@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Store Inventory</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#1f3a34">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#1d2421;--mute:#6b7570;--line:#e3dfd6;--brand:#1f3a34;--brand2:#2f5a50;--accent:#c8873a;--bad:#b3392f;--ok:#2d7a4f;--warn:#b7791f;--shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05)}
+@media(prefers-color-scheme:dark){:root{--bg:#121816;--card:#1a221f;--ink:#e8ece9;--mute:#9aa7a1;--line:#2a3532;--brand:#3d7a6b;--brand2:#4a8f7e;--accent:#e0a458;--bad:#e5685d;--ok:#4cb37e;--warn:#e0b04a;--shadow:none}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;font-weight:650}
+.hide{display:none!important}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+nav.side{background:var(--brand);color:#fff;padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px}
+nav.side .logo{font-weight:700;font-size:17px;padding:4px 10px 14px;letter-spacing:.2px}
+nav.side .logo small{display:block;font-weight:400;opacity:.7;font-size:12px}
+nav.side button{background:none;border:0;color:#fff;text-align:left;padding:10px 12px;border-radius:10px;cursor:pointer;opacity:.85;display:flex;gap:10px;align-items:center}
+nav.side button:hover{background:rgba(255,255,255,.08)}
+nav.side button.on{background:rgba(255,255,255,.16);opacity:1;font-weight:600}
+nav.side .sp{flex:1}
+nav.side .me{font-size:12px;opacity:.8;padding:8px 10px;border-top:1px solid rgba(255,255,255,.15)}
+main{padding:22px;max-width:1200px;width:100%}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.top h2{font-size:22px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:12px}
+.stats{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.stat .k{color:var(--mute);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.stat .v{font-size:24px;font-weight:700;margin-top:4px}
+.stat .s{font-size:12px;color:var(--mute)}
+.btn{background:var(--brand);color:#fff;border:0;border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:600}
+.btn:hover{background:var(--brand2)}
+.btn.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.sec:hover{background:rgba(127,127,127,.08)}
+.btn.bad{background:var(--bad)}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+input,select,textarea{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%;min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand2);outline-offset:-1px}
+label{display:block;font-size:12px;color:var(--mute);margin-bottom:4px}
+.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.f .full{grid-column:1/-1}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;background:rgba(127,127,127,.14)}
+.tag.ok{background:rgba(45,122,79,.15);color:var(--ok)}.tag.low{background:rgba(183,121,31,.18);color:var(--warn)}.tag.out{background:rgba(179,57,47,.15);color:var(--bad)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:9px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.mute{color:var(--mute)}.small{font-size:12px}
+.pill-row{display:flex;gap:6px;flex-wrap:wrap}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;z-index:50}
+.modal{background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:720px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.modal h3{margin-bottom:14px}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;z-index:99;box-shadow:0 6px 20px rgba(0,0,0,.3);max-width:90vw}
+.toast.err{background:var(--bad)}
+.pos{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}
+.items{display:grid;gap:8px;max-height:62vh;overflow:auto;padding-right:2px}
+.item{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;text-align:left}
+.item:hover{border-color:var(--brand2)}
+.item b{font-weight:600}
+.cartline{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.qty{display:flex;align-items:center;gap:4px}
+.qty button{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:none;cursor:pointer}
+.qty input{width:52px;text-align:center;padding:5px}
+.tree details{margin:4px 0}
+.tree summary{cursor:pointer;padding:6px 8px;border-radius:8px}
+.tree summary:hover{background:rgba(127,127,127,.08)}
+.tree .leaf{padding:5px 8px 5px 26px;display:flex;justify-content:space-between;cursor:pointer;border-radius:8px}
+.tree .leaf:hover{background:rgba(127,127,127,.08)}
+.tree .kids{margin-left:16px;border-left:1px solid var(--line);padding-left:6px}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}.bar>i{display:block;height:100%;background:var(--accent)}
+.auth{max-width:380px;margin:9vh auto;padding:0 16px}
+.auth h1{font-size:26px;margin-bottom:6px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.bottom{display:none}
+@media(max-width:820px){
+ .app{grid-template-columns:1fr}
+ nav.side{display:none}
+ main{padding:14px 12px 90px}
+ .bottom{display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--brand);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:40;justify-content:space-around}
+ .bottom button{background:none;border:0;color:#fff;opacity:.75;padding:6px 8px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
+ .bottom button.on{opacity:1;font-weight:700}
+ .bottom button span{font-size:18px}
+ .pos{grid-template-columns:1fr}
+ .items{max-height:40vh}
+ table.resp thead{display:none}
+ table.resp tr{display:block;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px;background:var(--card)}
+ table.resp td{display:flex;justify-content:space-between;gap:10px;border:0;padding:3px 0;text-align:right}
+ table.resp td::before{content:attr(data-l);color:var(--mute);font-size:12px;text-align:left}
+}
+@media print{body *{visibility:hidden}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="modal"></div>
+<div id="toast"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,updateProfile,sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection,doc,onSnapshot,setDoc,getDoc,getDocs,updateDoc,deleteDoc,query,orderBy,limit,runTransaction,serverTimestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {firebaseConfig} from "./firebase-config.js";
+
+/* ---------- Taxonomy (embedded from homecentre_taxonomy.json) ---------- */
+const TAXONOMY = [{"id":"living-room","name":"Living Room","slug":"livingroom","subcategories":[{"id":"sofas","name":"Sofas","slug":"livingroom-sofas","subcategories":[{"id":"3-seater-sofas","name":"3 Seater Sofas","slug":"livingroom-sofas-3seatersofas","subcategories":[]},{"id":"2-seater-sofas","name":"2 Seater Sofas","slug":"livingroom-sofas-2seatersofas","subcategories":[]},{"id":"1-seater-sofas","name":"1 Seater Sofas","slug":"livingroom-sofas-1seatersofas","subcategories":[]},{"id":"sofa-sets","name":"Sofa Sets","slug":"livingroom-sofas-sofasets","subcategories":[]},{"id":"sofa-cum-beds","name":"Sofa Cum Beds","slug":"livingroom-sofas-sofacumbeds","subcategories":[]},{"id":"corner-sofas","name":"Corner Sofas","slug":"livingroom-sofas-cornersofa","subcategories":[]}]},{"id":"customised-furniture","name":"Customised Furniture","slug":"customizedfurniture","subcategories":[]},{"id":"recliners","name":"Recliners","slug":"livingroom-recliners","subcategories":[{"id":"3-seater-recliners","name":"3 Seater Recliners","slug":"livingroom-recliners-3seaterrecliners","subcategories":[]},{"id":"2-seater-recliners","name":"2 Seater Recliners","slug":"livingroom-recliners-2seaterrecliners","subcategories":[]},{"id":"1-seater-recliners","name":"1 Seater Recliners","slug":"livingroom-recliners-1seaterrecliners","subcategories":[]},{"id":"recliner-sets","name":"Recliner Sets","slug":"livingroom-recliners-reclinersets","subcategories":[]}]},{"id":"occasional-chairs","name":"Occasional Chairs","slug":"livingroom-occasionalchairs","subcategories":[{"id":"accent-chairs","name":"Accent Chairs","slug":"livingroom-occasionalchairs-accentchairs","subcategories":[]},{"id":"folding-chairs","name":"Folding Chairs","slug":"livingroom-occasionalchairs-foldingchairs","subcategories":[]},{"id":"cafe-chairs","name":"Cafe Chairs","slug":"livingroom-occasionalchairs-cafechairs","subcategories":[]},{"id":"plastic-chairs","name":"Plastic Chairs","slug":"livingroom-occasionalchairs-plasticchairs","subcategories":[]}]},{"id":"benches-stools","name":"Benches & Stools","slug":"livingroom-benchandstools","subcategories":[{"id":"benches","name":"Benches","slug":"livingroom-benchandstools-benches","subcategories":[]},{"id":"stools","name":"Stools","slug":"livingroom-benchandstools-stools","subcategories":[]}]},{"id":"bean-bags-pouffes","name":"Bean Bags & Pouffes","slug":"livingroom-beanbagsandpouffes","subcategories":[{"id":"pouffes","name":"Pouffes","slug":"livingroom-beanbagsandpouffes-pouffes","subcategories":[]},{"id":"bean-bags","name":"Bean Bags","slug":"livingroom-beanbagsandpouffes-beanbags","subcategories":[]}]},{"id":"tables","name":"Tables","slug":"livingroom-tables","subcategories":[{"id":"centre-tables","name":"Centre Tables","slug":"livingroom-tables-centertables","subcategories":[]},{"id":"end-tables","name":"End Tables","slug":"livingroom-tables-endtables","subcategories":[]},{"id":"console-tables","name":"Console Tables","slug":"livingroom-tables-consoletables","subcategories":[]},{"id":"nesting-tables","name":"Nesting Tables","slug":"livingroom-tables-nestingtables","subcategories":[]}]},{"id":"tv-media-units","name":"TV & Media Units","slug":"livingroom-tvandmediaunits","subcategories":[{"id":"tv-consoles","name":"TV Consoles","slug":"livingroom-tvandmediaunits-tvconsoles","subcategories":[]},{"id":"tv-units","name":"TV Units","slug":"livingroom-tvandmediaunits-tvunits","subcategories":[]}]},{"id":"shelves","name":"Shelves","slug":"livingroom-shelves","subcategories":[{"id":"wall-shelves","name":"Wall Shelves","slug":"livingroom-shelves-wallshelves","subcategories":[]},{"id":"corner-shelves","name":"Corner Shelves","slug":"livingroom-shelves-cornershelves","subcategories":[]},{"id":"home-mandir","name":"Home Mandir","slug":"livingroom-shelves-homemandir","subcategories":[]}]},{"id":"shoe-racks","name":"Shoe Racks","slug":"livingroom-shoeracks","subcategories":[{"id":"shoe-cabinets","name":"Shoe Cabinets","slug":"livingroom-shoeracks-shoecabinets","subcategories":[]},{"id":"open-shoe-racks","name":"Open Shoe Racks","slug":"livingroom-shoeracks-shoeopenshelves","subcategories":[]}]},{"id":"study-work","name":"Study & Work","slug":"livingroom-studyandwork","subcategories":[{"id":"study-office-tables","name":"Study & Office Tables","slug":"livingroom-studyandwork-studyandofficetables","subcategories":[]},{"id":"study-office-chairs","name":"Study & Office Chairs","slug":"livingroom-studyandwork-studyandofficechairs","subcategories":[]}]},{"id":"book-cases-cabinets","name":"Book Cases & Cabinets","slug":"livingroom-bookcaseandcabinets","subcategories":[{"id":"book-cabinets","name":"Book Cabinets","slug":"livingroom-bookcaseandcabinets-bookcabinets","subcategories":[]},{"id":"open-book-shelves","name":"Open Book Shelves","slug":"livingroom-bookcaseandcabinets-openbookshelves","subcategories":[]}]},{"id":"outdoor-furniture","name":"Outdoor Furniture","slug":"outdoor","subcategories":[{"id":"outdoor-seating-tables","name":"Outdoor Seating & Tables","slug":"outdoor-outdoorseatingandtables","subcategories":[]}]},{"id":"ottomans","name":"Ottomans","slug":"livingroom-ottomans","subcategories":[]},{"id":"tea-table-sets","name":"Tea Table Sets","slug":"livingroom-teasets","subcategories":[]}]},{"id":"bedroom","name":"Bedroom","slug":"bedroom","subcategories":[{"id":"beds","name":"Beds","slug":"bedroom-beds","subcategories":[{"id":"king-beds","name":"King Beds","slug":"bedroom-beds-kingbeds","subcategories":[]},{"id":"queen-beds","name":"Queen Beds","slug":"bedroom-beds-queenbeds","subcategories":[]},{"id":"single-beds","name":"Single Beds","slug":"bedroom-beds-singlebeds","subcategories":[]},{"id":"bunk-beds","name":"Bunk Beds","slug":"bedroom-beds-bunkbeds","subcategories":[]}]},{"id":"wardrobes","name":"Wardrobes","slug":"bedroom-wardrobes","subcategories":[{"id":"2-door-wardrobes","name":"2 Door Wardrobes","slug":"bedroom-wardrobes-2doorswingwardrobes","subcategories":[]},{"id":"3-door-wardrobes","name":"3 Door Wardrobes","slug":"bedroom-wardrobes-3doorswingwardrobes","subcategories":[]},{"id":"4-door-wardrobes","name":"4 Door Wardrobes","slug":"bedroom-wardrobes-4doorswingwardrobes","subcategories":[]},{"id":"sliding-wardrobes","name":"Sliding Wardrobes","slug":"bedroom-wardrobes-2doorslidingwardrobes","subcategories":[]}]},{"id":"mattresses","name":"Mattresses","slug":"bedroom-mattresses","subcategories":[{"id":"king-mattresses","name":"King Mattresses","slug":"bedroom-mattresses-kingmattresses","subcategories":[]},{"id":"queen-mattresses","name":"Queen Mattresses","slug":"bedroom-mattresses-queenmattresses","subcategories":[]},{"id":"single-mattresses","name":"Single Mattresses","slug":"bedroom-mattresses-singlemattresses","subcategories":[]}]},{"id":"bed-side-tables","name":"Bed Side Tables","slug":"bedroom-bedsidetables","subcategories":[]},{"id":"chest-of-drawers","name":"Chest of Drawers","slug":"bedroom-chestofdrawers","subcategories":[]},{"id":"dresser-mirrors","name":"Dresser Mirrors","slug":"bedroom-dressermirrors","subcategories":[]}]},{"id":"dining-room","name":"Dining Room","slug":"diningroom","subcategories":[{"id":"dining-sets","name":"Dining Sets","slug":"diningroom-diningtablesets","subcategories":[{"id":"4-seater-dining-sets","name":"4 Seater Dining Sets","slug":"diningroom-diningtablesets-4seaterdiningtablesets","subcategories":[]},{"id":"6-seater-dining-sets","name":"6 Seater Dining Sets","slug":"diningroom-diningtablesets-6seaterdiningtablesets","subcategories":[]},{"id":"8-seater-dining-sets","name":"8 Seater Dining Sets","slug":"diningroom-diningtablesets-8seaterdiningtablesets","subcategories":[]}]},{"id":"dining-tables","name":"Dining Tables","slug":"diningroom-diningtables","subcategories":[{"id":"4-seater-dining-tables","name":"4 Seater Dining Tables","slug":"diningroom-diningtables-4seatertables","subcategories":[]},{"id":"6-seater-dining-tables","name":"6 Seater Dining Tables","slug":"diningroom-diningtables-6seatertables","subcategories":[]},{"id":"8-seater-dining-tables","name":"8 Seater Dining Tables","slug":"diningroom-diningtables-8seatertables","subcategories":[]}]},{"id":"bar-furniture","name":"Bar Furniture","slug":"diningroom-bar","subcategories":[{"id":"bar-cabinet-curios","name":"Bar Cabinet-Curios","slug":"diningroom-bar-barcabinetcurios","subcategories":[]},{"id":"bar-stools-chairs","name":"Bar Stools & Chairs","slug":"diningroom-bar-barstools","subcategories":[]},{"id":"serving-trolleys","name":"Serving Trolleys","slug":"diningroom-bar-servingtrolleys","subcategories":[]}]},{"id":"dining-chairs","name":"Dining Chairs","slug":"diningroom-diningchairs","subcategories":[]},{"id":"dining-benches","name":"Dining Benches","slug":"diningroom-diningbenches","subcategories":[]},{"id":"crockery-units","name":"Crockery Units","slug":"diningroom-crockeryunits","subcategories":[]}]},{"id":"decor","name":"Decor","slug":"decor","subcategories":[{"id":"home-accessories","name":"Home Accessories","slug":"decor-homeaccessories","subcategories":[{"id":"figurines","name":"Figurines","slug":"decor-homeaccessories-figurines","subcategories":[]},{"id":"vases","name":"Vases","slug":"decor-homeaccessories-vases","subcategories":[]},{"id":"table-accents","name":"Table Accents","slug":"decor-homeaccessories-tableaccents","subcategories":[]},{"id":"candle-holders-lanterns","name":"Candle Holders & Lanterns","slug":"decor-homeaccessories-candleholdersandlanterns","subcategories":[]},{"id":"potpourri-bowls-platters","name":"Potpourri Bowls & Platters","slug":"decor-homeaccessories-bowls","subcategories":[]},{"id":"clocks","name":"Clocks","slug":"decor-homeaccessories-clocks","subcategories":[]},{"id":"desk-accessories","name":"Desk Accessories","slug":"decor-homeaccessories-deskaccessories","subcategories":[]},{"id":"gift-accessories","name":"Gift Accessories","slug":"decor-homeaccessories-giftaccessories","subcategories":[]}]},{"id":"lighting","name":"Lighting","slug":"decor-lighting","subcategories":[{"id":"table-lamps","name":"Table Lamps","slug":"decor-lighting-tablelamps","subcategories":[]},{"id":"wall-lamps","name":"Wall Lamps","slug":"decor-lighting-walllamps","subcategories":[]},{"id":"hanging-lamps","name":"Hanging Lamps","slug":"decor-lighting-ceilinglamps","subcategories":[]},{"id":"floor-lamps","name":"Floor Lamps","slug":"decor-lighting-floorlamps","subcategories":[]},{"id":"decorative-lights","name":"Decorative Lights","slug":"decor-lighting-decorativelights","subcategories":[]},{"id":"string-lights","name":"String Lights","slug":"decor-lighting-stringlights","subcategories":[]},{"id":"bulbs","name":"Bulbs","slug":"decor-lighting-bulbs","subcategories":[]}]},{"id":"wall-decor","name":"Wall Decor","slug":"decor-wallaccent","subcategories":[{"id":"wall-accents","name":"Wall Accents","slug":"decor-wallaccent-walldecor","subcategories":[]},{"id":"decorative-mirrors","name":"Decorative Mirrors","slug":"decor-wallaccent-decorativemirrors","subcategories":[]},{"id":"photo-frames","name":"Photo Frames","slug":"decor-wallaccent-photoframes","subcategories":[]},{"id":"posters-paintings","name":"Posters & Paintings","slug":"decor-wallaccent-pictureframes","subcategories":[]}]},{"id":"home-fragrances","name":"Home Fragrances","slug":"decor-homefragrance","subcategories":[{"id":"candles","name":"Candles","slug":"decor-homefragrance-candles","subcategories":[]},{"id":"fragrances-potpourris","name":"Fragrances & Potpourris","slug":"decor-homefragrance-fragranceandpotpourri","subcategories":[]},{"id":"diffusers","name":"Diffusers","slug":"decor-homefragrance-diffusers","subcategories":[]},{"id":"aroma-oils","name":"Aroma Oils","slug":"decor-homefragrance-aromaoil","subcategories":[]},{"id":"room-car-sprays","name":"Room & Car Sprays","slug":"decor-homefragrance-roomsprays","subcategories":[]}]},{"id":"garden","name":"Garden","slug":"decor-garden","subcategories":[{"id":"artificial-plants-flowers","name":"Artificial Plants & Flowers","slug":"decor-garden-artificialplantsandflowers","subcategories":[]},{"id":"pots-planters","name":"Pots & Planters","slug":"decor-garden-potsandplanters","subcategories":[]},{"id":"fountains","name":"Fountains","slug":"decor-garden-indoorandoutdoorfountains","subcategories":[]}]}]},{"id":"kitchen","name":"Kitchen","slug":"kitchen","subcategories":[{"id":"storage-containers","name":"Storage & Containers","slug":"kitchen-storageandcontainers","subcategories":[{"id":"containers-jars","name":"Containers & Jars","slug":"kitchen-storageandcontainers-containersandjars","subcategories":[]},{"id":"bottles","name":"Bottles","slug":"kitchen-storageandcontainers-bottles","subcategories":[]},{"id":"flasks","name":"Flasks","slug":"kitchen-storageandcontainers-flask","subcategories":[]},{"id":"lunch-boxes-bags","name":"Lunch Boxes & Bags","slug":"kitchen-storageandcontainers-lunchboxandbags","subcategories":[]},{"id":"kitchen-organisers","name":"Kitchen Organisers","slug":"kitchen-storageandcontainers-organisers","subcategories":[]}]},{"id":"cookware","name":"Cookware","slug":"kitchen-cooking","subcategories":[{"id":"cookware-sets","name":"Cookware Sets","slug":"kitchen-cooking-cookwaresets","subcategories":[]},{"id":"induction-cookware","name":"Induction Cookware","slug":"kitchen-cooking-inductioncookware","subcategories":[]},{"id":"pots-pans","name":"Pots & Pans","slug":"kitchen-cooking-potsandpans","subcategories":[]},{"id":"kadhai-woks","name":"Kadhai & Woks","slug":"kitchen-cooking-kadhaiandwoks","subcategories":[]},{"id":"cooking-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-cooking-toolsandgadgets","subcategories":[]},{"id":"pressure-cookers","name":"Pressure Cookers","slug":"kitchen-cooking-pressurecookers","subcategories":[]},{"id":"tawas","name":"Tawas","slug":"kitchen-cooking-tawas","subcategories":[]}]},{"id":"kitchenware","name":"Kitchenware","slug":"kitchen-kitchenware","subcategories":[{"id":"kitchen-trolleys","name":"Kitchen Trolleys","slug":"kitchen-kitchenware-kitchentrolley","subcategories":[]},{"id":"knives-scissors","name":"Knives & Scissors","slug":"kitchen-kitchenware-knivesandscissors","subcategories":[]},{"id":"casseroles","name":"Casseroles","slug":"kitchen-kitchenware-casseroles","subcategories":[]},{"id":"oil-vinegar-servers","name":"Oil & Vinegar Servers","slug":"kitchen-kitchenware-oilandvinegarserver","subcategories":[]},{"id":"utensil-holders","name":"Utensil Holders","slug":"kitchen-kitchenware-utensilholders","subcategories":[]},{"id":"chopping-boards","name":"Chopping Boards","slug":"kitchen-kitchenware-choppingboards","subcategories":[]},{"id":"dish-racks","name":"Dish Racks","slug":"kitchen-kitchenware-dishracks","subcategories":[]},{"id":"fruit-baskets","name":"Fruit Baskets","slug":"kitchen-kitchenware-fruitstands","subcategories":[]},{"id":"strainers-colanders","name":"Strainers & Colanders","slug":"kitchen-kitchenware-strainersandcolanders","subcategories":[]},{"id":"kitchenware-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-kitchenware-toolsandgadgets","subcategories":[]}]},{"id":"kitchen-linen","name":"Kitchen Linen","slug":"kitchen-kitchenlinens","subcategories":[{"id":"aprons","name":"Aprons","slug":"kitchen-kitchenlinens-aprons","subcategories":[]},{"id":"pot-holders-mittens","name":"Pot Holders & Mittens","slug":"kitchen-kitchenlinens-potholders","subcategories":[]},{"id":"kitchen-towels","name":"Kitchen Towels","slug":"kitchen-kitchenlinens-kitchentowels","subcategories":[]}]},{"id":"bakeware","name":"Bakeware","slug":"kitchen-bakeware","subcategories":[]},{"id":"kitchen-appliances","name":"Kitchen Appliances","slug":"kitchen-appliances","subcategories":[]}]},{"id":"furnishings","name":"Furnishings","slug":"furnishing","subcategories":[{"id":"bedding","name":"Bedding","slug":"furnishing-bedding","subcategories":[{"id":"double-bedsheets","name":"Double Bedsheets","slug":"furnishing-bedding-doublebedsheets","subcategories":[]},{"id":"single-bedsheets","name":"Single Bedsheets","slug":"furnishing-bedding-singlebedsheets","subcategories":[]},{"id":"bedding-sets","name":"Bedding Sets","slug":"furnishing-bedding-beddingsets","subcategories":[]},{"id":"pillows-pillow-covers","name":"Pillows & Pillow Covers","slug":"furnishing-bedding-pillowsandpillowcovers","subcategories":[]},{"id":"blankets-quilts","name":"Blankets & Quilts","slug":"furnishing-bedding-blanketsandquilts","subcategories":[]},{"id":"comforters","name":"Comforters","slug":"furnishing-bedding-comforters","subcategories":[]},{"id":"throws","name":"Throws","slug":"furnishing-bedding-throws","subcategories":[]},{"id":"duvets-duvet-covers","name":"Duvets & Duvet Covers","slug":"furnishing-bedding-duvetandduvetcovers","subcategories":[]},{"id":"dohars","name":"Dohars","slug":"furnishing-bedding-dohars","subcategories":[]},{"id":"bed-covers","name":"Bed Covers","slug":"furnishing-bedding-bedcovers","subcategories":[]}]},{"id":"cushions","name":"Cushions","slug":"furnishing-cushions","subcategories":[{"id":"cushion-covers","name":"Cushion Covers","slug":"furnishing-cushions-cushioncovers","subcategories":[]},{"id":"filled-cushions","name":"Filled Cushions","slug":"furnishing-cushions-filledcushions","subcategories":[]},{"id":"cushion-fillers","name":"Cushion Fillers","slug":"furnishing-cushions-cushionfilling","subcategories":[]},{"id":"floor-cushions","name":"Floor Cushions","slug":"furnishing-cushions-floorcushions","subcategories":[]}]},{"id":"curtains-blinds","name":"Curtains & Blinds","slug":"furnishing-curtains","subcategories":[{"id":"door-curtains","name":"Door Curtains","slug":"furnishing-curtains-doorcurtains","subcategories":[]},{"id":"window-curtains","name":"Window Curtains","slug":"furnishing-curtains-windowcurtains","subcategories":[]},{"id":"blinds","name":"Blinds","slug":"furnishing-curtains-blinds","subcategories":[]},{"id":"rods-accessories","name":"Rods & Accessories","slug":"furnishing-curtains-rodsandaccessories","subcategories":[]}]},{"id":"accessories","name":"Accessories","slug":"furnishing-accessories","subcategories":[{"id":"bags","name":"Bags","slug":"furnishing-accessories-bags","subcategories":[]},{"id":"pads-mats","name":"Pads & Mats","slug":"furnishing-accessories-padsandmats","subcategories":[]},{"id":"sofa-covers","name":"Sofa Covers","slug":"furnishing-accessories-sofacovers","subcategories":[]}]},{"id":"floor-coverings","name":"Floor Coverings","slug":"furnishing-floorcoverings","subcategories":[{"id":"carpets-rugs","name":"Carpets & Rugs","slug":"furnishing-floorcoverings-carpets","subcategories":[]},{"id":"dhurries","name":"Dhurries","slug":"furnishing-floorcoverings-dhurries","subcategories":[]},{"id":"doormats","name":"Doormats","slug":"furnishing-floorcoverings-doormats","subcategories":[]}]}]},{"id":"tableware","name":"Tableware","slug":"dining","subcategories":[{"id":"serving","name":"Serving","slug":"dining-serving","subcategories":[{"id":"trays-platters","name":"Trays & Platters","slug":"dining-serving-traysandplatters","subcategories":[]},{"id":"glasses-jugs","name":"Glasses & Jugs","slug":"dining-serving-glassesandjugs","subcategories":[]},{"id":"bar-accessories","name":"Bar Accessories","slug":"dining-serving-baraccessories","subcategories":[]},{"id":"salt-pepper-shakers","name":"Salt & Pepper Shakers","slug":"dining-serving-saltandpeppershakers","subcategories":[]},{"id":"chip-dip","name":"Chip & Dip","slug":"dining-serving-chipanddip","subcategories":[]}]},{"id":"crockery","name":"Crockery","slug":"dining-crockery","subcategories":[{"id":"bowls","name":"Bowls","slug":"dining-crockery-bowls","subcategories":[]},{"id":"plates","name":"Plates","slug":"dining-crockery-plates","subcategories":[]},{"id":"mugs","name":"Mugs","slug":"dining-crockery-mugsandcups","subcategories":[]},{"id":"cups-saucers","name":"Cups & Saucers","slug":"dining-crockery-cupsandsaucers","subcategories":[]},{"id":"pots-kettles","name":"Pots & Kettles","slug":"dining-crockery-potsandkettles","subcategories":[]},{"id":"dinner-sets","name":"Dinner Sets","slug":"dining-crockery-dinnersets","subcategories":[]}]},{"id":"cutlery","name":"Cutlery","slug":"dining-cutlery","subcategories":[{"id":"spoons","name":"Spoons","slug":"dining-cutlery-spoons","subcategories":[]},{"id":"cutlery-sets","name":"Cutlery & Cutlery Sets","slug":"dining-cutlery-cutlerysets","subcategories":[]},{"id":"cutlery-holders","name":"Cutlery Holders","slug":"dining-cutlery-cutleryholders","subcategories":[]}]},{"id":"table-linens","name":"Table Linens","slug":"dining-tableaccessories","subcategories":[{"id":"placemats","name":"Placemats","slug":"dining-tableaccessories-placemats","subcategories":[]},{"id":"table-runners","name":"Table Runners","slug":"dining-tableaccessories-tablerunners","subcategories":[]},{"id":"table-cloths","name":"Table Cloths","slug":"dining-tableaccessories-tablecloths","subcategories":[]},{"id":"trivets-coasters","name":"Trivets & Coasters","slug":"dining-tableaccessories-trivetandcoasters","subcategories":[]},{"id":"tissue-holders","name":"Tissue Holders","slug":"dining-tableaccessories-tissueholders","subcategories":[]}]}]},{"id":"bath-laundry","name":"Bath & Laundry","slug":"bathandlaundry","subcategories":[{"id":"bath-linen","name":"Bath Linen","slug":"bathandlaundry-bath","subcategories":[{"id":"towels","name":"Towels","slug":"bathandlaundry-bath-towel","subcategories":[]},{"id":"robes","name":"Robes","slug":"bathandlaundry-bath-robes","subcategories":[]},{"id":"bathmats","name":"Bathmats","slug":"bathandlaundry-bath-bathmats","subcategories":[]}]},{"id":"bath-accessories","name":"Bath Accessories","slug":"bathandlaundry-bathaccessories","subcategories":[{"id":"holders-tumblers","name":"Holders & Tumblers","slug":"bathandlaundry-bathaccessories-holdersandtumblers","subcategories":[]},{"id":"soap-dispensers","name":"Soap Dispensers","slug":"bathandlaundry-bathaccessories-soapdispensers","subcategories":[]},{"id":"soap-dishes","name":"Soap Dishes","slug":"bathandlaundry-bathaccessories-soapdishes","subcategories":[]},{"id":"bath-sets","name":"Bath Sets","slug":"bathandlaundry-bathaccessories-accessorysets","subcategories":[]},{"id":"storage-mirrors","name":"Storage & Mirrors","slug":"bathandlaundry-bathaccessories-storageandmirrors","subcategories":[]},{"id":"towel-holders","name":"Towel Holders","slug":"bathandlaundry-bathaccessories-towelholders","subcategories":[]},{"id":"toilet-accessories","name":"Toilet Accessories","slug":"bathandlaundry-bathaccessories-toiletpaperandbrushholders","subcategories":[]},{"id":"shower-curtains","name":"Shower Curtains","slug":"bathandlaundry-bathaccessories-showercurtains","subcategories":[]},{"id":"bath-stools","name":"Bath Stools","slug":"bathandlaundry-bathaccessories-bathstools","subcategories":[]}]},{"id":"laundry","name":"Laundry","slug":"bathandlaundry-laundry","subcategories":[{"id":"laundry-storage-baskets","name":"Laundry Storage & Baskets","slug":"bathandlaundry-laundry-storage","subcategories":[]},{"id":"cleaning-accessories","name":"Cleaning Accessories","slug":"bathandlaundry-laundry-cleaningaccessories","subcategories":[]},{"id":"dustbins","name":"Dustbins","slug":"bathandlaundry-laundry-dustbins","subcategories":[]},{"id":"cloth-dryers","name":"Cloth Dryers","slug":"bathandlaundry-laundry-clothdryers","subcategories":[]},{"id":"hangers-hooks","name":"Hangers & Hooks","slug":"bathandlaundry-laundry-hangersandhooks","subcategories":[]}]}]},{"id":"gifting","name":"Gifting","slug":"gifts","subcategories":[{"id":"housewarming-gifts","name":"Housewarming Gifts","slug":"gifts-housewarminggifts","subcategories":[]},{"id":"wedding-gifts","name":"Wedding Gifts","slug":"gifts-weddinggifts","subcategories":[]},{"id":"anniversary-gifts","name":"Anniversary Gifts","slug":"gifts-anniversarygifts","subcategories":[]},{"id":"birthday-gifts","name":"Birthday Gifts","slug":"gifts-birthdaygifts","subcategories":[]},{"id":"gifts-for-him","name":"Gifts for Him","slug":"gifts-giftsforhim","subcategories":[]},{"id":"gifts-for-her","name":"Gifts for Her","slug":"gifts-giftsforher","subcategories":[]},{"id":"festive-gifts","name":"Festive Gifts","slug":"gifts-festivegifts","subcategories":[{"id":"ganesh-chaturthi","name":"Ganesh Chaturthi","slug":"gifts-festivegifts-ganeshchaturthigifts","subcategories":[]}]},{"id":"special-occasions","name":"Special Occasions","slug":"gifts-specialoccasiongifts","subcategories":[]}]}];
+const bySlug = {}; // slug -> {cat,sub,type}
+(function idx(){
+  TAXONOMY.forEach(c=>{bySlug[c.slug]={cat:c};
+    c.subcategories.forEach(s=>{bySlug[s.slug]={cat:c,sub:s};
+      s.subcategories.forEach(t=>{bySlug[t.slug]={cat:c,sub:s,type:t};});});});
+})();
+const ref = n=>({id:n.id,name:n.name,slug:n.slug});
+
+/* ---------- Helpers ---------- */
+const $ = (s,r=document)=>r.querySelector(s);
+const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const inr = n=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(+n||0);
+const num = v=>{const n=parseFloat(v);return isNaN(n)?0:n};
+const dkey = (d=new Date())=>{const z=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`};
+const tms = ts=>ts?.toMillis?ts.toMillis():(ts?.seconds?ts.seconds*1000:Date.now());
+const fdt = ms=>new Date(ms).toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+function toast(m,err){const t=$("#toast");t.innerHTML=`<div class="toast ${err?"err":""}">${esc(m)}</div>`;clearTimeout(toast.t);toast.t=setTimeout(()=>t.innerHTML="",3200)}
+function dl(name,text,type="text/csv"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+const csvCell=v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+function parseCSV(t){const rows=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}else if(ch=='"')q=true;else if(ch==","){r.push(c);c=""}else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t[i+1]=="\n")i++;r.push(c);c="";if(r.some(x=>x!==""))rows.push(r);r=[]}else c+=ch}r.push(c);if(r.some(x=>x!==""))rows.push(r);return rows}
+
+/* ---------- Firebase ---------- */
+const configured = firebaseConfig && firebaseConfig.apiKey && !/YOUR_/.test(firebaseConfig.apiKey);
+let app,auth,db;
+const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",invoicePrefix:"INV",address:"",phone:"",gstin:"",footer:"Thank you for shopping with us!",allowNegative:false},
+  products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",stock:"all",sort:"name",limit:100},
+  cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",unsub:[]};
+
+if(configured){
+  app=initializeApp(firebaseConfig);auth=getAuth(app);
+  db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});
+}
+
+const isAdmin = ()=>S.profile?.role==="admin";
+const fullMode = ()=>S.settings.mode==="full";
+const lowStock = p=>p.qty>0&&p.qty<=num(p.reorder);
+const outStock = p=>p.qty<=0;
+
+/* ---------- Auth & boot ---------- */
+function authScreen(mode="in",msg=""){
+  $("#root").innerHTML=`<div class="auth"><h1>Store Inventory</h1><p class="mute">${mode==="in"?"Sign in to continue":"Create your staff account"}</p>
+  ${msg?`<p style="color:var(--bad)">${esc(msg)}</p>`:""}
+  <div class="grid">
+   ${mode==="up"?`<div><label>Your name</label><input id="a-name" autocomplete="name"></div>`:""}
+   <div><label>Email</label><input id="a-email" type="email" autocomplete="email"></div>
+   <div><label>Password</label><input id="a-pass" type="password" autocomplete="${mode==="in"?"current-password":"new-password"}"></div>
+   <button class="btn" id="a-go">${mode==="in"?"Sign in":"Create account"}</button>
+   <div class="row" style="justify-content:space-between"><a href="#" id="a-sw">${mode==="in"?"New staff? Create account":"Have an account? Sign in"}</a>${mode==="in"?`<a href="#" id="a-fp">Forgot password</a>`:""}</div>
+  </div></div>`;
+  $("#a-sw").onclick=e=>{e.preventDefault();authScreen(mode==="in"?"up":"in")};
+  $("#a-fp")&&($("#a-fp").onclick=async e=>{e.preventDefault();const em=$("#a-email").value.trim();if(!em)return toast("Enter your email first",1);try{await sendPasswordResetEmail(auth,em);toast("Reset email sent")}catch(x){toast(x.message,1)}});
+  const go=async()=>{
+    const email=$("#a-email").value.trim(),pass=$("#a-pass").value;
+    try{
+      if(mode==="in")await signInWithEmailAndPassword(auth,email,pass);
+      else{const name=$("#a-name").value.trim()||email.split("@")[0];
+        S.pendingName=name;const cr=await createUserWithEmailAndPassword(auth,email,pass);await updateProfile(cr.user,{displayName:name});}
+    }catch(x){authScreen(mode,x.code?.replace("auth/","").replace(/-/g," ")||x.message)}
+  };
+  $("#a-go").onclick=go;$("#a-pass").onkeydown=e=>{if(e.key==="Enter")go()};
+}
+
+function setupScreen(){
+  $("#root").innerHTML=`<div class="auth" style="max-width:560px"><h1>One-time setup needed</h1>
+  <p>Add your Firebase project keys to <code>firebase-config.js</code>, then reload. Step-by-step instructions are in <b>README.md</b>.</p></div>`;
+}
+
+async function ensureProfile(u){
+  const r=doc(db,"users",u.uid);let s=await getDoc(r);
+  if(!s.exists()){
+    const name=u.displayName||S.pendingName||u.email.split("@")[0];
+    const boot=await getDoc(doc(db,"settings","bootstrap")).catch(()=>null);
+    const first=!(boot&&boot.exists());
+    const b=writeBatch(db);
+    b.set(r,{name,email:u.email,role:first?"admin":"pending",createdAt:serverTimestamp()});
+    if(first)b.set(doc(db,"settings","bootstrap"),{by:u.uid,at:serverTimestamp()});
+    await b.commit();
+    s=await getDoc(r);
+  }
+  return s.data();
+}
+
+function stopListeners(){S.unsub.forEach(f=>f());S.unsub=[]}
+function startListeners(){
+  stopListeners();
+  const on=(q,fn)=>S.unsub.push(onSnapshot(q,fn,e=>console.warn(e)));
+  on(doc(db,"settings","store"),s=>{if(s.exists())S.settings={...S.settings,...s.data()};render()});
+  on(collection(db,"products"),s=>{S.products=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  on(query(collection(db,"sales"),orderBy("createdAt","desc"),limit(500)),s=>{S.sales=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  on(query(collection(db,"movements"),orderBy("createdAt","desc"),limit(200)),s=>{S.moves=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  if(isAdmin())on(collection(db,"users"),s=>{S.users=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+}
+
+if(!configured){setupScreen()}
+else onAuthStateChanged(auth,async u=>{
+  S.user=u;
+  if(!u){stopListeners();S.profile=null;authScreen("in");return}
+  try{S.profile=await ensureProfile(u)}catch(e){$("#root").innerHTML=`<div class="auth"><h1>Couldn't load profile</h1><p>${esc(e.message)}</p><p>Check that Firestore rules from README.md are published.</p><button class="btn" id="so">Sign out</button></div>`;$("#so").onclick=()=>signOut(auth);return}
+  if(S.profile.role==="pending"){
+    stopListeners();
+    $("#root").innerHTML=`<div class="auth"><h1>Waiting for approval</h1><p class="mute">Your account (${esc(u.email)}) is created. Ask the store admin to approve it, then reload.</p><div class="row"><button class="btn" id="rl">Reload</button><button class="btn sec" id="so">Sign out</button></div></div>`;
+    $("#rl").onclick=()=>location.reload();$("#so").onclick=()=>signOut(auth);return}
+  startListeners();render();
+});
+
+/* ---------- Shell ---------- */
+const NAV=[["dashboard","Dashboard","▦"],["products","Products","▤"],["sell","Sell","₹",true],["stock","Stock","⇅"],["sales","Sales","☰",true],["categories","Categories","⌗"],["settings","Settings","⚙"]];
+function navItems(){return NAV.filter(n=>!n[3]||fullMode())}
+function setView(v){S.view=v;render()}
+window.go=setView;
+function render(soft){
+  if(!S.profile||S.profile.role==="pending")return;
+  if(!fullMode()&&(S.view==="sell"||S.view==="sales"))S.view="dashboard";
+  // don't clobber inputs while typing during snapshot updates
+  if(soft&&document.activeElement&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)&&$("main")?.contains(document.activeElement))return;
+  const items=navItems();
+  $("#root").innerHTML=`<div class="app">
+   <nav class="side"><div class="logo">${esc(S.settings.storeName)}<small>${fullMode()?"Inventory + Sales":"Inventory"}</small></div>
+    ${items.map(n=>`<button class="${S.view===n[0]?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}
+    <div class="sp"></div><div class="me">${esc(S.profile.name)} · ${S.profile.role}<br><a href="#" style="color:#fff" onclick="doSignOut();return false">Sign out</a></div></nav>
+   <main id="main"></main></div>
+   <div class="bottom">${items.slice(0,5).map(n=>`<button class="${S.view===n[0]?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}</div>`;
+  const v={dashboard:vDash,products:vProducts,sell:vSell,stock:vStock,sales:vSales,categories:vCats,settings:vSettings}[S.view]||vDash;
+  v($("#main"));
+}
+window.doSignOut=()=>signOut(auth);
+
+/* ---------- Dashboard ---------- */
+function vDash(el){
+  const P=S.products,tk=dkey();
+  const units=P.reduce((a,p)=>a+(+p.qty||0),0),cost=P.reduce((a,p)=>a+(+p.qty||0)*num(p.cost),0),retail=P.reduce((a,p)=>a+(+p.qty||0)*num(p.price),0);
+  const low=P.filter(lowStock),out=P.filter(outStock);
+  const today=S.sales.filter(s=>s.dateKey===tk&&s.status!=="void");
+  const byCat={};P.forEach(p=>{const k=p.categoryName||"Uncategorised";byCat[k]=(byCat[k]||0)+(+p.qty||0)*num(p.cost||p.price)});
+  const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);const mx=cats[0]?.[1]||1;
+  el.innerHTML=`<div class="top"><h2>Dashboard</h2><div class="row"><button class="btn" onclick="openProduct()">+ Add product</button>${fullMode()?`<button class="btn sec" onclick="go('sell')">New sale</button>`:""}</div></div>
+  <div class="grid stats">
+   <div class="card stat"><div class="k">Products</div><div class="v">${P.length}</div><div class="s">${units} units in stock</div></div>
+   <div class="card stat"><div class="k">Stock value (cost)</div><div class="v">${inr(cost)}</div><div class="s">Retail value ${inr(retail)}</div></div>
+   <div class="card stat"><div class="k">Low stock</div><div class="v" style="color:var(--warn)">${low.length}</div><div class="s">${out.length} out of stock</div></div>
+   ${fullMode()?`<div class="card stat"><div class="k">Today's sales</div><div class="v">${inr(today.reduce((a,s)=>a+s.total,0))}</div><div class="s">${today.length} bills</div></div>`:""}
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:12px">
+   <div class="card"><h3 style="margin-bottom:10px">Needs restocking</h3>
+    ${[...out,...low].slice(0,10).map(p=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)}<br><span class="small mute">${esc(p.sku)} · ${esc(p.subcategoryName||p.categoryName||"")}</span></span><span class="tag ${outStock(p)?"out":"low"}">${p.qty} left</span></div>`).join("")||`<p class="mute">Everything is well stocked.</p>`}</div>
+   <div class="card"><h3 style="margin-bottom:10px">Stock value by category</h3>
+    ${cats.map(([k,v])=>`<div style="margin-bottom:9px"><div class="row" style="justify-content:space-between"><span>${esc(k)}</span><span class="mute small">${inr(v)}</span></div><div class="bar"><i style="width:${(v/mx*100).toFixed(1)}%"></i></div></div>`).join("")||`<p class="mute">Add products to see this.</p>`}</div>
+   <div class="card"><h3 style="margin-bottom:10px">Recent stock activity</h3>
+    ${S.moves.slice(0,8).map(m=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(m.productName)}<br><span class="small mute">${esc(m.type)} · ${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><b style="color:${m.delta>=0?"var(--ok)":"var(--bad)"}">${m.delta>0?"+":""}${m.delta}</b></div>`).join("")||`<p class="mute">No activity yet.</p>`}</div>
+  </div>`;
+}
+
+/* ---------- Products ---------- */
+function filteredProducts(){
+  const f=S.pf,q=f.q.toLowerCase();
+  let L=S.products.filter(p=>{
+    if(q&&!(`${p.name} ${p.sku} ${p.barcode||""} ${p.brand||""}`.toLowerCase().includes(q)))return false;
+    if(f.cat&&p.categoryId!==f.cat)return false;if(f.sub&&p.subcategoryId!==f.sub)return false;
+    if(f.stock==="low"&&!lowStock(p))return false;if(f.stock==="out"&&!outStock(p))return false;if(f.stock==="in"&&outStock(p))return false;
+    return true});
+  const s={name:(a,b)=>a.name.localeCompare(b.name),qty:(a,b)=>a.qty-b.qty,price:(a,b)=>b.price-a.price,new:(a,b)=>tms(b.createdAt)-tms(a.createdAt)}[f.sort];
+  return L.sort(s);
+}
+function catOptions(sel){return `<option value="">All categories</option>`+TAXONOMY.map(c=>`<option value="${c.id}" ${sel===c.id?"selected":""}>${esc(c.name)}</option>`).join("")}
+function subOptions(cid,sel){const c=TAXONOMY.find(x=>x.id===cid);return `<option value="">All subcategories</option>`+(c?c.subcategories.map(s=>`<option value="${s.id}" ${sel===s.id?"selected":""}>${esc(s.name)}</option>`).join(""):"")}
+
+function vProducts(el){
+  const L=filteredProducts(),f=S.pf;
+  el.innerHTML=`<div class="top"><h2>Products <span class="mute small">(${L.length})</span></h2>
+   <div class="row">${isAdmin()?`<button class="btn" onclick="openProduct()">+ Add product</button><button class="btn sec" onclick="openImport()">Import CSV</button>`:""}<button class="btn sec" onclick="exportProducts()">Export</button></div></div>
+  <div class="card" style="margin-bottom:12px"><div class="f">
+   <div class="full"><input id="pf-q" placeholder="Search name, SKU, barcode, brand…" value="${esc(f.q)}"></div>
+   <select id="pf-cat">${catOptions(f.cat)}</select><select id="pf-sub">${subOptions(f.cat,f.sub)}</select>
+   <select id="pf-stock">${[["all","All stock"],["in","In stock"],["low","Low stock"],["out","Out of stock"]].map(o=>`<option value="${o[0]}" ${f.stock===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select>
+   <select id="pf-sort">${[["name","Sort: Name"],["qty","Sort: Stock (low first)"],["price","Sort: Price (high first)"],["new","Sort: Newest"]].map(o=>`<option value="${o[0]}" ${f.sort===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select>
+  </div></div>
+  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Product</th><th>Category</th><th class="n">Price</th><th class="n">Stock</th><th></th></tr></thead><tbody>
+  ${L.slice(0,f.limit).map(p=>`<tr><td data-l="Product"><b>${esc(p.name)}</b><br><span class="small mute">${esc(p.sku)}${p.brand?" · "+esc(p.brand):""}${p.location?" · 📍"+esc(p.location):""}</span></td>
+   <td data-l="Category" class="small">${esc(p.categoryName||"")}${p.subcategoryName?" › "+esc(p.subcategoryName):""}${p.typeName?" › "+esc(p.typeName):""}</td>
+   <td data-l="Price" class="n">${inr(p.price)}${p.mrp>p.price?`<br><span class="small mute" style="text-decoration:line-through">${inr(p.mrp)}</span>`:""}</td>
+   <td data-l="Stock" class="n"><span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${p.qty} ${esc(p.unit||"pcs")}</span></td>
+   <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="openStock('${p.id}')">Stock</button>${isAdmin()?`<button class="btn sm sec" onclick="openProduct('${p.id}')">Edit</button>`:""}</div></td></tr>`).join("")||`<tr><td colspan="5" class="mute">No products found.</td></tr>`}
+  </tbody></table>${L.length>f.limit?`<p style="text-align:center"><button class="btn sec" onclick="S.pf.limit+=100;render()">Show more</button></p>`:""}</div>`;
+  const bind=(id,k,reset)=>{const e=$(id);e.oninput=e.onchange=()=>{S.pf[k]=e.value;S.pf.limit=100;if(reset)S.pf.sub="";render()}};
+  const q=$("#pf-q");q.oninput=()=>{S.pf.q=q.value;S.pf.limit=100;clearTimeout(vProducts.t);vProducts.t=setTimeout(()=>{render();const n=$("#pf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
+  bind("#pf-cat","cat",1);bind("#pf-sub","sub");bind("#pf-stock","stock");bind("#pf-sort","sort");
+}
+window.S=S;window.render=render;
+
+/* Product form */
+window.openProduct=function(id){
+  if(!isAdmin())return toast("Only admin can add or edit products",1);
+  const p=S.products.find(x=>x.id===id)||{qty:0,reorder:2,gst:18,unit:"pcs",active:true};
+  const o=(arr,sel)=>arr.map(n=>`<option value="${n.id}" ${sel===n.id?"selected":""}>${esc(n.name)}</option>`).join("");
+  const cat=TAXONOMY.find(c=>c.id===p.categoryId),sub=cat?.subcategories.find(s=>s.id===p.subcategoryId);
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal"><h3>${id?"Edit product":"Add product"}</h3>
+  <div class="f">
+   <div class="full"><label>Product name *</label><input id="p-name" value="${esc(p.name)}"></div>
+   <div><label>Category *</label><select id="p-cat"><option value="">Select…</option>${o(TAXONOMY,p.categoryId)}</select></div>
+   <div><label>Sub-category</label><select id="p-sub"><option value="">—</option>${cat?o(cat.subcategories,p.subcategoryId):""}</select></div>
+   <div><label>Type</label><select id="p-type"><option value="">—</option>${sub?o(sub.subcategories,p.typeId):""}</select></div>
+   <div><label>SKU *</label><div class="row" style="flex-wrap:nowrap"><input id="p-sku" value="${esc(p.sku)}"><button class="btn sec sm" id="p-auto" type="button">Auto</button></div></div>
+   <div><label>Barcode</label><input id="p-bar" value="${esc(p.barcode)}"></div>
+   <div><label>Brand</label><input id="p-brand" value="${esc(p.brand)}"></div>
+   <div><label>MRP (₹)</label><input id="p-mrp" type="number" step="0.01" value="${p.mrp??""}"></div>
+   <div><label>Selling price (₹) *</label><input id="p-price" type="number" step="0.01" value="${p.price??""}"></div>
+   <div><label>Cost price (₹)</label><input id="p-cost" type="number" step="0.01" value="${p.cost??""}"></div>
+   <div><label>GST % (included in price)</label><select id="p-gst">${[0,5,12,18,28].map(g=>`<option ${+p.gst===g?"selected":""}>${g}</option>`).join("")}</select></div>
+   <div><label>${id?"Stock (use Stock button to change)":"Opening stock"}</label><input id="p-qty" type="number" value="${p.qty}" ${id?"disabled":""}></div>
+   <div><label>Reorder level</label><input id="p-re" type="number" value="${p.reorder??2}"></div>
+   <div><label>Unit</label><select id="p-unit">${["pcs","set","pair","mtr","kg","box"].map(u=>`<option ${p.unit===u?"selected":""}>${u}</option>`).join("")}</select></div>
+   <div><label>Location / rack</label><input id="p-loc" value="${esc(p.location)}"></div>
+   <div class="full"><label>Notes / description</label><textarea id="p-desc" rows="2">${esc(p.description)}</textarea></div>
+  </div>
+  <div class="row" style="margin-top:16px;justify-content:space-between"><div>${id?`<button class="btn bad sm" id="p-del">Delete</button>`:""}</div><div class="row"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="p-save">Save</button></div></div></div></div>`;
+  const cs=$("#p-cat"),ss=$("#p-sub"),ts=$("#p-type");
+  cs.onchange=()=>{const c=TAXONOMY.find(x=>x.id===cs.value);ss.innerHTML=`<option value="">—</option>`+(c?o(c.subcategories):"");ts.innerHTML=`<option value="">—</option>`};
+  ss.onchange=()=>{const c=TAXONOMY.find(x=>x.id===cs.value),s=c?.subcategories.find(x=>x.id===ss.value);ts.innerHTML=`<option value="">—</option>`+(s?o(s.subcategories):"")};
+  $("#p-auto").onclick=()=>{const c=TAXONOMY.find(x=>x.id===cs.value);const pre=(c?c.slug:"gen").slice(0,3).toUpperCase();let k;do{k=pre+"-"+String(Math.floor(Math.random()*90000)+10000)}while(S.products.some(x=>x.sku===k));$("#p-sku").value=k};
+  $("#p-save").onclick=()=>saveProduct(id);
+  $("#p-del")&&($("#p-del").onclick=async()=>{if(!confirm("Delete this product permanently? Sales history is kept."))return;await deleteDoc(doc(db,"products",id));closeModal();toast("Deleted")});
+};
+async function saveProduct(id){
+  const v=i=>$(i).value.trim();
+  const name=v("#p-name"),sku=v("#p-sku"),cid=v("#p-cat");
+  if(!name||!sku||!cid)return toast("Name, SKU and category are required",1);
+  if(S.products.some(x=>x.sku.toLowerCase()===sku.toLowerCase()&&x.id!==id))return toast("SKU already exists",1);
+  if(v("#p-price")==="")return toast("Selling price is required",1);
+  const cat=TAXONOMY.find(c=>c.id===cid),sub=cat.subcategories.find(s=>s.id===v("#p-sub")),type=sub?.subcategories.find(t=>t.id===v("#p-type"));
+  const d={name,sku,barcode:v("#p-bar"),brand:v("#p-brand"),
+    categoryId:cat.id,categoryName:cat.name,categorySlug:cat.slug,
+    subcategoryId:sub?.id||"",subcategoryName:sub?.name||"",subcategorySlug:sub?.slug||"",
+    typeId:type?.id||"",typeName:type?.name||"",typeSlug:type?.slug||"",
+    fullSlug:(type||sub||cat).slug,
+    mrp:num(v("#p-mrp"))||num(v("#p-price")),price:num(v("#p-price")),cost:num(v("#p-cost")),gst:num(v("#p-gst")),
+    reorder:num(v("#p-re")),unit:v("#p-unit"),location:v("#p-loc"),description:v("#p-desc"),active:true,
+    updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+  try{
+    if(id){await updateDoc(doc(db,"products",id),d)}
+    else{
+      const r=doc(collection(db,"products"));const q=Math.max(0,Math.floor(num(v("#p-qty"))));
+      const b=writeBatch(db);b.set(r,{...d,qty:q,createdAt:serverTimestamp()});
+      if(q>0)b.set(doc(collection(db,"movements")),mv(r.id,name,sku,"opening",q,0,q,"Opening stock"));
+      await b.commit();
+    }
+    closeModal();toast("Saved");
+  }catch(e){toast(e.message,1)}
+}
+function mv(pid,pname,sku,type,delta,before,after,note){return{productId:pid,productName:pname,sku,type,delta,before,after,note:note||"",by:S.user.uid,byName:S.profile.name,createdAt:serverTimestamp()}}
+window.closeModal=()=>$("#modal").innerHTML="";
+
+/* ---------- Stock ---------- */
+window.openStock=function(id){
+  const p=S.products.find(x=>x.id===id);if(!p)return;
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:460px"><h3>${esc(p.name)}</h3>
+  <p class="mute">${esc(p.sku)} · Current stock: <b>${p.qty} ${esc(p.unit||"pcs")}</b></p>
+  <div class="tabs" id="s-tabs">${[["in","Stock in"],["out","Stock out"],["set","Set count"]].map((t,i)=>`<button class="btn sm ${i?"sec":""}" data-t="${t[0]}">${t[1]}</button>`).join("")}</div>
+  <div class="grid"><div><label id="s-lab">Quantity received</label><input id="s-qty" type="number" min="0" step="1" autofocus></div>
+  <div><label>Reason</label><select id="s-reason"></select></div><div><label>Note (optional)</label><input id="s-note" placeholder="Supplier / bill no. / remark"></div></div>
+  <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="s-save">Update stock</button></div></div></div>`;
+  let mode="in";
+  const R={in:["Purchase / received","Customer return","Transfer in","Found / correction"],out:["Damaged","Transfer out","Sold (offline)","Lost / missing","Supplier return"],set:["Stock count / audit"]};
+  const upd=()=>{$("#s-reason").innerHTML=R[mode].map(r=>`<option>${r}</option>`).join("");$("#s-lab").textContent={in:"Quantity received",out:"Quantity removed",set:"Counted quantity"}[mode];
+    document.querySelectorAll("#s-tabs button").forEach(b=>b.classList.toggle("sec",b.dataset.t!==mode))};
+  document.querySelectorAll("#s-tabs button").forEach(b=>b.onclick=()=>{mode=b.dataset.t;upd()});upd();
+  $("#s-save").onclick=async()=>{
+    const q=Math.floor(num($("#s-qty").value));if($("#s-qty").value===""||q<0)return toast("Enter a valid quantity",1);
+    const reason=$("#s-reason").value,note=$("#s-note").value.trim();
+    try{
+      await runTransaction(db,async tx=>{
+        const r=doc(db,"products",id),s=await tx.get(r);const cur=s.data().qty;
+        const after=mode==="in"?cur+q:mode==="out"?cur-q:q;
+        if(after<0&&!S.settings.allowNegative)throw new Error("Not enough stock (only "+cur+")");
+        tx.update(r,{qty:after,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+        tx.set(doc(collection(db,"movements")),mv(id,p.name,p.sku,mode==="in"?"in":mode==="out"?"out":"adjust",after-cur,cur,after,reason+(note?" — "+note:"")));
+      });
+      closeModal();toast("Stock updated");
+    }catch(e){toast(e.message,1)}
+  };
+};
+function vStock(el){
+  const low=S.products.filter(p=>outStock(p)||lowStock(p)).sort((a,b)=>a.qty-b.qty);
+  el.innerHTML=`<div class="top"><h2>Stock</h2><div class="row"><button class="btn sec" onclick="exportMoves()">Export log</button></div></div>
+  <div class="card" style="margin-bottom:12px"><div class="row"><input id="st-q" placeholder="Find a product to update stock — name, SKU or barcode" style="flex:1"></div><div id="st-res" style="margin-top:8px"></div></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+   <div class="card"><h3 style="margin-bottom:8px">Low &amp; out of stock (${low.length})</h3>${low.slice(0,40).map(p=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)}<br><span class="small mute">${esc(p.sku)} · reorder at ${p.reorder}</span></span><span class="row"><span class="tag ${outStock(p)?"out":"low"}">${p.qty}</span><button class="btn sm sec" onclick="openStock('${p.id}')">+</button></span></div>`).join("")||`<p class="mute">Nothing low right now.</p>`}</div>
+   <div class="card"><h3 style="margin-bottom:8px">Movement log</h3>${S.moves.slice(0,60).map(m=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(m.productName)}<br><span class="small mute">${esc(m.type)} · ${esc(m.note||"")} · ${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><span style="text-align:right"><b style="color:${m.delta>=0?"var(--ok)":"var(--bad)"}">${m.delta>0?"+":""}${m.delta}</b><br><span class="small mute">→ ${m.after}</span></span></div>`).join("")||`<p class="mute">No movements yet.</p>`}</div></div>`;
+  const q=$("#st-q");q.oninput=()=>{const t=q.value.toLowerCase().trim();$("#st-res").innerHTML=t?S.products.filter(p=>`${p.name} ${p.sku} ${p.barcode||""}`.toLowerCase().includes(t)).slice(0,8).map(p=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)} <span class="small mute">${esc(p.sku)}</span></span><span class="row"><span class="tag">${p.qty}</span><button class="btn sm" onclick="openStock('${p.id}')">Update</button></span></div>`).join(""):""};
+  q.onkeydown=e=>{if(e.key==="Enter"){const t=q.value.trim().toLowerCase();const p=S.products.find(x=>x.barcode&&x.barcode.toLowerCase()===t||x.sku.toLowerCase()===t);if(p){q.value="";openStock(p.id)}}};
+}
+
+/* ---------- POS ---------- */
+function cartTotals(){
+  const gross=S.cart.reduce((a,i)=>a+i.price*i.qty,0);
+  let disc=S.cartDiscType==="pct"?gross*Math.min(100,S.cartDiscount)/100:Math.min(gross,S.cartDiscount);
+  disc=Math.round(disc*100)/100;const total=Math.round((gross-disc)*100)/100;
+  let gst=0;S.cart.forEach(i=>{const share=gross?i.price*i.qty/gross:0;const line=i.price*i.qty-disc*share;gst+=line-line/(1+i.gst/100)});
+  gst=Math.round(gst*100)/100;
+  return{gross,disc,total,gst,taxable:Math.round((total-gst)*100)/100};
+}
+function vSell(el){
+  const q=S.posQ.toLowerCase();
+  const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${p.brand||""}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
+  const t=cartTotals();
+  el.innerHTML=`<div class="top"><h2>New sale</h2><button class="btn sec" onclick="S.cart=[];S.cartDiscount=0;render()">Clear</button></div>
+  <div class="pos"><div><input id="pos-q" placeholder="Scan barcode or search…" value="${esc(S.posQ)}" style="margin-bottom:10px">
+   <div class="items">${L.map(p=>`<button class="item" onclick="addCart('${p.id}')"><b>${esc(p.name)}</b><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${outStock(p)?"":"mute"}" style="${outStock(p)?"color:var(--bad)":""}">${p.qty} in stock</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
+  <div class="card"><h3 style="margin-bottom:6px">Cart (${S.cart.length})</h3>
+   ${S.cart.map((i,ix)=>`<div class="cartline"><div><b>${esc(i.name)}</b><br><span class="small mute">${inr(i.price)} each</span></div><div style="text-align:right"><b>${inr(i.price*i.qty)}</b></div>
+    <div class="qty"><button onclick="cartQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="cartSet(${ix},this.value)"><button onclick="cartQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.cart.splice(${ix},1);render()">Remove</button></div></div>`).join("")||`<p class="mute">Tap a product to add it.</p>`}
+   <div class="f" style="margin-top:10px"><div><label>Discount</label><div class="row" style="flex-wrap:nowrap"><input id="c-disc" type="number" min="0" value="${S.cartDiscount||""}"><select id="c-dt" style="width:80px"><option value="amt" ${S.cartDiscType==="amt"?"selected":""}>₹</option><option value="pct" ${S.cartDiscType==="pct"?"selected":""}>%</option></select></div></div>
+    <div><label>Payment</label><select id="c-pay">${["Cash","UPI","Card","Bank transfer","Credit"].map(x=>`<option>${x}</option>`).join("")}</select></div>
+    <div><label>Customer name</label><input id="c-name"></div><div><label>Phone</label><input id="c-ph" inputmode="tel"></div></div>
+   <div style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">
+    <div class="row" style="justify-content:space-between"><span class="mute">Subtotal</span><span>${inr(t.gross)}</span></div>
+    ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount</span><span>− ${inr(t.disc)}</span></div>`:""}
+    <div class="row" style="justify-content:space-between"><span class="mute">incl. GST</span><span>${inr(t.gst)}</span></div>
+    <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Total</span><span>${inr(t.total)}</span></div></div>
+   <button class="btn" style="width:100%;margin-top:12px;padding:12px" id="c-done" ${S.cart.length?"":"disabled"}>Complete sale</button></div></div>`;
+  const q2=$("#pos-q");q2.oninput=()=>{S.posQ=q2.value;clearTimeout(vSell.t);vSell.t=setTimeout(()=>{render();const n=$("#pos-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},150)};
+  q2.onkeydown=e=>{if(e.key==="Enter"){const v=q2.value.trim().toLowerCase();const p=S.products.find(x=>(x.barcode&&x.barcode.toLowerCase()===v)||x.sku.toLowerCase()===v);if(p){addCart(p.id);S.posQ="";render();$("#pos-q").focus()}}};
+  $("#c-disc").onchange=e=>{S.cartDiscount=num(e.target.value);keepCust();render()};$("#c-dt").onchange=e=>{S.cartDiscType=e.target.value;keepCust();render()};
+  const keepCust=()=>{S.cust={name:$("#c-name").value,ph:$("#c-ph").value,pay:$("#c-pay").value}};
+  if(S.cust){$("#c-name").value=S.cust.name||"";$("#c-ph").value=S.cust.ph||"";$("#c-pay").value=S.cust.pay||"Cash"}
+  ["#c-name","#c-ph","#c-pay"].forEach(i=>$(i).onchange=keepCust);
+  $("#c-done").onclick=completeSale;
+}
+window.addCart=id=>{const p=S.products.find(x=>x.id===id);if(!p)return;
+  const e=S.cart.find(i=>i.pid===id);const have=e?e.qty:0;
+  if(have+1>p.qty&&!S.settings.allowNegative)return toast("Only "+p.qty+" in stock",1);
+  if(e)e.qty++;else S.cart.push({pid:id,name:p.name,sku:p.sku,price:p.price,gst:p.gst||0,qty:1,cost:p.cost||0});render()};
+window.cartQty=(ix,d)=>{const i=S.cart[ix],p=S.products.find(x=>x.id===i.pid);const n=i.qty+d;if(n<1){S.cart.splice(ix,1)}else if(n>p.qty&&!S.settings.allowNegative)return toast("Only "+p.qty+" in stock",1);else i.qty=n;render()};
+window.cartSet=(ix,v)=>{const i=S.cart[ix],p=S.products.find(x=>x.id===i.pid);let n=Math.max(1,Math.floor(num(v)));if(n>p.qty&&!S.settings.allowNegative){n=p.qty;toast("Only "+p.qty+" in stock",1)}i.qty=n;render()};
+
+async function completeSale(){
+  const btn=$("#c-done");btn.disabled=true;btn.textContent="Saving…";
+  const t=cartTotals(),cust={name:$("#c-name").value.trim(),phone:$("#c-ph").value.trim()},pay=$("#c-pay").value;
+  const cart=S.cart.map(i=>({...i}));
+  try{
+    let inv="",saleId="";
+    await runTransaction(db,async tx=>{
+      const cr=doc(db,"counters","invoice"),cs=await tx.get(cr);
+      const refs=cart.map(i=>doc(db,"products",i.pid));const snaps=[];for(const r of refs)snaps.push(await tx.get(r));
+      snaps.forEach((s,ix)=>{if(!s.exists())throw new Error(cart[ix].name+" no longer exists");if(s.data().qty<cart[ix].qty&&!S.settings.allowNegative)throw new Error("Not enough stock for "+cart[ix].name+" (only "+s.data().qty+")")});
+      const n=(cs.exists()?cs.data().n:0)+1;inv=(S.settings.invoicePrefix||"INV")+"-"+String(n).padStart(5,"0");
+      tx.set(cr,{n});
+      const sr=doc(collection(db,"sales"));saleId=sr.id;
+      snaps.forEach((s,ix)=>{const c=cart[ix],cur=s.data().qty;
+        tx.update(refs[ix],{qty:cur-c.qty,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+        tx.set(doc(collection(db,"movements")),mv(c.pid,c.name,c.sku,"sale",-c.qty,cur,cur-c.qty,inv))});
+      tx.set(sr,{invoiceNo:inv,items:cart.map(i=>({pid:i.pid,sku:i.sku,name:i.name,price:i.price,qty:i.qty,gst:i.gst,cost:i.cost,lineTotal:Math.round(i.price*i.qty*100)/100})),
+        subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,customer:cust,payment:pay,status:"completed",
+        soldBy:S.user.uid,soldByName:S.profile.name,dateKey:dkey(),createdAt:serverTimestamp()});
+    });
+    S.cart=[];S.cartDiscount=0;S.cust=null;S.posQ="";
+    toast("Sale "+inv+" saved");render();
+    printReceipt({invoiceNo:inv,items:cart,subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,customer:cust,payment:pay,soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
+  }catch(e){toast(e.message||"Couldn't save — are you online?",1);btn.disabled=false;btn.textContent="Complete sale"}
+}
+window.printReceipt=function(s){
+  const st=S.settings,w=window.open("","_blank","width=380,height=640");if(!w)return toast("Allow pop-ups to print",1);
+  w.document.write(`<html><head><title>${esc(s.invoiceNo)}</title><style>body{font:13px monospace;width:300px;margin:8px auto}h2{text-align:center;margin:0}.c{text-align:center}.r{display:flex;justify-content:space-between}hr{border:0;border-top:1px dashed #000}</style></head><body>
+  <h2>${esc(st.storeName)}</h2><div class="c">${esc(st.address||"")}<br>${st.phone?"Ph: "+esc(st.phone):""}${st.gstin?"<br>GSTIN: "+esc(st.gstin):""}</div><hr>
+  <div class="r"><span>${esc(s.invoiceNo)}</span><span>${fdt(tms(s.createdAt))}</span></div>${s.customer?.name?`<div>Customer: ${esc(s.customer.name)} ${esc(s.customer.phone||"")}</div>`:""}<hr>
+  ${s.items.map(i=>`<div>${esc(i.name)}</div><div class="r"><span>${i.qty} × ${inr(i.price)}</span><span>${inr(i.price*i.qty)}</span></div>`).join("")}<hr>
+  <div class="r"><span>Subtotal</span><span>${inr(s.subtotal)}</span></div>${s.discount?`<div class="r"><span>Discount</span><span>-${inr(s.discount)}</span></div>`:""}
+  <div class="r"><span>GST included</span><span>${inr(s.gstAmount)}</span></div><div class="r"><b>TOTAL</b><b>${inr(s.total)}</b></div><div>Paid by: ${esc(s.payment)}</div><hr>
+  <div class="c">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),300)<\/script></body></html>`);w.document.close();
+};
+
+/* ---------- Sales history ---------- */
+function vSales(el){
+  const day=S.salesDay||dkey();const L=S.sales.filter(s=>!day||s.dateKey===day);
+  const ok=L.filter(s=>s.status!=="void");const tot=ok.reduce((a,s)=>a+s.total,0);
+  const prof=ok.reduce((a,s)=>a+s.items.reduce((b,i)=>b+(i.price*i.qty-(i.cost||0)*i.qty),0)-s.discount,0);
+  el.innerHTML=`<div class="top"><h2>Sales</h2><div class="row"><input type="date" id="sd" value="${day}" style="width:auto"><button class="btn sec" onclick="exportSales()">Export</button></div></div>
+  <div class="grid stats" style="margin-bottom:12px"><div class="card stat"><div class="k">Bills</div><div class="v">${ok.length}</div></div><div class="card stat"><div class="k">Revenue</div><div class="v">${inr(tot)}</div></div>${isAdmin()?`<div class="card stat"><div class="k">Gross margin</div><div class="v">${inr(prof)}</div><div class="s">vs recorded cost price</div></div>`:""}</div>
+  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Invoice</th><th>Customer</th><th>Items</th><th class="n">Total</th><th></th></tr></thead><tbody>
+  ${L.map(s=>`<tr style="${s.status==="void"?"opacity:.5":""}"><td data-l="Invoice"><b>${esc(s.invoiceNo)}</b> ${s.status==="void"?`<span class="tag out">void</span>`:""}<br><span class="small mute">${fdt(tms(s.createdAt))} · ${esc(s.soldByName||"")}</span></td><td data-l="Customer">${esc(s.customer?.name||"Walk-in")}<br><span class="small mute">${esc(s.payment)}</span></td>
+   <td data-l="Items" class="small">${s.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")}</td><td data-l="Total" class="n">${inr(s.total)}</td>
+   <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="reprint('${s.id}')">Print</button>${isAdmin()&&s.status!=="void"?`<button class="btn sm sec" onclick="voidSale('${s.id}')">Void</button>`:""}</div></td></tr>`).join("")||`<tr><td colspan="5" class="mute">No sales on this date.</td></tr>`}
+  </tbody></table></div>`;
+  $("#sd").onchange=e=>{S.salesDay=e.target.value;render()};
+}
+window.reprint=id=>{const s=S.sales.find(x=>x.id===id);if(s)printReceipt(s)};
+window.voidSale=async id=>{
+  const s=S.sales.find(x=>x.id===id);if(!s||!confirm("Void "+s.invoiceNo+"? Stock will be returned."))return;
+  try{await runTransaction(db,async tx=>{
+    const sr=doc(db,"sales",id),sd=await tx.get(sr);if(sd.data().status==="void")throw new Error("Already void");
+    const refs=s.items.map(i=>doc(db,"products",i.pid)),snaps=[];for(const r of refs)snaps.push(await tx.get(r));
+    snaps.forEach((p,ix)=>{if(!p.exists())return;const cur=p.data().qty,i=s.items[ix];
+      tx.update(refs[ix],{qty:cur+i.qty,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+      tx.set(doc(collection(db,"movements")),mv(i.pid,i.name,i.sku,"void",i.qty,cur,cur+i.qty,"Void "+s.invoiceNo))});
+    tx.update(sr,{status:"void",voidedBy:S.profile.name,voidedAt:serverTimestamp()});
+  });toast("Sale voided")}catch(e){toast(e.message,1)}
+};
+
+/* ---------- Categories ---------- */
+function vCats(el){
+  const cnt={};S.products.forEach(p=>{[p.categoryId,p.subcategoryId,p.typeId].forEach(k=>{if(k)cnt[k]=(cnt[k]||0)+1})});
+  const stockOf=(key,id)=>S.products.filter(p=>p[key]===id).reduce((a,p)=>a+(+p.qty||0),0);
+  const n=(c,id,key)=>`<span class="small mute">${cnt[id]||0} items · ${stockOf(key,id)} units</span>`;
+  const leaf=(t,key)=>`<div class="leaf" onclick="filterTo('${key}','${t.id}')"><span>${esc(t.name)} <span class="small mute">${esc(t.slug)}</span></span>${n(0,t.id,key)}</div>`;
+  el.innerHTML=`<div class="top"><h2>Categories</h2><span class="mute small">Structure from your catalogue taxonomy · tap an entry to see its products</span></div>
+  <div class="card tree">${TAXONOMY.map(c=>`<details><summary><b>${esc(c.name)}</b> &nbsp;${n(c,c.id,"categoryId")}</summary><div class="kids">
+   ${c.subcategories.map(s=>s.subcategories.length?`<details><summary>${esc(s.name)} &nbsp;${n(s,s.id,"subcategoryId")}</summary><div class="kids">${s.subcategories.map(t=>leaf(t,"typeId")).join("")}</div></details>`:leaf(s,"subcategoryId")).join("")}</div></details>`).join("")}</div>`;
+}
+window.filterTo=(key,id)=>{
+  S.pf={q:"",cat:"",sub:"",stock:"all",sort:"name",limit:100};
+  for(const c of TAXONOMY){if(c.id===id&&key==="categoryId")S.pf.cat=c.id;
+    for(const s of c.subcategories){if(s.id===id&&key==="subcategoryId"){S.pf.cat=c.id;S.pf.sub=s.id}
+      for(const t of s.subcategories)if(t.id===id){S.pf.cat=c.id;S.pf.sub=s.id}}}
+  setView("products");
+};
+
+/* ---------- Settings / Team ---------- */
+function vSettings(el){
+  const st=S.settings;
+  el.innerHTML=`<div class="top"><h2>Settings</h2></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+  <div class="card"><h3 style="margin-bottom:10px">App mode</h3>
+   <p class="mute small">Choose how this store uses the app. Applies to every staff device.</p>
+   <label style="display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:14px;margin-bottom:8px"><input type="radio" name="mode" value="inventory" style="width:auto;margin-top:3px" ${st.mode==="inventory"?"checked":""} ${isAdmin()?"":"disabled"}><span><b>Inventory only</b><br><span class="mute small">Track stock, receive goods, adjust counts. No billing.</span></span></label>
+   <label style="display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:14px"><input type="radio" name="mode" value="full" style="width:auto;margin-top:3px" ${st.mode==="full"?"checked":""} ${isAdmin()?"":"disabled"}><span><b>Inventory + Sales</b><br><span class="mute small">Adds billing screen, GST receipts, sales history; stock reduces automatically.</span></span></label></div>
+  <div class="card"><h3 style="margin-bottom:10px">Store details</h3><div class="grid">
+   <div><label>Store name</label><input id="s-nm" value="${esc(st.storeName)}" ${isAdmin()?"":"disabled"}></div><div><label>Address</label><input id="s-ad" value="${esc(st.address)}" ${isAdmin()?"":"disabled"}></div>
+   <div><label>Phone</label><input id="s-ph" value="${esc(st.phone)}" ${isAdmin()?"":"disabled"}></div><div><label>GSTIN</label><input id="s-gs" value="${esc(st.gstin)}" ${isAdmin()?"":"disabled"}></div>
+   <div><label>Invoice prefix</label><input id="s-pf" value="${esc(st.invoicePrefix)}" ${isAdmin()?"":"disabled"}></div><div><label>Receipt footer</label><input id="s-ft" value="${esc(st.footer)}" ${isAdmin()?"":"disabled"}></div>
+   <label style="display:flex;gap:8px;align-items:center;color:var(--ink);font-size:14px"><input type="checkbox" id="s-neg" style="width:auto" ${st.allowNegative?"checked":""} ${isAdmin()?"":"disabled"}> Allow selling beyond available stock</label>
+   ${isAdmin()?`<button class="btn" id="s-save">Save settings</button>`:`<p class="mute small">Only admin can change settings.</p>`}</div></div>
+  ${isAdmin()?`<div class="card" style="grid-column:1/-1"><h3 style="margin-bottom:10px">Team</h3><table class="resp"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th></th></tr></thead><tbody>
+   ${S.users.map(u=>`<tr><td data-l="Name">${esc(u.name)}</td><td data-l="Email">${esc(u.email)}</td><td data-l="Role"><select onchange="setRole('${u.id}',this.value)" ${u.id===S.user.uid?"disabled":""}>${["pending","staff","admin"].map(r=>`<option ${u.role===r?"selected":""}>${r}</option>`).join("")}</select></td><td data-l=""><span class="small mute">${u.role==="pending"?"Awaiting approval":""}</span></td></tr>`).join("")}</tbody></table>
+   <p class="mute small">New staff create their own account from the sign-in screen, then appear here as <b>pending</b>. Set them to <b>staff</b> to give access.</p></div>`:""}
+  </div>`;
+  if(isAdmin()){
+    $("#s-save").onclick=async()=>{const mode=document.querySelector("input[name=mode]:checked").value;
+      try{await setDoc(doc(db,"settings","store"),{storeName:$("#s-nm").value.trim()||"My Store",address:$("#s-ad").value.trim(),phone:$("#s-ph").value.trim(),gstin:$("#s-gs").value.trim(),invoicePrefix:$("#s-pf").value.trim()||"INV",footer:$("#s-ft").value.trim(),allowNegative:$("#s-neg").checked,mode},{merge:true});toast("Settings saved")}catch(e){toast(e.message,1)}};
+  }
+}
+window.setRole=async(id,role)=>{try{await updateDoc(doc(db,"users",id),{role});toast("Role updated")}catch(e){toast(e.message,1)}};
+
+/* ---------- Import / Export ---------- */
+const PCOLS=["sku","name","brand","barcode","categorySlug","mrp","price","cost","gst","qty","reorder","unit","location","description"];
+window.exportProducts=()=>{
+  const rows=[["sku","name","brand","barcode","category","subcategory","type","categorySlug","mrp","price","cost","gst","qty","reorder","unit","location","description"]];
+  filteredProducts().forEach(p=>rows.push([p.sku,p.name,p.brand,p.barcode,p.categoryName,p.subcategoryName,p.typeName,p.fullSlug,p.mrp,p.price,p.cost,p.gst,p.qty,p.reorder,p.unit,p.location,p.description]));
+  dl("products-"+dkey()+".csv",rows.map(r=>r.map(csvCell).join(",")).join("\n"));
+};
+window.exportSales=()=>{
+  const rows=[["invoice","date","customer","phone","payment","status","items","subtotal","discount","gst_included","total","sold_by"]];
+  S.sales.forEach(s=>rows.push([s.invoiceNo,s.dateKey,s.customer?.name,s.customer?.phone,s.payment,s.status,s.items.map(i=>i.name+" x"+i.qty).join("; "),s.subtotal,s.discount,s.gstAmount,s.total,s.soldByName]));
+  dl("sales-"+dkey()+".csv",rows.map(r=>r.map(csvCell).join(",")).join("\n"));
+};
+window.exportMoves=()=>{
+  const rows=[["date","product","sku","type","change","before","after","note","by"]];
+  S.moves.forEach(m=>rows.push([new Date(tms(m.createdAt)).toISOString(),m.productName,m.sku,m.type,m.delta,m.before,m.after,m.note,m.byName]));
+  dl("stock-log-"+dkey()+".csv",rows.map(r=>r.map(csvCell).join(",")).join("\n"));
+};
+window.openImport=()=>{
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal"><h3>Import products from CSV</h3>
+  <p class="mute small">Columns: <code>${PCOLS.join(", ")}</code>. <b>categorySlug</b> is any slug from your taxonomy (e.g. <code>livingroom-sofas-3seatersofas</code>). Existing SKUs are updated (stock is left unchanged); new SKUs are created with the given qty.</p>
+  <div class="row" style="margin:10px 0"><button class="btn sec sm" onclick="dl('products-template.csv',PCOLS.join(',')+'\\nSOF-1001,Milano 3 Seater,Brand,8901234,livingroom-sofas-3seatersofas,45000,39999,28000,18,4,1,pcs,Floor 1 A2,')">Download template</button></div>
+  <input type="file" id="imp-f" accept=".csv"><div id="imp-r" class="small mute" style="margin-top:10px"></div>
+  <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Close</button><button class="btn" id="imp-go" disabled>Import</button></div></div></div>`;
+  let rows=[];
+  $("#imp-f").onchange=async e=>{const t=await e.target.files[0].text();const all=parseCSV(t);const h=all[0].map(x=>x.trim());
+    rows=all.slice(1).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||"").trim()])));
+    const bad=rows.filter(r=>!r.sku||!r.name||!bySlug[r.categorySlug]);
+    $("#imp-r").innerHTML=`${rows.length} rows read · ${rows.length-bad.length} valid${bad.length?` · <span style="color:var(--bad)">${bad.length} skipped (missing sku/name or unknown categorySlug)</span>`:""}`;
+    rows=rows.filter(r=>r.sku&&r.name&&bySlug[r.categorySlug]);$("#imp-go").disabled=!rows.length};
+  $("#imp-go").onclick=async()=>{
+    $("#imp-go").disabled=true;const bySku=Object.fromEntries(S.products.map(p=>[p.sku.toLowerCase(),p]));let n=0,u=0;
+    try{
+      for(let i=0;i<rows.length;i+=150){const b=writeBatch(db);
+        rows.slice(i,i+150).forEach(r=>{const m=bySlug[r.categorySlug],c=m.cat,s=m.sub,t=m.type;
+          const d={sku:r.sku,name:r.name,brand:r.brand||"",barcode:r.barcode||"",categoryId:c.id,categoryName:c.name,categorySlug:c.slug,
+            subcategoryId:s?.id||"",subcategoryName:s?.name||"",subcategorySlug:s?.slug||"",typeId:t?.id||"",typeName:t?.name||"",typeSlug:t?.slug||"",fullSlug:(t||s||c).slug,
+            mrp:num(r.mrp)||num(r.price),price:num(r.price),cost:num(r.cost),gst:r.gst===""?18:num(r.gst),reorder:r.reorder===""?2:num(r.reorder),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+          const ex=bySku[r.sku.toLowerCase()];
+          if(ex){b.update(doc(db,"products",ex.id),d);u++}
+          else{const ref=doc(collection(db,"products")),q=Math.max(0,Math.floor(num(r.qty)));b.set(ref,{...d,qty:q,createdAt:serverTimestamp()});
+            if(q>0)b.set(doc(collection(db,"movements")),mv(ref.id,r.name,r.sku,"opening",q,0,q,"CSV import"));n++}});
+        await b.commit()}
+      closeModal();toast(`Imported: ${n} new, ${u} updated`);
+    }catch(e){toast(e.message,1);$("#imp-go").disabled=false}
+  };
+};
+window.dl=dl;window.PCOLS=PCOLS;
+
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
