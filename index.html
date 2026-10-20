@@ -298,7 +298,7 @@ function subOptions(cid,sel){const c=TAXONOMY.find(x=>x.id===cid);return `<optio
 function vProducts(el){
   const L=filteredProducts(),f=S.pf;
   el.innerHTML=`<div class="top"><h2>Products <span class="mute small">(${L.length})</span></h2>
-   <div class="row">${isAdmin()?`<button class="btn" onclick="openProduct()">+ Add product</button><button class="btn sec" onclick="openImport()">Import Excel</button>`:""}<button class="btn sec" onclick="exportProducts()">Export</button></div></div>
+   <div class="row">${isAdmin()?`<button class="btn" onclick="openProduct()">+ Add product</button><button class="btn sec" onclick="openImport()">Import Excel</button>`:""}<button class="btn sec" onclick="openLabels()">Barcode labels</button><button class="btn sec" onclick="exportProducts()">Export</button></div></div>
   <div class="card" style="margin-bottom:12px"><div class="f">
    <div class="full"><input id="pf-q" placeholder="Search name, SKU, barcode, brand…" value="${esc(f.q)}"></div>
    <select id="pf-cat">${catOptions(f.cat)}</select><select id="pf-sub">${subOptions(f.cat,f.sub)}</select>
@@ -331,7 +331,7 @@ window.openProduct=function(id){
    <div><label>Sub-category</label><select id="p-sub"><option value="">—</option>${cat?o(cat.subcategories,p.subcategoryId):""}</select></div>
    <div><label>Type</label><select id="p-type"><option value="">—</option>${sub?o(sub.subcategories,p.typeId):""}</select></div>
    <div><label>SKU *</label><div class="row" style="flex-wrap:nowrap"><input id="p-sku" value="${esc(p.sku)}"><button class="btn sec sm" id="p-auto" type="button">Auto</button></div></div>
-   <div><label>Barcode</label><input id="p-bar" value="${esc(p.barcode)}"></div>
+   <div><label>Barcode</label><div class="row" style="flex-wrap:nowrap"><input id="p-bar" value="${esc(p.barcode)}"><button class="btn sec sm" id="p-genbar" type="button" ${p.barcode?'disabled title="Barcode already assigned"':""}>Generate</button></div></div>
    <div><label>Brand</label><input id="p-brand" value="${esc(p.brand)}"></div>
    <div><label>MRP (₹)</label><input id="p-mrp" type="number" step="0.01" value="${p.mrp??""}"></div>
    <div><label>Selling price (₹) *</label><input id="p-price" type="number" step="0.01" value="${p.price??""}"></div>
@@ -355,6 +355,11 @@ window.openProduct=function(id){
   cs.onchange=()=>{const c=TAXONOMY.find(x=>x.id===cs.value);ss.innerHTML=`<option value="">—</option>`+(c?o(c.subcategories):"");ts.innerHTML=`<option value="">—</option>`};
   ss.onchange=()=>{const c=TAXONOMY.find(x=>x.id===cs.value),s=c?.subcategories.find(x=>x.id===ss.value);ts.innerHTML=`<option value="">—</option>`+(s?o(s.subcategories):"")};
   $("#p-auto").onclick=()=>{const c=TAXONOMY.find(x=>x.id===cs.value);const pre=(c?c.slug:"gen").slice(0,3).toUpperCase();let k;do{k=pre+"-"+String(Math.floor(Math.random()*90000)+10000)}while(S.products.some(x=>x.sku===k));$("#p-sku").value=k};
+  $("#p-genbar").onclick=async()=>{if($("#p-bar").value.trim())return;const b=$("#p-genbar");b.disabled=true;
+    try{const [c]=await nextBarcodes(1);$("#p-bar").value=c;
+      if(id){await updateDoc(doc(db,"products",id),{barcode:c,updatedAt:serverTimestamp(),updatedBy:S.user.uid});toast("Barcode "+c+" assigned")}
+      else toast("Barcode ready — it is saved with the product")}
+    catch(e){b.disabled=false;toast(e.message,1)}};
   $("#p-save").onclick=()=>saveProduct(id);
   $("#p-del")&&($("#p-del").onclick=async()=>{if(!confirm("Delete this product permanently? Sales history is kept."))return;await deleteDoc(doc(db,"products",id));if(S.products.find(x=>x.id===id)?.hasImage)await deleteDoc(doc(db,"productImages",id)).catch(()=>{});closeModal();toast("Deleted")});
 };
@@ -368,7 +373,9 @@ async function saveProduct(id){
   const cat=TAXONOMY.find(c=>c.id===cid),sub=cat.subcategories.find(s=>s.id===v("#p-sub")),type=sub?.subcategories.find(t=>t.id===v("#p-type"));
   const imageUrl=v("#p-imgurl");
   const hasImage=IMGSTATE.newImg?true:IMGSTATE.rm?false:!!old.hasImage;
-  const d={name,sku,barcode:v("#p-bar"),brand:v("#p-brand"),
+  const barcode=v("#p-bar")||old.barcode||"";
+  if(barcode&&S.products.some(x=>x.barcode===barcode&&x.id!==id))return toast("That barcode is already used by another product",1);
+  const d={name,sku,barcode,brand:v("#p-brand"),
     categoryId:cat.id,categoryName:cat.name,categorySlug:cat.slug,
     subcategoryId:sub?.id||"",subcategoryName:sub?.name||"",subcategorySlug:sub?.slug||"",
     typeId:type?.id||"",typeName:type?.name||"",typeSlug:type?.slug||"",
@@ -623,10 +630,43 @@ async function readFileRows(file){
   if(!name)throw new Error('No sheet with a "sku" column found');
   return toObjs(X.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:""}));
 }
-window.exportProducts=()=>{
-  const rows=[["sku","name","brand","barcode","category","subcategory","type","categorySlug","imageUrl","mrp","price","cost","gst","qty","reorder","unit","location","description"]];
-  filteredProducts().forEach(p=>rows.push([p.sku,p.name,p.brand,p.barcode,p.categoryName,p.subcategoryName,p.typeName,p.fullSlug,p.imageUrl,p.mrp,p.price,p.cost,p.gst,p.qty,p.reorder,p.unit,p.location,p.description]));
-  dl("products-"+dkey()+".csv",rows.map(r=>r.map(csvCell).join(",")).join("\n"));
+let exljsP;
+const loadExcelJS=()=>window.ExcelJS?Promise.resolve(window.ExcelJS):(exljsP=exljsP||new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js";s.onload=()=>ok(window.ExcelJS);s.onerror=()=>{exljsP=null;no(new Error("Couldn't load the Excel writer — check your internet"))};document.head.appendChild(s)}));
+const thumbJpeg=(src,max=220)=>new Promise(res=>{const im=new Image();im.crossOrigin="anonymous";
+  im.onload=()=>{try{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));
+    const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.8))}catch(e){res(null)}};
+  im.onerror=()=>res(null);im.src=src});
+async function buildProductsWorkbook(EJ,L,img){
+  const wb=new EJ.Workbook(),ws=wb.addWorksheet("Products");
+  const C=[["photo",12],["sku",14],["name",34],["brand",16],["barcode",16],["category",20],["subcategory",24],["type",22],["categorySlug",40],["imageUrl",32],["mrp",11],["price",11],["cost",11],["gst",8],["qty",8],["reorder",9],["unit",8],["location",16],["description",36]];
+  ws.columns=C.map(([h,w])=>({header:h,key:h,width:w}));
+  const hr=ws.getRow(1);hr.font={name:"Arial",bold:true,color:{argb:"FFFFFFFF"}};hr.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF1F3A34"}};hr.height=22;
+  ws.getColumn("sku").numFmt="@";ws.getColumn("barcode").numFmt="@";
+  let n=0;
+  for(const p of L){
+    const row=ws.addRow({sku:p.sku,name:p.name,brand:p.brand||"",barcode:String(p.barcode||""),category:p.categoryName||"",subcategory:p.subcategoryName||"",type:p.typeName||"",categorySlug:p.fullSlug||"",imageUrl:p.imageUrl||"",mrp:p.mrp,price:p.price,cost:p.cost,gst:p.gst,qty:p.qty,reorder:p.reorder,unit:p.unit||"",location:p.location||"",description:p.description||""});
+    row.alignment={vertical:"middle"};
+    const d=img[p.id];
+    if(d){row.height=48;const id=wb.addImage({base64:d,extension:"jpeg"});ws.addImage(id,{tl:{col:0.08,row:row.number-1+0.08},ext:{width:60,height:60}});n++}
+  }
+  ws.views=[{state:"frozen",ySplit:1,xSplit:3}];
+  return{buf:await wb.xlsx.writeBuffer(),n};
+}
+window.exportProducts=async()=>{
+  const L=filteredProducts();if(!L.length)return toast("No products to export",1);
+  toast("Preparing export with photos…");
+  try{
+    const EJ=await loadExcelJS(),img={};let failed=0;
+    const need=L.filter(p=>p.hasImage&&!IMG.cache.get(p.id));
+    for(let i=0;i<need.length;i+=20)await Promise.all(need.slice(i,i+20).map(async p=>{try{const s=await getDoc(doc(db,"productImages",p.id));if(s.exists())IMG.cache.set(p.id,s.data().data)}catch(e){}}));
+    for(let i=0;i<L.length;i+=8)await Promise.all(L.slice(i,i+8).map(async p=>{
+      let d=p.imageUrl?await thumbJpeg(p.imageUrl):null;
+      if(!d&&IMG.cache.get(p.id))d=await thumbJpeg(IMG.cache.get(p.id));
+      if(d)img[p.id]=d;else if(p.imageUrl||p.hasImage)failed++}));
+    const{buf,n}=await buildProductsWorkbook(EJ,L,img);
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download="products-"+dkey()+".xlsx";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    toast(`Exported ${L.length} products, ${n} with photos${failed?` (${failed} photos couldn't be embedded; links stay in the imageUrl column)`:""}`);
+  }catch(e){toast(e.message,1)}
 };
 window.exportSales=()=>{
   const rows=[["invoice","date","customer","phone","payment","status","items","subtotal","discount","gst_included","total","sold_by"]];
@@ -652,6 +692,7 @@ window.openImport=()=>{
         if(/^example\b/i.test(r.name||"")){skipped++;return}
         if(!r.sku||!r.name)return bad.push(`Row ${r._row}: sku and name are required`);
         if(r.price===undefined||r.price==="")return bad.push(`Row ${r._row} (${r.sku}): price is missing`);
+        if(r.barcode){const o=S.products.find(p=>p.barcode===r.barcode&&p.sku.toLowerCase()!==String(r.sku).toLowerCase());if(o)return bad.push(`Row ${r._row} (${r.sku}): barcode already used by ${o.sku}`)}
         const m=resolveCategory(r);if(m.err)return bad.push(`Row ${r._row} (${r.sku}): ${m.err}`);
         good.push({r,m});
       });
@@ -670,13 +711,95 @@ window.openImport=()=>{
             mrp:num(r.mrp)||num(r.price),price:num(r.price),cost:num(r.cost),gst:r.gst===undefined||r.gst===""?18:num(r.gst),reorder:r.reorder===undefined||r.reorder===""?2:num(r.reorder),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
           if(r.imageUrl)d.imageUrl=r.imageUrl;
           const ex=bySku[key]||seen[key];
-          if(ex){b.update(doc(db,"products",ex.id),d);u++}
+          if(ex){if(!r.barcode)delete d.barcode;b.update(doc(db,"products",ex.id),d);u++}
           else{const ref=doc(collection(db,"products")),q=Math.max(0,Math.floor(num(r.qty)));seen[key]={id:ref.id};
             b.set(ref,{...d,imageUrl:r.imageUrl||"",hasImage:false,qty:q,createdAt:serverTimestamp()});
             if(q>0)b.set(doc(collection(db,"movements")),mv(ref.id,r.name,r.sku,"opening",q,0,q,"Excel import"));n++}});
         await b.commit()}
       closeModal();toast(`Imported: ${n} new, ${u} updated`);
     }catch(e){toast(e.message,1);$("#imp-go").disabled=false;$("#imp-go").textContent="Import"}
+  };
+};
+/* ---------- Barcodes & labels ---------- */
+const ean13check=b12=>{let s=0;for(let i=0;i<12;i++)s+=(+b12[i])*(i%2?3:1);return(10-s%10)%10};
+const isEAN13=c=>/^\d{13}$/.test(c)&&ean13check(c.slice(0,12))===+c[12];
+// In-store EAN-13 codes (prefix 200 is reserved by GS1 for internal use). One shared counter, so staff never get the same code twice.
+async function nextBarcodes(n){
+  const used=new Set(S.products.map(p=>String(p.barcode||"")));const out=[];
+  await runTransaction(db,async tx=>{
+    const r=doc(db,"counters","barcode"),s=await tx.get(r);let seq=s.exists()?s.data().n:0;out.length=0;
+    while(out.length<n){seq++;const body="200"+String(seq).padStart(9,"0"),code=body+ean13check(body);if(!used.has(code))out.push(code)}
+    tx.set(r,{n:seq});
+  });
+  return out;
+}
+const loadJsBarcode=()=>window.JsBarcode?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js";s.onload=ok;s.onerror=()=>no(new Error("Couldn't load the barcode generator — check your internet"));document.head.appendChild(s)});
+const _bcMemo=new Map();
+function barcodeSVG(code){
+  if(_bcMemo.has(code))return _bcMemo.get(code);
+  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  JsBarcode(svg,code,{format:isEAN13(code)?"EAN13":"CODE128",displayValue:false,margin:0,height:60,width:2});
+  svg.setAttribute("preserveAspectRatio","none");svg.removeAttribute("style");
+  const s=svg.outerHTML;_bcMemo.set(code,s);return s;
+}
+function labelsHTML(items,o,svgFn){
+  const roll=o.layout==="roll";
+  const css=`@page{size:${roll?"50mm 25mm":"A4"};margin:${roll?"0":"10mm 7mm"}}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#000}
+.sheet{display:grid;${roll?"":"grid-template-columns:repeat(3,64mm);grid-auto-rows:34mm;"}}
+.lb{padding:${roll?"1.5mm 2.5mm":"2mm 3mm"};overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;break-inside:avoid;page-break-inside:avoid;${roll?"width:50mm;height:25mm;page-break-after:always;":""}${o.border&&!roll?"outline:.2mm dashed #999;outline-offset:-.2mm;":""}}
+.nm{font-size:${roll?"6.5pt":"8pt"};line-height:1.15;max-height:2.3em;overflow:hidden;font-weight:600}
+.sk{font-size:${roll?"7.5pt":"9.5pt"};font-weight:700;display:flex;justify-content:space-between;gap:4px}
+.bc svg{display:block;width:100%;height:${roll?"8mm":"11mm"}}
+.no{font-size:${roll?"7pt":"8.5pt"};letter-spacing:.8px;text-align:center}`;
+  const body=items.map(p=>`<div class="lb"><div class="nm">${esc(p.name)}</div><div class="sk"><span>${esc(p.sku)}</span>${o.price?`<span>${inr(p.price)}</span>`:""}</div><div class="bc">${svgFn(p.barcode)}</div><div class="no">${esc(p.barcode)}</div></div>`).join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Barcode labels</title><style>${css}</style></head><body><div class="sheet">${body}</div>${o.noprint?"":"<script>onload=()=>setTimeout(()=>print(),500)<\/script>"}</body></html>`;
+}
+window.openLabels=function(){
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:560px"><h3>Barcode labels</h3>
+  <p class="mute small">Print labels with the SKU and a scannable barcode to stick on products in the showroom. A scanner works in Sell, Stock and the product search.</p>
+  <div class="grid">
+   <div><label>Which products</label><select id="lb-scope"><option value="shown">Products currently shown in the list</option><option value="all">All products</option></select></div>
+   <div class="f"><div><label>Copies</label><select id="lb-copies"><option value="1">1 label per product</option><option value="qty">1 label per unit in stock</option></select></div>
+   <div><label>Layout</label><select id="lb-layout"><option value="a4">A4 sheet — 24 labels (3 × 8)</option><option value="roll">Label roll — 50 × 25 mm</option></select></div></div>
+   <div class="row"><label style="display:flex;gap:6px;align-items:center;color:var(--ink);font-size:14px"><input type="checkbox" id="lb-price" style="width:auto"> Show price</label>
+    <label style="display:flex;gap:6px;align-items:center;color:var(--ink);font-size:14px"><input type="checkbox" id="lb-border" checked style="width:auto"> Cut lines (A4)</label></div>
+   <div id="lb-info" class="small"></div></div>
+  <div class="row" style="margin-top:14px;justify-content:space-between"><button class="btn sec hide" id="lb-gen">Generate missing barcodes</button>
+   <span class="row" style="margin-left:auto"><button class="btn sec" onclick="closeModal()">Close</button><button class="btn sec" id="lb-xlsx">Download list (Excel)</button><button class="btn" id="lb-print">Print / Save as PDF</button></span></div></div></div>`;
+  const list=()=>($("#lb-scope").value==="all"?S.products:filteredProducts()).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  const info=()=>{const L=list(),miss=L.filter(p=>!p.barcode).length;
+    $("#lb-info").innerHTML=`${L.length-miss} of ${L.length} products have a barcode`+(miss?` · <span style="color:var(--warn)">${miss} without a barcode (not printed)</span>`:"");
+    $("#lb-gen").classList.toggle("hide",!(miss&&isAdmin()))};
+  $("#lb-scope").onchange=info;info();
+  $("#lb-gen").onclick=async()=>{
+    const miss=list().filter(p=>!p.barcode);if(!miss.length)return;
+    if(!confirm(`Create barcodes for ${miss.length} products? Once assigned, a barcode stays with that SKU.`))return;
+    const btn=$("#lb-gen");btn.disabled=true;btn.textContent="Generating…";
+    try{
+      const codes=await nextBarcodes(miss.length);
+      for(let i=0;i<miss.length;i+=400){const b=writeBatch(db);miss.slice(i,i+400).forEach((p,j)=>b.update(doc(db,"products",p.id),{barcode:codes[i+j],updatedAt:serverTimestamp(),updatedBy:S.user.uid}));await b.commit()}
+      miss.forEach((p,i)=>p.barcode=codes[i]);toast(`${miss.length} barcodes created`);
+    }catch(e){toast(e.message,1)}
+    btn.disabled=false;btn.textContent="Generate missing barcodes";info();
+  };
+  $("#lb-xlsx").onclick=async()=>{
+    const L=list().filter(p=>p.barcode);if(!L.length)return toast("No products with a barcode in this selection",1);
+    try{const X=await loadXLSX();
+      const rows=[["sku","name","category","barcode","price"],...L.map(p=>[p.sku,p.name,[p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" › "),String(p.barcode),p.price])];
+      const ws=X.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:14},{wch:36},{wch:36},{wch:16},{wch:10}];
+      const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,"Barcodes");X.writeFile(wb,"barcode-list-"+dkey()+".xlsx");
+    }catch(e){toast(e.message,1)}
+  };
+  $("#lb-print").onclick=async()=>{
+    const L=list().filter(p=>p.barcode);if(!L.length)return toast("No products with a barcode in this selection",1);
+    const perUnit=$("#lb-copies").value==="qty",items=[];
+    L.forEach(p=>{const n=perUnit?Math.max(1,Math.floor(+p.qty||0)):1;for(let i=0;i<n;i++)items.push(p)});
+    if(items.length>2000)return toast(`That would be ${items.length} labels — narrow the selection (max 2000)`,1);
+    const w=window.open("","_blank");if(!w)return toast("Allow pop-ups to print",1);
+    try{await loadJsBarcode();
+      w.document.write(labelsHTML(items,{layout:$("#lb-layout").value,price:$("#lb-price").checked,border:$("#lb-border").checked},barcodeSVG));w.document.close();
+    }catch(e){w.close();toast(e.message,1)}
   };
 };
 window.dl=dl;

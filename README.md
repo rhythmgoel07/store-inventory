@@ -31,3 +31,12 @@ name, SKU, barcode, brand, category / sub-category / type (id, name, slug from y
 - **Excel import:** Products → Import → upload the filled `Inventory_Import_Template.xlsx`. Pick category / sub-category / type from the dropdowns; the categorySlug fills itself and the app also saves it. Existing SKUs update (stock unchanged), new SKUs are created.
 - **Images:** add a photo to any product (camera or gallery; resized automatically and stored in Firestore, so no paid Storage plan is needed), or put an image link in the `imageUrl` column.
 - **Updating:** re-upload `index.html`, `sw.js`, `firestore.rules` contents (re-publish the rules in Firebase) and the template to GitHub when you get a new version.
+
+## Barcodes & labels
+- Product form → **Generate** next to Barcode, or leave `barcode` blank in the Excel and use **Barcode labels → Generate missing barcodes** (admin) to fill every product at once.
+- Codes are 13-digit EAN-13 numbers starting `200` (the range reserved for in-store use) from one shared counter, so two staff can never get the same code. Once a SKU has a barcode it is kept: the Generate button locks, a blank value can't overwrite it (also on Excel import), and duplicates are refused.
+- **Products → Barcode labels** → *Print / Save as PDF* (A4 sheet of 24, or a 50x25 mm roll; optional price, one label per unit in stock) or *Download list (Excel)* with sku, name, barcode.
+- Any USB/Bluetooth barcode scanner works: scan in Sell (adds to the bill), Stock or the product search.
+
+## Export
+Products → Export gives an .xlsx with a **photo** column (pictures embedded, 220 px) plus all fields. Photos from image links are embedded only if the website allows it; the link always stays in `imageUrl`.
