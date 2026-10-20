@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function prof() { return get(/databases/$(db)/documents/users/$(request.auth.uid)).data; }
+    function hasProf() { return signedIn() && exists(/databases/$(db)/documents/users/$(request.auth.uid)); }
+    function isStaff() { return hasProf() && prof().role in ['staff','admin']; }
+    function isAdmin() { return hasProf() && prof().role == 'admin'; }
+
+    // Users: anyone signed in can read; may create their own profile as 'pending'.
+    // The very first account may create itself as 'admin' together with settings/bootstrap.
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.auth.uid == uid && (
+        request.resource.data.role == 'pending' ||
+        (request.resource.data.role == 'admin'
+          && !exists(/databases/$(db)/documents/settings/bootstrap)
+          && existsAfter(/databases/$(db)/documents/settings/bootstrap)));
+      allow update, delete: if isAdmin();
+    }
+
+    match /settings/bootstrap {
+      allow read: if signedIn();
+      allow create: if signedIn();
+    }
+    match /settings/{id} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+    }
+
+    // Products: admin full control; staff may only change stock fields.
+    match /products/{id} {
+      allow read: if isStaff();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (isStaff() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['qty','updatedAt','updatedBy']));
+    }
+
+    // Product photos (uploaded images, stored separately so the product list stays fast)
+    match /productImages/{id} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+    }
+
+    match /sales/{id} {
+      allow read: if isStaff();
+      allow create: if isStaff();
+      allow update: if isAdmin();
+    }
+    match /movements/{id} {
+      allow read: if isStaff();
+      allow create: if isStaff();
+    }
+    match /counters/{id} {
+      allow read, write: if isStaff();
+    }
+  }
+}
