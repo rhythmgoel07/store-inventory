@@ -7,22 +7,15 @@ service cloud.firestore {
     function isStaff() { return hasProf() && prof().role in ['staff','admin']; }
     function isAdmin() { return hasProf() && prof().role == 'admin'; }
 
-    // Users: anyone signed in can read; may create their own profile as 'pending'.
-    // The very first account may create itself as 'admin' together with settings/bootstrap.
+    // Staff profiles. There is NO self sign-up: only an admin creates these, and an
+    // account with no profile here (or role 'disabled') can read and write nothing.
+    // The very first admin profile is added by hand in the Firebase console.
     match /users/{uid} {
       allow read: if signedIn();
-      allow create: if signedIn() && request.auth.uid == uid && (
-        request.resource.data.role == 'pending' ||
-        (request.resource.data.role == 'admin'
-          && !exists(/databases/$(db)/documents/settings/bootstrap)
-          && existsAfter(/databases/$(db)/documents/settings/bootstrap)));
-      allow update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
 
-    match /settings/bootstrap {
-      allow read: if signedIn();
-      allow create: if signedIn();
-    }
+    // Store details, app mode, and the editable dropdown lists (locations, units, GST %, payment modes).
     match /settings/{id} {
       allow read: if isStaff();
       allow write: if isAdmin();
@@ -36,7 +29,7 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['qty','updatedAt','updatedBy']));
     }
 
-    // Product photos (uploaded images, stored separately so the product list stays fast)
+    // Product photos (stored separately so the product list stays fast).
     match /productImages/{id} {
       allow read: if isStaff();
       allow write: if isAdmin();
@@ -51,6 +44,7 @@ service cloud.firestore {
       allow read: if isStaff();
       allow create: if isStaff();
     }
+    // Shared counters for invoice numbers and in-store barcodes.
     match /counters/{id} {
       allow read, write: if isStaff();
     }
