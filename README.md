@@ -44,8 +44,9 @@ name, SKU, barcode, brand, category / sub-category / type (id, name, slug from y
 ## Notes
 - Works offline for browsing and stock changes (syncs when back online). **Completing a sale needs an internet connection** so two staff can never sell the same last piece.
 - Prices are treated as GST-inclusive (usual retail MRP); the receipt shows the GST portion.
-- **Excel import:** Products → Import → upload the filled `Inventory_Import_Template.xlsx`. Pick category / sub-category / type from the dropdowns; the categorySlug fills itself and the app also saves it. Existing SKUs update (stock unchanged), new SKUs are created.
+- **Excel in, Excel out:** every import and export is .xlsx in the same layout — dark header row, frozen panes, filter arrows, Arial, rupee columns formatted, and a `photo` column with the product picture embedded wherever products are listed.
 - **Images:** add a photo to any product (camera or gallery; resized automatically and stored in Firestore, so no paid Storage plan is needed), or put an image link in the `imageUrl` column.
+- **Templates:** the Import window can regenerate `Inventory_Import_Template.xlsx` from your current categories and lists at any time.
 - **Updating:** re-upload `index.html`, `sw.js`, `firestore.rules` contents (re-publish the rules in Firebase) and the template to GitHub when you get a new version.
 
 ## Barcodes & labels
@@ -56,3 +57,17 @@ name, SKU, barcode, brand, category / sub-category / type (id, name, slug from y
 
 ## Export
 Products → Export gives an .xlsx with a **photo** column (pictures embedded, 220 px) plus all fields. Photos from image links are embedded only if the website allows it; the link always stays in `imageUrl`.
+
+## Customers
+- Saved automatically whenever you bill or book a phone number; add or edit by hand from **Customers → + Add customer**.
+- **Search by phone number** (also name or email). Each customer page shows total spent, every past bill with a reprint button, and all their bookings.
+- On the Sell and New booking screens, typing a known phone fills the name and shows past bills, spend and open bookings.
+- Import/export: Customers → Import Excel uses the **Customers** sheet of the template (`name`, `phone` required; `email`, `address`, `notes` optional). A phone that already exists updates that customer rather than adding a duplicate. Export adds bills, total spent, open bookings, advance held and last purchase.
+
+## Bookings
+- **Bookings → + New booking**: pick products like a bill, enter the customer's phone and name, the **booking amount received**, a **tentative delivery date** and any notes. Booking numbers run BK-00001 upward.
+- Booked pieces stay in stock but are **reserved**: the product list shows "🔖 2 booked · 2 free", and Sell and New booking only allow what is free, so the same last piece can't be sold twice.
+- **Deliver & bill** turns a booking into an invoice: stock comes down, the reservation clears, and the receipt shows the booking amount already paid and the balance collected.
+- **Cancel booking** (admin) releases the reserved stock. **Print slip** gives the customer a booking slip with the balance and delivery date.
+- Edit lets you update the booking amount, delivery date and notes as things change.
+- Dashboard shows open bookings, advance held and upcoming deliveries; overdue dates turn red.

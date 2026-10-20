@@ -171,7 +171,8 @@ const configured = firebaseConfig && firebaseConfig.apiKey && !/YOUR_/.test(fire
 let app,auth,db;
 const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",invoicePrefix:"INV",address:"",phone:"",gstin:"",footer:"Thank you for shopping with us!",allowNegative:false},
   products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",loc:"",stock:"all",sort:"name",limit:100},
-  lists:{...DEFAULT_LISTS},detailId:null,cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",unsub:[]};
+  lists:{...DEFAULT_LISTS},detailId:null,customers:[],bookings:[],cf:{q:""},bf:{q:"",status:"booked"},detailCust:null,detailBk:null,
+  bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bdate:"",bnotes:"",bq:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",unsub:[]};
 
 if(configured){
   app=initializeApp(firebaseConfig);auth=getAuth(app);
@@ -180,6 +181,8 @@ if(configured){
 
 const isAdmin = ()=>S.profile?.role==="admin";
 const fullMode = ()=>S.settings.mode==="full";
+const bk = p=>Math.max(0,+p.booked||0);
+const avail = p=>(+p.qty||0)-bk(p);
 const lowStock = p=>p.qty>0&&p.qty<=num(p.reorder);
 const outStock = p=>p.qty<=0;
 
@@ -222,6 +225,8 @@ function startListeners(){
   on(doc(db,"settings","lists"),s=>{S.lists={...DEFAULT_LISTS,...(s.exists()?s.data():{})};render(true)});
   on(collection(db,"products"),s=>{S.products=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"sales"),orderBy("createdAt","desc"),limit(500)),s=>{S.sales=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  on(collection(db,"customers"),s=>{S.customers=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  on(query(collection(db,"bookings"),orderBy("createdAt","desc"),limit(500)),s=>{S.bookings=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"movements"),orderBy("createdAt","desc"),limit(200)),s=>{S.moves=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   if(isAdmin())on(collection(db,"users"),s=>{S.users=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
 }
@@ -239,20 +244,27 @@ else onAuthStateChanged(auth,async u=>{
 });
 
 /* ---------- Shell ---------- */
-const NAV=[["dashboard","Dashboard","▦"],["products","Products","▤"],["sell","Sell","₹",true],["stock","Stock","⇅"],["sales","Sales","☰",true],["categories","Categories","⌗"],["settings","Settings","⚙"]];
+const NAV=[["dashboard","Dashboard","▦"],["products","Products","▤"],["sell","Sell","₹",true],["bookings","Bookings","🔖",true],["customers","Customers","👤",true],["stock","Stock","⇅"],["sales","Sales","☰",true],["categories","Categories","⌗"],["settings","Settings","⚙"]];
+const SALES_VIEWS=["sell","sales","bookings","customers","newbooking","booking","customer"];
 function navItems(){return NAV.filter(n=>!n[3]||fullMode())}
-function setView(v){S.view=v;if(v!=="product"&&location.hash.startsWith("#product"))history.replaceState(null,"",location.pathname+location.search);window.scrollTo(0,0);render()}
-const navOn=k=>S.view===k||(S.view==="product"&&k==="products");
+const DETAIL={product:"products",customer:"customers",booking:"bookings"};
+function setView(v){S.view=v;if(!DETAIL[v]&&location.hash)history.replaceState(null,"",location.pathname+location.search);window.scrollTo(0,0);render()}
+const navOn=k=>S.view===k||DETAIL[S.view]===k||(S.view==="newbooking"&&k==="bookings");
 function routeFromHash(){
-  const m=location.hash.match(/^#product\/(.+)$/);
-  if(m&&S.profile&&isAdmin()){S.view="product";S.detailId=decodeURIComponent(m[1])}
-  else if(S.view==="product"){S.view="products"}
+  const m=location.hash.match(/^#(product|customer|booking)\/(.+)$/);
+  if(m&&S.profile){
+    const id=decodeURIComponent(m[2]);
+    if(m[1]==="product"&&!isAdmin()){S.view="products";return}
+    S.view=m[1];
+    if(m[1]==="product")S.detailId=id;else if(m[1]==="customer")S.detailCust=id;else S.detailBk=id;
+  }
+  else if(DETAIL[S.view])S.view=DETAIL[S.view];
 }
 window.addEventListener("hashchange",()=>{routeFromHash();render()});
 window.go=setView;
 function render(soft){
   if(!S.profile||!["staff","admin"].includes(S.profile.role))return;
-  if(!fullMode()&&(S.view==="sell"||S.view==="sales"))S.view="dashboard";
+  if(!fullMode()&&SALES_VIEWS.includes(S.view))S.view="dashboard";
   // don't clobber inputs while typing during snapshot updates
   if(soft&&document.activeElement&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)&&$("main")?.contains(document.activeElement))return;
   const items=navItems();
@@ -261,12 +273,18 @@ function render(soft){
     ${items.map(n=>`<button class="${navOn(n[0])?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}
     <div class="sp"></div><div class="me">${esc(S.profile.name)} · ${S.profile.role}<br><a href="#" style="color:#fff" onclick="doSignOut();return false">Sign out</a></div></nav>
    <main id="main"></main></div>
-   <div class="bottom">${items.slice(0,5).map(n=>`<button class="${navOn(n[0])?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}</div>`;
-  const v={dashboard:vDash,products:vProducts,product:vProduct,sell:vSell,stock:vStock,sales:vSales,categories:vCats,settings:vSettings}[S.view]||vDash;
+   <div class="bottom">${items.slice(0,4).map(n=>`<button class="${navOn(n[0])?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}${items.length>4?`<button class="${items.slice(4).some(n=>navOn(n[0]))?"on":""}" onclick="openMore()"><span>⋯</span>More</button>`:""}</div>`;
+  const v={dashboard:vDash,products:vProducts,product:vProduct,sell:vSell,stock:vStock,sales:vSales,categories:vCats,settings:vSettings,
+    customers:vCustomers,customer:vCustomer,bookings:vBookings,booking:vBooking,newbooking:vNewBooking}[S.view]||vDash;
   v($("#main"));
   hydrateImages();
 }
 window.doSignOut=()=>signOut(auth);
+window.openMore=()=>{
+  $("#modal").innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-width:380px"><h3>Menu</h3>
+  <div class="grid">${navItems().slice(4).map(n=>`<button class="btn sec" style="text-align:left" onclick="closeModal();go('${n[0]}')">${n[2]} &nbsp;${n[1]}</button>`).join("")}</div>
+  <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Close</button></div></div></div>`;
+};
 
 /* ---------- Dashboard ---------- */
 function vDash(el){
@@ -274,6 +292,7 @@ function vDash(el){
   const units=P.reduce((a,p)=>a+(+p.qty||0),0),cost=P.reduce((a,p)=>a+(+p.qty||0)*num(p.cost),0),retail=P.reduce((a,p)=>a+(+p.qty||0)*num(p.price),0);
   const low=P.filter(lowStock),out=P.filter(outStock);
   const today=S.sales.filter(s=>s.dateKey===tk&&s.status!=="void");
+  const openBk=S.bookings.filter(b=>b.status==="booked"),due=openBk.filter(b=>b.deliveryDate&&b.deliveryDate<=tk);
   const byCat={};P.forEach(p=>{const k=p.categoryName||"Uncategorised";byCat[k]=(byCat[k]||0)+(+p.qty||0)*(isAdmin()?num(p.cost||p.price):1)});
   const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);const mx=cats[0]?.[1]||1;
   el.innerHTML=`<div class="top"><h2>Dashboard</h2><div class="row"><button class="btn" onclick="openProduct()">+ Add product</button>${fullMode()?`<button class="btn sec" onclick="go('sell')">New sale</button>`:""}</div></div>
@@ -281,13 +300,16 @@ function vDash(el){
    <div class="card stat"><div class="k">Products</div><div class="v">${P.length}</div><div class="s">${units} units in stock</div></div>
    ${isAdmin()?`<div class="card stat"><div class="k">Stock value (cost)</div><div class="v">${inr(cost)}</div><div class="s">Retail value ${inr(retail)}</div></div>`:""}
    <div class="card stat"><div class="k">Low stock</div><div class="v" style="color:var(--warn)">${low.length}</div><div class="s">${out.length} out of stock</div></div>
-   ${fullMode()?`<div class="card stat"><div class="k">Today's sales</div><div class="v">${inr(today.reduce((a,s)=>a+s.total,0))}</div><div class="s">${today.length} bills</div></div>`:""}
+   ${fullMode()?`<div class="card stat"><div class="k">Open bookings</div><div class="v">${openBk.length}</div><div class="s">${inr(openBk.reduce((a,b)=>a+num(b.advance),0))} advance held${due.length?` · ${due.length} due`:""}</div></div>`:""}
+  ${fullMode()?`<div class="card stat"><div class="k">Today's sales</div><div class="v">${inr(today.reduce((a,s)=>a+s.total,0))}</div><div class="s">${today.length} bills</div></div>`:""}
   </div>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:12px">
    <div class="card"><h3 style="margin-bottom:10px">Needs restocking</h3>
     ${[...out,...low].slice(0,10).map(p=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)}<br><span class="small mute">${esc(p.sku)} · ${esc(p.subcategoryName||p.categoryName||"")}</span></span><span class="tag ${outStock(p)?"out":"low"}">${p.qty} left</span></div>`).join("")||`<p class="mute">Everything is well stocked.</p>`}</div>
    <div class="card"><h3 style="margin-bottom:10px">${isAdmin()?"Stock value by category":"Units in stock by category"}</h3>
     ${cats.map(([k,v])=>`<div style="margin-bottom:9px"><div class="row" style="justify-content:space-between"><span>${esc(k)}</span><span class="mute small">${isAdmin()?inr(v):v+" units"}</span></div><div class="bar"><i style="width:${(v/mx*100).toFixed(1)}%"></i></div></div>`).join("")||`<p class="mute">Add products to see this.</p>`}</div>
+   ${fullMode()&&openBk.length?`<div class="card"><h3 style="margin-bottom:10px">Upcoming deliveries</h3>
+    ${openBk.slice().sort((a,b)=>String(a.deliveryDate||"9999").localeCompare(String(b.deliveryDate||"9999"))).slice(0,8).map(b=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span><a href="#booking/${b.id}">${esc(b.bookingNo)}</a> ${esc(b.customerName||"")}<br><span class="small mute">${b.items.length} item(s) · balance ${inr(num(b.total)-num(b.advance))}</span></span><span class="tag ${b.deliveryDate&&b.deliveryDate<=tk?"out":"ok"}">${esc(b.deliveryDate||"no date")}</span></div>`).join("")}</div>`:""}
    <div class="card"><h3 style="margin-bottom:10px">Recent stock activity</h3>
     ${S.moves.slice(0,8).map(m=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(m.productName)}<br><span class="small mute">${esc(m.type)} · ${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><b style="color:${m.delta>=0?"var(--ok)":"var(--bad)"}">${m.delta>0?"+":""}${m.delta}</b></div>`).join("")||`<p class="mute">No activity yet.</p>`}</div>
   </div>`;
@@ -321,6 +343,7 @@ function pcard(p){
   return `<div class="pcard ${adm?"adm":""}" ${adm?`onclick="location.hash='${href.slice(1)}'"`:""}>${cardImg(p)}<div class="pb">
    ${adm?`<a class="pn" href="${href}" onclick="event.stopPropagation()">${esc(p.name)}</a>`:`<div class="pn">${esc(p.name)}</div>`}
    <div class="sku">${esc(p.sku)}</div><div><b>MRP ${inr(p.mrp??p.price)}</b></div><div class="small mute">📍 ${esc(p.location||"—")}</div>
+   ${bk(p)?`<div class="small" style="color:var(--warn)">🔖 ${bk(p)} booked · ${avail(p)} free</div>`:""}
    <div class="meta"><span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">Stock ${p.qty}</span><button class="btn sm sec" onclick="event.stopPropagation();openStock('${p.id}')">Update</button></div></div></div>`;
 }
 function vProducts(el){
@@ -349,7 +372,7 @@ function vProduct(el){
   const R=[["Name",esc(p.name)],["SKU",esc(p.sku)],["Barcode",esc(p.barcode||"—")],["Brand",esc(p.brand||"—")],
     ["Category",esc([p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" › ")||"—")],["Category slug",esc(p.fullSlug||"—")],
     ["MRP",inr(p.mrp)],["Selling price",inr(p.price)],["Cost price",inr(p.cost)],["Margin",margin],["GST",(p.gst??0)+"% (included in price)"],
-    ["Stock",`<span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${p.qty} ${esc(p.unit||"pcs")}</span>`],["Reorder level",p.reorder??"—"],["Location",esc(p.location||"—")],
+    ["Stock",`<span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${p.qty} ${esc(p.unit||"pcs")}</span>`],["Booked",bk(p)?`${bk(p)} ${esc(p.unit||"pcs")} reserved for bookings · ${avail(p)} free`:"—"],["Reorder level",p.reorder??"—"],["Location",esc(p.location||"—")],
     ["Image link",p.imageUrl?`<a href="${esc(p.imageUrl)}" target="_blank" rel="noopener">${esc(p.imageUrl)}</a>`:(p.hasImage?"Uploaded photo":"—")],
     ["Notes",esc(p.description||"—")],["Added",p.createdAt?fdt(tms(p.createdAt)):"—"],["Last updated",(p.updatedAt?fdt(tms(p.updatedAt)):"—")+(by(p.updatedBy)?" by "+esc(by(p.updatedBy)):"")]];
   const mv=S.moves.filter(m=>m.productId===p.id).slice(0,15);
@@ -439,7 +462,7 @@ async function saveProduct(id){
     const r=id?doc(db,"products",id):doc(collection(db,"products"));
     if(id)b.update(r,d);
     else{const q=Math.max(0,Math.floor(num(v("#p-qty"))));
-      b.set(r,{...d,qty:q,createdAt:serverTimestamp()});
+      b.set(r,{...d,qty:q,booked:0,createdAt:serverTimestamp()});
       if(q>0)b.set(doc(collection(db,"movements")),mv(r.id,name,sku,"opening",q,0,q,"Opening stock"))}
     if(IMGSTATE.newImg){b.set(doc(db,"productImages",r.id),{data:IMGSTATE.newImg,updatedAt:serverTimestamp()});IMG.cache.set(r.id,IMGSTATE.newImg)}
     else if(IMGSTATE.rm&&old.hasImage){b.delete(doc(db,"productImages",r.id));IMG.cache.delete(r.id)}
@@ -454,7 +477,7 @@ window.closeModal=()=>$("#modal").innerHTML="";
 window.openStock=function(id){
   const p=S.products.find(x=>x.id===id);if(!p)return;
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:460px"><h3>${esc(p.name)}</h3>
-  <p class="mute">${esc(p.sku)} · Current stock: <b>${p.qty} ${esc(p.unit||"pcs")}</b></p>
+  <p class="mute">${esc(p.sku)} · Current stock: <b>${p.qty} ${esc(p.unit||"pcs")}</b>${bk(p)?` · <span style="color:var(--warn)">${bk(p)} booked, ${avail(p)} free</span>`:""}</p>
   <div class="tabs" id="s-tabs">${[["in","Stock in"],["out","Stock out"],["set","Set count"]].map((t,i)=>`<button class="btn sm ${i?"sec":""}" data-t="${t[0]}">${t[1]}</button>`).join("")}</div>
   <div class="grid"><div><label id="s-lab">Quantity received</label><input id="s-qty" type="number" min="0" step="1" autofocus></div>
   <div><label>Reason</label><select id="s-reason"></select></div><div><label>Note (optional)</label><input id="s-note" placeholder="Supplier / bill no. / remark"></div></div>
@@ -481,7 +504,7 @@ window.openStock=function(id){
 };
 function vStock(el){
   const low=S.products.filter(p=>outStock(p)||lowStock(p)).sort((a,b)=>a.qty-b.qty);
-  el.innerHTML=`<div class="top"><h2>Stock</h2><div class="row"><button class="btn sec" onclick="exportMoves()">Export log</button></div></div>
+  el.innerHTML=`<div class="top"><h2>Stock</h2><div class="row"><button class="btn sec" onclick="exportMoves()">Export Excel</button></div></div>
   <div class="card" style="margin-bottom:12px"><div class="row"><input id="st-q" placeholder="Find a product to update stock — name, SKU or barcode" style="flex:1"></div><div id="st-res" style="margin-top:8px"></div></div>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
    <div class="card"><h3 style="margin-bottom:8px">Low &amp; out of stock (${low.length})</h3>${low.slice(0,40).map(p=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)}<br><span class="small mute">${esc(p.sku)} · reorder at ${p.reorder}</span></span><span class="row"><span class="tag ${outStock(p)?"out":"low"}">${p.qty}</span><button class="btn sm sec" onclick="openStock('${p.id}')">+</button></span></div>`).join("")||`<p class="mute">Nothing low right now.</p>`}</div>
@@ -499,46 +522,59 @@ function cartTotals(){
   gst=Math.round(gst*100)/100;
   return{gross,disc,total,gst,taxable:Math.round((total-gst)*100)/100};
 }
+const sellSum=t=>`<div class="row" style="justify-content:space-between"><span class="mute">Subtotal</span><span>${inr(t.gross)}</span></div>
+  ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount</span><span>− ${inr(t.disc)}</span></div>`:""}
+  <div class="row" style="justify-content:space-between"><span class="mute">incl. GST</span><span>${inr(t.gst)}</span></div>
+  <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Total</span><span>${inr(t.total)}</span></div>`;
 function vSell(el){
   const q=S.posQ.toLowerCase();
   const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${p.brand||""} ${p.location||""}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
   const t=cartTotals();
   el.innerHTML=`<div class="top"><h2>New sale</h2><button class="btn sec" onclick="S.cart=[];S.cartDiscount=0;render()">Clear</button></div>
   <div class="pos"><div><input id="pos-q" placeholder="Scan barcode or search…" value="${esc(S.posQ)}" style="margin-bottom:10px">
-   <div class="items">${L.map(p=>`<button class="item" onclick="addCart('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${outStock(p)?"":"mute"}" style="${outStock(p)?"color:var(--bad)":""}">${p.qty} in stock</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
+   <div class="items">${L.map(p=>`<button class="item" onclick="addCart('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Cart (${S.cart.length})</h3>
    ${S.cart.map((i,ix)=>`<div class="cartline"><div><b>${esc(i.name)}</b><br><span class="small mute">${inr(i.price)} each</span></div><div style="text-align:right"><b>${inr(i.price*i.qty)}</b></div>
     <div class="qty"><button onclick="cartQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="cartSet(${ix},this.value)"><button onclick="cartQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.cart.splice(${ix},1);render()">Remove</button></div></div>`).join("")||`<p class="mute">Tap a product to add it.</p>`}
    <div class="f" style="margin-top:10px"><div><label>Discount</label><div class="row" style="flex-wrap:nowrap"><input id="c-disc" type="number" min="0" value="${S.cartDiscount||""}"><select id="c-dt" style="width:80px"><option value="amt" ${S.cartDiscType==="amt"?"selected":""}>₹</option><option value="pct" ${S.cartDiscType==="pct"?"selected":""}>%</option></select></div></div>
     <div><label>Payment</label><select id="c-pay">${S.lists.payModes.map(x=>`<option>${x}</option>`).join("")}</select></div>
-    <div><label>Customer name</label><input id="c-name"></div><div><label>Phone</label><input id="c-ph" inputmode="tel"></div></div>
-   <div style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">
-    <div class="row" style="justify-content:space-between"><span class="mute">Subtotal</span><span>${inr(t.gross)}</span></div>
-    ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount</span><span>− ${inr(t.disc)}</span></div>`:""}
-    <div class="row" style="justify-content:space-between"><span class="mute">incl. GST</span><span>${inr(t.gst)}</span></div>
-    <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Total</span><span>${inr(t.total)}</span></div></div>
+    <div><label>Customer phone</label><input id="c-ph" inputmode="tel" list="c-phl" placeholder="Search saved customers"><datalist id="c-phl">${S.customers.slice(0,400).map(c=>`<option value="${esc(c.phone)}">${esc(c.name)}</option>`).join("")}</datalist></div>
+    <div><label>Customer name</label><input id="c-name"></div><div class="full small" id="c-cinfo"></div></div>
+   <div id="c-sum" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">${sellSum(t)}</div>
    <button class="btn" style="width:100%;margin-top:12px;padding:12px" id="c-done" ${S.cart.length?"":"disabled"}>Complete sale</button></div></div>`;
   const q2=$("#pos-q");q2.oninput=()=>{S.posQ=q2.value;clearTimeout(vSell.t);vSell.t=setTimeout(()=>{render();const n=$("#pos-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},150)};
   q2.onkeydown=e=>{if(e.key==="Enter"){const v=q2.value.trim().toLowerCase();const p=S.products.find(x=>(x.barcode&&x.barcode.toLowerCase()===v)||x.sku.toLowerCase()===v);if(p){addCart(p.id);S.posQ="";render();$("#pos-q").focus()}}};
-  $("#c-disc").onchange=e=>{S.cartDiscount=num(e.target.value);keepCust();render()};$("#c-dt").onchange=e=>{S.cartDiscType=e.target.value;keepCust();render()};
+  const sum=()=>{const el=$("#c-sum");if(el)el.innerHTML=sellSum(cartTotals())};
+  $("#c-disc").oninput=$("#c-disc").onchange=e=>{S.cartDiscount=num(e.target.value);keepCust();sum()};
+  $("#c-dt").onchange=e=>{S.cartDiscType=e.target.value;keepCust();sum()};
   const keepCust=()=>{S.cust={name:$("#c-name").value,ph:$("#c-ph").value,pay:$("#c-pay").value}};
   if(S.cust){$("#c-name").value=S.cust.name||"";$("#c-ph").value=S.cust.ph||"";$("#c-pay").value=S.cust.pay||"Cash"}
+  const custInfo=()=>{const ph=$("#c-ph").value.trim(),ex=findCustByPhone(ph);const box=$("#c-cinfo");
+    if(!ex){box.innerHTML=ph&&custKey(ph).length>=6?`<span class="mute">New customer — saved automatically with this sale</span>`:"";return}
+    if(!$("#c-name").value.trim())$("#c-name").value=ex.name||"";
+    const st=custStats(ex);box.innerHTML=`<span class="tag ok">Saved customer</span> ${esc(ex.name)} · ${st.sales.length} past ${st.sales.length===1?"bill":"bills"} · ${inr(st.spend)} spent${st.open.length?` · <span style="color:var(--warn)">${st.open.length} open booking(s)</span>`:""}`};
+  $("#c-ph").oninput=()=>{keepCust();custInfo()};custInfo();
   ["#c-name","#c-ph","#c-pay"].forEach(i=>$(i).onchange=keepCust);
   $("#c-done").onclick=completeSale;
 }
 window.addCart=id=>{const p=S.products.find(x=>x.id===id);if(!p)return;
   const e=S.cart.find(i=>i.pid===id);const have=e?e.qty:0;
-  if(have+1>p.qty&&!S.settings.allowNegative)return toast("Only "+p.qty+" in stock",1);
+  if(have+1>avail(p)&&!S.settings.allowNegative)return toast(bk(p)?`Only ${avail(p)} available (${bk(p)} booked)`:`Only ${avail(p)} in stock`,1);
   if(e)e.qty++;else S.cart.push({pid:id,name:p.name,sku:p.sku,price:p.price,gst:p.gst||0,qty:1,cost:p.cost||0});render()};
-window.cartQty=(ix,d)=>{const i=S.cart[ix],p=S.products.find(x=>x.id===i.pid);const n=i.qty+d;if(n<1){S.cart.splice(ix,1)}else if(n>p.qty&&!S.settings.allowNegative)return toast("Only "+p.qty+" in stock",1);else i.qty=n;render()};
-window.cartSet=(ix,v)=>{const i=S.cart[ix],p=S.products.find(x=>x.id===i.pid);let n=Math.max(1,Math.floor(num(v)));if(n>p.qty&&!S.settings.allowNegative){n=p.qty;toast("Only "+p.qty+" in stock",1)}i.qty=n;render()};
+window.cartQty=(ix,d)=>{const i=S.cart[ix],p=S.products.find(x=>x.id===i.pid);const n=i.qty+d;if(n<1){S.cart.splice(ix,1)}else if(n>avail(p)&&!S.settings.allowNegative)return toast(bk(p)?`Only ${avail(p)} available (${bk(p)} booked)`:`Only ${avail(p)} in stock`,1);else i.qty=n;render()};
+window.cartSet=(ix,v)=>{const i=S.cart[ix],p=S.products.find(x=>x.id===i.pid);let n=Math.max(1,Math.floor(num(v)));if(n>avail(p)&&!S.settings.allowNegative){n=avail(p);toast(bk(p)?`Only ${avail(p)} available (${bk(p)} booked)`:`Only ${avail(p)} in stock`,1)}i.qty=n;render()};
 
 async function completeSale(){
   const btn=$("#c-done");btn.disabled=true;btn.textContent="Saving…";
   const t=cartTotals(),cust={name:$("#c-name").value.trim(),phone:$("#c-ph").value.trim()},pay=$("#c-pay").value;
   const cart=S.cart.map(i=>({...i}));
   try{
-    let inv="",saleId="";
+    let inv="",saleId="",customerId="";
+    if(cust.phone&&custKey(cust.phone).length>=6){
+      const ex=findCustByPhone(cust.phone);
+      if(ex){customerId=ex.id;if(cust.name&&cust.name!==ex.name)await updateDoc(doc(db,"customers",ex.id),{name:cust.name,updatedAt:serverTimestamp()}).catch(()=>{})}
+      else{const r=doc(collection(db,"customers"));await setDoc(r,{name:cust.name||"Walk-in",phone:cust.phone,email:"",address:"",notes:"",createdAt:serverTimestamp(),createdBy:S.user.uid});customerId=r.id}
+    }
     await runTransaction(db,async tx=>{
       const cr=doc(db,"counters","invoice"),cs=await tx.get(cr);
       const refs=cart.map(i=>doc(db,"products",i.pid));const snaps=[];for(const r of refs)snaps.push(await tx.get(r));
@@ -550,7 +586,7 @@ async function completeSale(){
         tx.update(refs[ix],{qty:cur-c.qty,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
         tx.set(doc(collection(db,"movements")),mv(c.pid,c.name,c.sku,"sale",-c.qty,cur,cur-c.qty,inv))});
       tx.set(sr,{invoiceNo:inv,items:cart.map(i=>({pid:i.pid,sku:i.sku,name:i.name,price:i.price,qty:i.qty,gst:i.gst,cost:i.cost,lineTotal:Math.round(i.price*i.qty*100)/100})),
-        subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,customer:cust,payment:pay,status:"completed",
+        subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,customer:cust,customerId,payment:pay,status:"completed",
         soldBy:S.user.uid,soldByName:S.profile.name,dateKey:dkey(),createdAt:serverTimestamp()});
     });
     S.cart=[];S.cartDiscount=0;S.cust=null;S.posQ="";
@@ -565,7 +601,7 @@ window.printReceipt=function(s){
   <div class="r"><span>${esc(s.invoiceNo)}</span><span>${fdt(tms(s.createdAt))}</span></div>${s.customer?.name?`<div>Customer: ${esc(s.customer.name)} ${esc(s.customer.phone||"")}</div>`:""}<hr>
   ${s.items.map(i=>`<div>${esc(i.name)}</div><div class="r"><span>${i.qty} × ${inr(i.price)}</span><span>${inr(i.price*i.qty)}</span></div>`).join("")}<hr>
   <div class="r"><span>Subtotal</span><span>${inr(s.subtotal)}</span></div>${s.discount?`<div class="r"><span>Discount</span><span>-${inr(s.discount)}</span></div>`:""}
-  <div class="r"><span>GST included</span><span>${inr(s.gstAmount)}</span></div><div class="r"><b>TOTAL</b><b>${inr(s.total)}</b></div><div>Paid by: ${esc(s.payment)}</div><hr>
+  <div class="r"><span>GST included</span><span>${inr(s.gstAmount)}</span></div><div class="r"><b>TOTAL</b><b>${inr(s.total)}</b></div>${s.advance?`<div class="r"><span>Booking amount paid${s.bookingNo?" ("+esc(s.bookingNo)+")":""}</span><span>-${inr(s.advance)}</span></div><div class="r"><b>PAID NOW</b><b>${inr(s.total-s.advance)}</b></div>`:""}<div>Paid by: ${esc(s.payment)}</div><hr>
   <div class="c">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),300)<\/script></body></html>`);w.document.close();
 };
 
@@ -574,14 +610,14 @@ function vSales(el){
   const day=S.salesDay||dkey();const L=S.sales.filter(s=>!day||s.dateKey===day);
   const ok=L.filter(s=>s.status!=="void");const tot=ok.reduce((a,s)=>a+s.total,0);
   const prof=ok.reduce((a,s)=>a+s.items.reduce((b,i)=>b+(i.price*i.qty-(i.cost||0)*i.qty),0)-s.discount,0);
-  el.innerHTML=`<div class="top"><h2>Sales</h2><div class="row"><input type="date" id="sd" value="${day}" style="width:auto"><button class="btn sec" onclick="exportSales()">Export</button></div></div>
+  el.innerHTML=`<div class="top"><h2>Sales</h2><div class="row"><input type="date" id="sd" value="${day}" style="width:auto"><button class="btn sec" onclick="exportSales()">Export Excel</button></div></div>
   <div class="grid stats" style="margin-bottom:12px"><div class="card stat"><div class="k">Bills</div><div class="v">${ok.length}</div></div><div class="card stat"><div class="k">Revenue</div><div class="v">${inr(tot)}</div></div>${isAdmin()?`<div class="card stat"><div class="k">Gross margin</div><div class="v">${inr(prof)}</div><div class="s">vs recorded cost price</div></div>`:""}</div>
   <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Invoice</th><th>Customer</th><th>Items</th><th class="n">Total</th><th></th></tr></thead><tbody>
   ${L.map(s=>`<tr style="${s.status==="void"?"opacity:.5":""}"><td data-l="Invoice"><b>${esc(s.invoiceNo)}</b> ${s.status==="void"?`<span class="tag out">void</span>`:""}<br><span class="small mute">${fdt(tms(s.createdAt))} · ${esc(s.soldByName||"")}</span></td><td data-l="Customer">${esc(s.customer?.name||"Walk-in")}<br><span class="small mute">${esc(s.payment)}</span></td>
    <td data-l="Items" class="small">${s.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")}</td><td data-l="Total" class="n">${inr(s.total)}</td>
    <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="reprint('${s.id}')">Print</button>${isAdmin()&&s.status!=="void"?`<button class="btn sm sec" onclick="voidSale('${s.id}')">Void</button>`:""}</div></td></tr>`).join("")||`<tr><td colspan="5" class="mute">No sales on this date.</td></tr>`}
   </tbody></table></div>`;
-  $("#sd").onchange=e=>{S.salesDay=e.target.value;render()};
+  $("#sd").onchange=e=>{S.salesDay=e.target.value;setTimeout(render,0)};
 }
 window.reprint=id=>{const s=S.sales.find(x=>x.id===id);if(s)printReceipt(s)};
 window.voidSale=async id=>{
@@ -594,6 +630,272 @@ window.voidSale=async id=>{
       tx.set(doc(collection(db,"movements")),mv(i.pid,i.name,i.sku,"void",i.qty,cur,cur+i.qty,"Void "+s.invoiceNo))});
     tx.update(sr,{status:"void",voidedBy:S.profile.name,voidedAt:serverTimestamp()});
   });toast("Sale voided")}catch(e){toast(e.message,1)}
+};
+
+
+/* ---------- Customers ---------- */
+const custKey=ph=>String(ph||"").replace(/\D/g,"");
+const findCustByPhone=ph=>{const k=custKey(ph);return k.length>=6?S.customers.find(c=>custKey(c.phone)===k):null};
+function custStats(c){
+  const k=custKey(c.phone);
+  const match=o=>o.customerId===c.id||(k&&custKey(o.customerPhone||o.customer?.phone)===k);
+  const sales=S.sales.filter(s=>s.status!=="void"&&match(s));
+  const bookings=S.bookings.filter(match);
+  return{sales,bookings,open:bookings.filter(b=>b.status==="booked"),spend:sales.reduce((a,s)=>a+num(s.total),0),
+    last:sales.length?Math.max(...sales.map(s=>tms(s.createdAt))):0};
+}
+function vCustomers(el){
+  const q=S.cf.q.trim(),qk=custKey(q),ql=q.toLowerCase();
+  let L=S.customers.filter(c=>!q||(qk&&custKey(c.phone).includes(qk))||`${c.name} ${c.email||""}`.toLowerCase().includes(ql));
+  L=L.map(c=>({c,st:custStats(c)})).sort((a,b)=>b.st.last-a.st.last||a.c.name.localeCompare(b.c.name));
+  el.innerHTML=`<div class="top"><h2>Customers <span class="mute small">(${S.customers.length})</span></h2>
+   <div class="row"><button class="btn" onclick="openCustomer()">+ Add customer</button><button class="btn sec" onclick="openImport('customers')">Import Excel</button><button class="btn sec" onclick="exportCustomers()">Export</button></div></div>
+  <div class="card" style="margin-bottom:12px"><input id="cf-q" inputmode="tel" placeholder="Search by phone number, name or email…" value="${esc(S.cf.q)}"></div>
+  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Customer</th><th>Phone</th><th class="n">Bills</th><th class="n">Spent</th><th>Bookings</th><th></th></tr></thead><tbody>
+  ${L.slice(0,200).map(({c,st})=>`<tr><td data-l="Customer"><a href="#customer/${c.id}"><b>${esc(c.name)}</b></a><br><span class="small mute">${esc(c.email||"")}${st.last?` · last ${fdt(st.last)}`:""}</span></td>
+   <td data-l="Phone"><a href="tel:${esc(c.phone)}">${esc(c.phone)}</a></td><td data-l="Bills" class="n">${st.sales.length}</td><td data-l="Spent" class="n">${inr(st.spend)}</td>
+   <td data-l="Bookings">${st.open.length?`<span class="tag low">${st.open.length} open</span>`:`<span class="mute small">—</span>`}</td>
+   <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="bookFor('${c.id}')">Book</button><button class="btn sm sec" onclick="openCustomer('${c.id}')">Edit</button></div></td></tr>`).join("")||`<tr><td colspan="6" class="mute">${S.customers.length?"No customer matches that search.":"No customers yet — they are saved automatically when you bill a phone number."}</td></tr>`}
+  </tbody></table></div>`;
+  const i=$("#cf-q");i.oninput=()=>{S.cf.q=i.value;clearTimeout(vCustomers.t);vCustomers.t=setTimeout(()=>{render();const n=$("#cf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
+}
+function vCustomer(el){
+  const c=S.customers.find(x=>x.id===S.detailCust);
+  if(!c){el.innerHTML=`<div class="top"><h2>Customer not found</h2><button class="btn sec" onclick="go('customers')">← Back</button></div>`;return}
+  const st=custStats(c);
+  el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('customers')">← Back</button><h2>${esc(c.name)}</h2></div>
+   <div class="row"><button class="btn sec" onclick="bookFor('${c.id}')">New booking</button><button class="btn" onclick="openCustomer('${c.id}')">Edit</button></div></div>
+  <div class="grid stats" style="margin-bottom:12px">
+   <div class="card stat"><div class="k">Phone</div><div class="v" style="font-size:19px"><a href="tel:${esc(c.phone)}">${esc(c.phone)}</a></div><div class="s">${esc(c.email||"")}</div></div>
+   <div class="card stat"><div class="k">Total spent</div><div class="v">${inr(st.spend)}</div><div class="s">${st.sales.length} bill(s)</div></div>
+   <div class="card stat"><div class="k">Open bookings</div><div class="v">${st.open.length}</div><div class="s">${inr(st.open.reduce((a,b)=>a+num(b.advance),0))} advance held</div></div>
+   <div class="card stat"><div class="k">Address</div><div class="v" style="font-size:14px;font-weight:400">${esc(c.address||"—")}</div><div class="s">${esc(c.notes||"")}</div></div></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+   <div class="card"><h3 style="margin-bottom:8px">Purchase history</h3>
+    ${st.sales.map(s=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span><b>${esc(s.invoiceNo)}</b><br><span class="small mute">${fdt(tms(s.createdAt))} · ${s.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")}</span></span><span style="text-align:right">${inr(s.total)}<br><button class="btn sm sec" onclick="reprint('${s.id}')">Print</button></span></div>`).join("")||`<p class="mute">No purchases yet.</p>`}</div>
+   <div class="card"><h3 style="margin-bottom:8px">Bookings</h3>
+    ${st.bookings.map(b=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span><a href="#booking/${b.id}"><b>${esc(b.bookingNo)}</b></a> <span class="tag ${b.status==="booked"?"low":b.status==="delivered"?"ok":"out"}">${esc(b.status)}</span><br><span class="small mute">${b.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")} · delivery ${esc(b.deliveryDate||"—")}</span></span><span style="text-align:right">${inr(b.total)}<br><span class="small mute">adv ${inr(b.advance)}</span></span></div>`).join("")||`<p class="mute">No bookings yet.</p>`}</div></div>`;
+}
+window.openCustomer=function(id){
+  const c=S.customers.find(x=>x.id===id)||{};
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:520px"><h3>${id?"Edit customer":"Add customer"}</h3>
+  <div class="f"><div><label>Name *</label><input id="cu-name" value="${esc(c.name)}"></div>
+   <div><label>Phone *</label><input id="cu-ph" inputmode="tel" value="${esc(c.phone)}"></div>
+   <div><label>Email</label><input id="cu-em" type="email" value="${esc(c.email)}"></div>
+   <div><label>Address</label><input id="cu-ad" value="${esc(c.address)}"></div>
+   <div class="full"><label>Notes</label><textarea id="cu-no" rows="2">${esc(c.notes)}</textarea></div></div>
+  <div class="row" style="margin-top:14px;justify-content:space-between"><div>${id&&isAdmin()?`<button class="btn bad sm" id="cu-del">Delete</button>`:""}</div>
+   <div class="row"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="cu-save">Save</button></div></div></div></div>`;
+  $("#cu-save").onclick=async()=>{
+    const name=$("#cu-name").value.trim(),phone=$("#cu-ph").value.trim();
+    if(!name||custKey(phone).length<6)return toast("Name and a valid phone number are required",1);
+    const dup=S.customers.find(x=>custKey(x.phone)===custKey(phone)&&x.id!==id);
+    if(dup)return toast(`That phone already belongs to ${dup.name}`,1);
+    const d={name,phone,email:$("#cu-em").value.trim(),address:$("#cu-ad").value.trim(),notes:$("#cu-no").value.trim(),updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+    try{if(id)await updateDoc(doc(db,"customers",id),d);else await setDoc(doc(collection(db,"customers")),{...d,createdAt:serverTimestamp(),createdBy:S.user.uid});closeModal();toast("Saved")}catch(e){toast(e.message,1)}
+  };
+  $("#cu-del")&&($("#cu-del").onclick=async()=>{if(!confirm("Delete this customer? Their bills and bookings stay."))return;
+    try{await deleteDoc(doc(db,"customers",id));closeModal();if(S.view==="customer")go("customers");else render();toast("Deleted")}catch(e){toast(e.message,1)}});
+};
+
+/* ---------- Bookings ---------- */
+window.bookFor=id=>{const c=S.customers.find(x=>x.id===id);S.bcart=[];S.badv=0;S.bnotes="";S.bq="";S.bdate="";
+  S.bcustId=id||"";S.bphone=c?.phone||"";S.bname=c?.name||"";setView("newbooking")};
+const bkTotals=cart=>{const gross=cart.reduce((a,i)=>a+i.price*i.qty,0);let gst=0;cart.forEach(i=>{const l=i.price*i.qty;gst+=l-l/(1+(i.gst||0)/100)});return{gross:Math.round(gross*100)/100,gst:Math.round(gst*100)/100}};
+const bkSum=(t,adv)=>`<div class="row" style="justify-content:space-between"><span class="mute">Order value</span><span>${inr(t.gross)}</span></div>
+  <div class="row" style="justify-content:space-between"><span class="mute">incl. GST</span><span>${inr(t.gst)}</span></div>
+  <div class="row" style="justify-content:space-between"><span class="mute">Booking amount</span><span>− ${inr(adv)}</span></div>
+  <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Balance due</span><span>${inr(Math.max(0,t.gross-adv))}</span></div>`;
+function vNewBooking(el){
+  const q=S.bq.toLowerCase();
+  const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${p.brand||""} ${p.location||""}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
+  const t=bkTotals(S.bcart);
+  el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('bookings')">← Back</button><h2>New booking</h2></div>
+   <button class="btn sec" onclick="S.bcart=[];S.badv=0;render()">Clear items</button></div>
+  <div class="pos"><div><input id="bk-q" placeholder="Scan barcode or search products…" value="${esc(S.bq)}" style="margin-bottom:10px">
+   <div class="items">${L.map(p=>`<button class="item" onclick="addBk('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
+  <div class="card"><h3 style="margin-bottom:6px">Booking (${S.bcart.length} item${S.bcart.length===1?"":"s"})</h3>
+   ${S.bcart.map((i,ix)=>`<div class="cartline"><div><b>${esc(i.name)}</b><br><span class="small mute">${inr(i.price)} each</span></div><div style="text-align:right"><b>${inr(i.price*i.qty)}</b></div>
+    <div class="qty"><button onclick="bkQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="bkSet(${ix},this.value)"><button onclick="bkQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.bcart.splice(${ix},1);render()">Remove</button></div></div>`).join("")||`<p class="mute">Tap a product to add it.</p>`}
+   <div class="f" style="margin-top:10px">
+    <div><label>Customer phone *</label><input id="bk-ph" inputmode="tel" list="bk-phl" value="${esc(S.bphone)}"><datalist id="bk-phl">${S.customers.slice(0,400).map(c=>`<option value="${esc(c.phone)}">${esc(c.name)}</option>`).join("")}</datalist></div>
+    <div><label>Customer name *</label><input id="bk-name" value="${esc(S.bname)}"></div>
+    <div class="full small" id="bk-cinfo"></div>
+    <div><label>Booking amount received (₹)</label><input id="bk-adv" type="number" min="0" step="0.01" value="${S.badv||""}"></div>
+    <div><label>Tentative delivery date</label><input id="bk-date" type="date" value="${esc(S.bdate)}"></div>
+    <div class="full"><label>Notes</label><input id="bk-notes" value="${esc(S.bnotes)}" placeholder="Fabric choice, floor, delivery instructions…"></div></div>
+   <div id="bk-sum" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">${bkSum(t,num(S.badv))}</div>
+   <p class="small mute" style="margin-top:8px">Booked items stay in stock but are reserved, so they can't be sold twice.</p>
+   <button class="btn" style="width:100%;margin-top:8px;padding:12px" id="bk-done" ${S.bcart.length?"":"disabled"}>Confirm booking</button></div></div>`;
+  const q2=$("#bk-q");q2.oninput=()=>{S.bq=q2.value;clearTimeout(vNewBooking.t);vNewBooking.t=setTimeout(()=>{render();const n=$("#bk-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},150)};
+  q2.onkeydown=e=>{if(e.key==="Enter"){const v=q2.value.trim().toLowerCase();const p=S.products.find(x=>(x.barcode&&x.barcode.toLowerCase()===v)||x.sku.toLowerCase()===v);if(p){addBk(p.id);S.bq="";render();$("#bk-q").focus()}}};
+  const keep=()=>{S.bphone=$("#bk-ph").value;S.bname=$("#bk-name").value;S.badv=num($("#bk-adv").value);S.bdate=$("#bk-date").value;S.bnotes=$("#bk-notes").value};
+  const info=()=>{const ex=findCustByPhone($("#bk-ph").value);const box=$("#bk-cinfo");
+    if(ex){S.bcustId=ex.id;if(!$("#bk-name").value.trim()){$("#bk-name").value=ex.name;S.bname=ex.name}
+      const st=custStats(ex);box.innerHTML=`<span class="tag ok">Saved customer</span> ${st.sales.length} bill(s) · ${inr(st.spend)} spent`}
+    else{S.bcustId="";box.innerHTML=custKey($("#bk-ph").value).length>=6?`<span class="mute">New customer — saved with this booking</span>`:""}};
+  $("#bk-ph").oninput=()=>{keep();info()};info();
+  ["#bk-name","#bk-adv","#bk-date","#bk-notes"].forEach(i=>{$(i).onchange=keep;$(i).oninput=keep});
+  const bsum=()=>{const el=$("#bk-sum");if(el)el.innerHTML=bkSum(bkTotals(S.bcart),num($("#bk-adv").value))};
+  $("#bk-adv").oninput=$("#bk-adv").onchange=()=>{keep();bsum()};
+  $("#bk-done").onclick=createBooking;
+}
+window.addBk=id=>{const p=S.products.find(x=>x.id===id);if(!p)return;
+  const e=S.bcart.find(i=>i.pid===id),have=e?e.qty:0;
+  if(have+1>avail(p)&&!S.settings.allowNegative)return toast(bk(p)?`Only ${avail(p)} available (${bk(p)} already booked)`:`Only ${avail(p)} in stock`,1);
+  if(e)e.qty++;else S.bcart.push({pid:id,name:p.name,sku:p.sku,price:p.price,gst:p.gst||0,qty:1,cost:p.cost||0});render()};
+window.bkQty=(ix,d)=>{const i=S.bcart[ix],p=S.products.find(x=>x.id===i.pid),n=i.qty+d;
+  if(n<1)S.bcart.splice(ix,1);else if(p&&n>avail(p)&&!S.settings.allowNegative)return toast(`Only ${avail(p)} available`,1);else i.qty=n;render()};
+window.bkSet=(ix,v)=>{const i=S.bcart[ix],p=S.products.find(x=>x.id===i.pid);let n=Math.max(1,Math.floor(num(v)));
+  if(p&&n>avail(p)&&!S.settings.allowNegative){n=avail(p);toast(`Only ${avail(p)} available`,1)}i.qty=n;render()};
+async function createBooking(){
+  const btn=$("#bk-done");const phone=$("#bk-ph").value.trim(),name=$("#bk-name").value.trim();
+  if(custKey(phone).length<6||!name)return toast("Customer name and phone are required",1);
+  const adv=num($("#bk-adv").value),date=$("#bk-date").value,notes=$("#bk-notes").value.trim();
+  const t=bkTotals(S.bcart);
+  if(adv>t.gross)return toast("Booking amount is more than the order value",1);
+  btn.disabled=true;btn.textContent="Saving…";
+  const cart=S.bcart.map(i=>({...i}));
+  try{
+    let customerId=S.bcustId||findCustByPhone(phone)?.id||"";
+    if(!customerId){const r=doc(collection(db,"customers"));await setDoc(r,{name,phone,email:"",address:"",notes:"",createdAt:serverTimestamp(),createdBy:S.user.uid});customerId=r.id}
+    else{const ex=S.customers.find(c=>c.id===customerId);if(ex&&name&&name!==ex.name)await updateDoc(doc(db,"customers",customerId),{name,updatedAt:serverTimestamp()}).catch(()=>{})}
+    let bno="";
+    await runTransaction(db,async tx=>{
+      const cr=doc(db,"counters","booking"),cs=await tx.get(cr);
+      const refs=cart.map(i=>doc(db,"products",i.pid)),snaps=[];for(const r of refs)snaps.push(await tx.get(r));
+      snaps.forEach((s,ix)=>{if(!s.exists())throw new Error(cart[ix].name+" no longer exists");
+        const d=s.data(),av=(+d.qty||0)-Math.max(0,+d.booked||0);
+        if(av<cart[ix].qty&&!S.settings.allowNegative)throw new Error(`Only ${av} of ${cart[ix].name} available`)});
+      const n=(cs.exists()?cs.data().n:0)+1;bno="BK-"+String(n).padStart(5,"0");tx.set(cr,{n});
+      snaps.forEach((s,ix)=>tx.update(refs[ix],{booked:Math.max(0,+s.data().booked||0)+cart[ix].qty,updatedAt:serverTimestamp(),updatedBy:S.user.uid}));
+      tx.set(doc(collection(db,"bookings")),{bookingNo:bno,customerId,customerName:name,customerPhone:phone,
+        items:cart.map(i=>({pid:i.pid,sku:i.sku,name:i.name,price:i.price,qty:i.qty,gst:i.gst,cost:i.cost,lineTotal:Math.round(i.price*i.qty*100)/100})),
+        total:t.gross,gstAmount:t.gst,advance:adv,balance:Math.round((t.gross-adv)*100)/100,deliveryDate:date||"",notes,status:"booked",
+        createdBy:S.user.uid,createdByName:S.profile.name,dateKey:dkey(),createdAt:serverTimestamp()});
+    });
+    S.bcart=[];S.badv=0;S.bnotes="";S.bdate="";S.bphone="";S.bname="";S.bcustId="";
+    toast("Booking "+bno+" saved");setView("bookings");
+  }catch(e){toast(e.message||"Couldn't save — are you online?",1);btn.disabled=false;btn.textContent="Confirm booking"}
+}
+function vBookings(el){
+  const f=S.bf,q=f.q.trim().toLowerCase(),qk=custKey(f.q),tk=dkey();
+  let L=S.bookings.filter(b=>{
+    if(f.status!=="all"&&b.status!==f.status)return false;
+    if(!q)return true;
+    return (qk&&custKey(b.customerPhone).includes(qk))||`${b.bookingNo} ${b.customerName}`.toLowerCase().includes(q)||b.items.some(i=>`${i.name} ${i.sku}`.toLowerCase().includes(q));
+  });
+  const open=S.bookings.filter(b=>b.status==="booked");
+  el.innerHTML=`<div class="top"><h2>Bookings <span class="mute small">(${open.length} open)</span></h2>
+   <div class="row"><button class="btn" onclick="bookFor()">+ New booking</button><button class="btn sec" onclick="exportBookings()">Export</button></div></div>
+  <div class="grid stats" style="margin-bottom:12px">
+   <div class="card stat"><div class="k">Open bookings</div><div class="v">${open.length}</div><div class="s">${open.reduce((a,b)=>a+b.items.reduce((x,i)=>x+i.qty,0),0)} units reserved</div></div>
+   <div class="card stat"><div class="k">Advance held</div><div class="v">${inr(open.reduce((a,b)=>a+num(b.advance),0))}</div><div class="s">against ${inr(open.reduce((a,b)=>a+num(b.total),0))} of orders</div></div>
+   <div class="card stat"><div class="k">Due for delivery</div><div class="v" style="color:var(--warn)">${open.filter(b=>b.deliveryDate&&b.deliveryDate<=tk).length}</div><div class="s">on or before today</div></div></div>
+  <div class="card" style="margin-bottom:12px"><div class="f">
+   <div class="full"><input id="bf-q" placeholder="Search by phone, booking no., customer or product…" value="${esc(f.q)}"></div>
+   <select id="bf-st">${[["booked","Open bookings"],["delivered","Delivered"],["cancelled","Cancelled"],["all","All"]].map(o=>`<option value="${o[0]}" ${f.status===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select>
+  </div></div>
+  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Booking</th><th>Customer</th><th>Items</th><th class="n">Total / advance</th><th>Delivery</th><th></th></tr></thead><tbody>
+  ${L.slice(0,200).map(b=>`<tr><td data-l="Booking"><a href="#booking/${b.id}"><b>${esc(b.bookingNo)}</b></a> <span class="tag ${b.status==="booked"?"low":b.status==="delivered"?"ok":"out"}">${esc(b.status)}</span><br><span class="small mute">${fdt(tms(b.createdAt))} · ${esc(b.createdByName||"")}</span></td>
+   <td data-l="Customer">${esc(b.customerName)}<br><a class="small" href="tel:${esc(b.customerPhone)}">${esc(b.customerPhone)}</a></td>
+   <td data-l="Items" class="small">${b.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")}</td>
+   <td data-l="Total / advance" class="n">${inr(b.total)}<br><span class="small mute">adv ${inr(b.advance)} · bal ${inr(num(b.total)-num(b.advance))}</span></td>
+   <td data-l="Delivery">${b.deliveryDate?`<span class="tag ${b.status==="booked"&&b.deliveryDate<=tk?"out":""}">${esc(b.deliveryDate)}</span>`:`<span class="mute small">—</span>`}</td>
+   <td data-l=""><div class="row" style="justify-content:flex-end">${b.status==="booked"?`<button class="btn sm" onclick="deliverBooking('${b.id}')">Deliver</button>`:""}<button class="btn sm sec" onclick="location.hash='booking/${b.id}'">View</button></div></td></tr>`).join("")||`<tr><td colspan="6" class="mute">No bookings here yet.</td></tr>`}
+  </tbody></table></div>`;
+  const i=$("#bf-q");i.oninput=()=>{S.bf.q=i.value;clearTimeout(vBookings.t);vBookings.t=setTimeout(()=>{render();const n=$("#bf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
+  $("#bf-st").onchange=e=>{S.bf.status=e.target.value;render()};
+}
+function vBooking(el){
+  const b=S.bookings.find(x=>x.id===S.detailBk);
+  if(!b){el.innerHTML=`<div class="top"><h2>Booking not found</h2><button class="btn sec" onclick="go('bookings')">← Back</button></div>`;return}
+  const bal=num(b.total)-num(b.advance),sale=b.saleId?S.sales.find(s=>s.id===b.saleId):null;
+  const R=[["Booking no.",esc(b.bookingNo)],["Status",`<span class="tag ${b.status==="booked"?"low":b.status==="delivered"?"ok":"out"}">${esc(b.status)}</span>`],
+   ["Customer",`${esc(b.customerName)} · <a href="tel:${esc(b.customerPhone)}">${esc(b.customerPhone)}</a>${b.customerId?` · <a href="#customer/${b.customerId}">open customer</a>`:""}`],
+   ["Order value",inr(b.total)],["GST included",inr(b.gstAmount)],["Booking amount received",inr(b.advance)],["Balance due",inr(bal)],
+   ["Tentative delivery",esc(b.deliveryDate||"—")],["Notes",esc(b.notes||"—")],["Taken by",esc(b.createdByName||"")+" · "+fdt(tms(b.createdAt))],
+   ["Invoice",sale?`<a href="#" onclick="reprint('${sale.id}');return false">${esc(sale.invoiceNo)}</a>`:(b.status==="delivered"?"—":"not billed yet")]];
+  el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('bookings')">← Back</button><h2>${esc(b.bookingNo)}</h2></div>
+   <div class="row">${b.status==="booked"?`<button class="btn" onclick="deliverBooking('${b.id}')">Deliver &amp; bill</button><button class="btn sec" onclick="editBooking('${b.id}')">Edit</button>${isAdmin()?`<button class="btn sec" onclick="cancelBooking('${b.id}')">Cancel booking</button>`:""}`:""}
+   <button class="btn sec" onclick="printBooking('${b.id}')">Print slip</button></div></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+   <div class="card" style="padding:6px 14px"><table>${R.map(r=>`<tr><td class="mute" style="width:42%">${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table></div>
+   <div class="card"><h3 style="margin-bottom:8px">Items</h3>
+    ${b.items.map(i=>{const p=S.products.find(x=>x.id===i.pid);return `<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span class="row" style="flex-wrap:nowrap">${p?thumb(p,38):""}<span>${esc(i.name)}<br><span class="small mute">${esc(i.sku)} · ${i.qty} × ${inr(i.price)}</span></span></span><b>${inr(i.lineTotal??i.price*i.qty)}</b></div>`}).join("")}</div></div>`;
+}
+window.editBooking=id=>{
+  const b=S.bookings.find(x=>x.id===id);if(!b)return;
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:480px"><h3>Edit ${esc(b.bookingNo)}</h3>
+  <div class="grid"><div><label>Booking amount received (₹)</label><input id="eb-adv" type="number" min="0" step="0.01" value="${b.advance||""}"></div>
+   <div><label>Tentative delivery date</label><input id="eb-date" type="date" value="${esc(b.deliveryDate||"")}"></div>
+   <div><label>Notes</label><textarea id="eb-no" rows="2">${esc(b.notes||"")}</textarea></div></div>
+  <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="eb-save">Save</button></div></div></div>`;
+  $("#eb-save").onclick=async()=>{
+    const adv=num($("#eb-adv").value);
+    if(adv>num(b.total))return toast("Booking amount is more than the order value",1);
+    try{await updateDoc(doc(db,"bookings",id),{advance:adv,balance:Math.round((num(b.total)-adv)*100)/100,deliveryDate:$("#eb-date").value,notes:$("#eb-no").value.trim(),updatedAt:serverTimestamp(),updatedBy:S.user.uid});closeModal();toast("Booking updated")}catch(e){toast(e.message,1)}
+  };
+};
+window.cancelBooking=async id=>{
+  const b=S.bookings.find(x=>x.id===id);if(!b||b.status!=="booked")return;
+  if(!confirm(`Cancel ${b.bookingNo}? The reserved stock is released. Any booking amount refund is handled outside the app.`))return;
+  try{
+    await runTransaction(db,async tx=>{
+      const br=doc(db,"bookings",id),bs=await tx.get(br);
+      if(bs.data().status!=="booked")throw new Error("This booking is no longer open");
+      const refs=b.items.map(i=>doc(db,"products",i.pid)),snaps=[];for(const r of refs)snaps.push(await tx.get(r));
+      snaps.forEach((s,ix)=>{if(s.exists())tx.update(refs[ix],{booked:Math.max(0,(+s.data().booked||0)-b.items[ix].qty),updatedAt:serverTimestamp(),updatedBy:S.user.uid})});
+      tx.update(br,{status:"cancelled",cancelledAt:serverTimestamp(),cancelledBy:S.profile.name});
+    });
+    toast("Booking cancelled, stock released");
+  }catch(e){toast(e.message,1)}
+};
+window.deliverBooking=async id=>{
+  const b=S.bookings.find(x=>x.id===id);if(!b||b.status!=="booked")return;
+  const bal=num(b.total)-num(b.advance);
+  if(!confirm(`Deliver ${b.bookingNo} and create the bill?\n\nOrder ${inr(b.total)} — advance ${inr(b.advance)} — balance ${inr(bal)} to collect now.`))return;
+  try{
+    let inv="";
+    await runTransaction(db,async tx=>{
+      const br=doc(db,"bookings",id),bs=await tx.get(br);
+      if(bs.data().status!=="booked")throw new Error("This booking is no longer open");
+      const cr=doc(db,"counters","invoice"),cs=await tx.get(cr);
+      const refs=b.items.map(i=>doc(db,"products",i.pid)),snaps=[];for(const r of refs)snaps.push(await tx.get(r));
+      snaps.forEach((s,ix)=>{if(!s.exists())throw new Error(b.items[ix].name+" no longer exists");
+        if((+s.data().qty||0)<b.items[ix].qty&&!S.settings.allowNegative)throw new Error(`Not enough stock for ${b.items[ix].name} (only ${s.data().qty})`)});
+      const n=(cs.exists()?cs.data().n:0)+1;inv=(S.settings.invoicePrefix||"INV")+"-"+String(n).padStart(5,"0");tx.set(cr,{n});
+      const sr=doc(collection(db,"sales"));
+      snaps.forEach((s,ix)=>{const i=b.items[ix],d=s.data(),cur=+d.qty||0;
+        tx.update(refs[ix],{qty:cur-i.qty,booked:Math.max(0,(+d.booked||0)-i.qty),updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+        tx.set(doc(collection(db,"movements")),mv(i.pid,i.name,i.sku,"sale",-i.qty,cur,cur-i.qty,inv+" (booking "+b.bookingNo+")"))});
+      tx.set(sr,{invoiceNo:inv,items:b.items,subtotal:num(b.total),discount:0,total:num(b.total),gstAmount:num(b.gstAmount),taxable:Math.round((num(b.total)-num(b.gstAmount))*100)/100,
+        customer:{name:b.customerName,phone:b.customerPhone},customerId:b.customerId||"",payment:"Booking balance",status:"completed",
+        advance:num(b.advance),balancePaid:bal,bookingId:id,bookingNo:b.bookingNo,
+        soldBy:S.user.uid,soldByName:S.profile.name,dateKey:dkey(),createdAt:serverTimestamp()});
+      tx.update(br,{status:"delivered",deliveredAt:serverTimestamp(),deliveredBy:S.profile.name,saleId:sr.id,invoiceNo:inv});
+    });
+    toast("Delivered — invoice "+inv+" created");
+    printReceipt({invoiceNo:inv,items:b.items,subtotal:num(b.total),discount:0,total:num(b.total),gstAmount:num(b.gstAmount),
+      customer:{name:b.customerName,phone:b.customerPhone},payment:"Booking balance",advance:num(b.advance),bookingNo:b.bookingNo,
+      soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
+  }catch(e){toast(e.message,1)}
+};
+window.printBooking=id=>{
+  const b=S.bookings.find(x=>x.id===id);if(!b)return;const st=S.settings;
+  const w=window.open("","_blank","width=380,height=640");if(!w)return toast("Allow pop-ups to print",1);
+  const bal=num(b.total)-num(b.advance);
+  w.document.write(`<html><head><title>${esc(b.bookingNo)}</title><style>body{font:13px monospace;width:300px;margin:8px auto}h2{text-align:center;margin:0}.c{text-align:center}.r{display:flex;justify-content:space-between}hr{border:0;border-top:1px dashed #000}</style></head><body>
+  <h2>${esc(st.storeName)}</h2><div class="c">${esc(st.address||"")}<br>${st.phone?"Ph: "+esc(st.phone):""}</div><hr>
+  <div class="c"><b>BOOKING SLIP</b></div>
+  <div class="r"><span>${esc(b.bookingNo)}</span><span>${fdt(tms(b.createdAt))}</span></div>
+  <div>${esc(b.customerName)} · ${esc(b.customerPhone)}</div><hr>
+  ${b.items.map(i=>`<div>${esc(i.name)}</div><div class="r"><span>${i.qty} × ${inr(i.price)}</span><span>${inr(i.lineTotal??i.price*i.qty)}</span></div>`).join("")}<hr>
+  <div class="r"><span>Order value</span><span>${inr(b.total)}</span></div>
+  <div class="r"><span>Booking amount paid</span><span>${inr(b.advance)}</span></div>
+  <div class="r"><b>BALANCE DUE</b><b>${inr(bal)}</b></div>
+  <div>Tentative delivery: ${esc(b.deliveryDate||"to be confirmed")}</div>${b.notes?`<div>Note: ${esc(b.notes)}</div>`:""}<hr>
+  <div class="c">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),300)<\/script></body></html>`);w.document.close();
 };
 
 /* ---------- Categories ---------- */
@@ -757,10 +1059,10 @@ function resolveCategory(r){
   const m=bySlug[String(r.categorySlug||"").trim()];
   return m?{cat:m.cat,sub:m.sub,type:m.type}:{err:"Category is blank"};
 }
-const HMAP={sku:"sku",name:"name",productname:"name",brand:"brand",barcode:"barcode",category:"category",subcategory:"subcategory",subcat:"subcategory",type:"type",categoryslug:"categorySlug",imageurl:"imageUrl",image:"imageUrl",mrp:"mrp",price:"price",sellingprice:"price",cost:"cost",costprice:"cost",gst:"gst",qty:"qty",stock:"qty",reorder:"reorder",unit:"unit",location:"location",description:"description",notes:"description"};
-function toObjs(all){
-  const hi=all.findIndex(r=>r.some(c=>String(c).trim().toLowerCase()==="sku"));
-  if(hi<0)throw new Error('Could not find a header row with a "sku" column');
+const HMAP={sku:"sku",name:"name",productname:"name",brand:"brand",barcode:"barcode",category:"category",subcategory:"subcategory",subcat:"subcategory",type:"type",categoryslug:"categorySlug",imageurl:"imageUrl",image:"imageUrl",mrp:"mrp",price:"price",sellingprice:"price",cost:"cost",costprice:"cost",gst:"gst",qty:"qty",stock:"qty",reorder:"reorder",unit:"unit",location:"location",description:"description",phone:"phone",mobile:"phone",phoneno:"phone",phonenumber:"phone",mobileno:"phone",contact:"phone",contactno:"phone",customername:"name",email:"email",emailid:"email",address:"address",notes:"notes"};
+function toObjs(all,key="sku"){
+  const hi=all.findIndex(r=>r.some(c=>String(c).trim().toLowerCase()===key));
+  if(hi<0)throw new Error(`Could not find a header row with a "${key}" column`);
   const keys=all[hi].map(c=>HMAP[String(c).toLowerCase().replace(/[^a-z]/g,"")]||null);
   const out=[];
   all.slice(hi+1).forEach((r,i)=>{const o={_row:hi+i+2};let any=false;keys.forEach((k,j)=>{if(!k)return;const v=r[j]===undefined||r[j]===null?"":String(r[j]).trim();if(v!=="")any=true;o[k]=v});if(any)out.push(o)});
@@ -771,13 +1073,13 @@ async function loadXLSX(){
   await new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";s.onload=ok;s.onerror=()=>no(new Error("Couldn't load the Excel reader — check your internet"));document.head.appendChild(s)});
   return window.XLSX;
 }
-async function readFileRows(file){
-  if(/\.csv$/i.test(file.name))return toObjs(parseCSV(await file.text()));
+async function readFileRows(file,key="sku",prefer="products"){
+  if(/\.csv$/i.test(file.name))return toObjs(parseCSV(await file.text()),key);
   const X=await loadXLSX();const wb=X.read(await file.arrayBuffer(),{type:"array"});
-  const hasSku=n=>((X.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:""})[0])||[]).some(c=>String(c).trim().toLowerCase()==="sku");
-  const name=wb.SheetNames.find(n=>n.toLowerCase()==="products"&&hasSku(n))||wb.SheetNames.find(hasSku);
-  if(!name)throw new Error('No sheet with a "sku" column found');
-  return toObjs(X.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:""}));
+  const hasKey=n=>((X.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:""})[0])||[]).some(c=>String(c).trim().toLowerCase()===key);
+  const name=wb.SheetNames.find(n=>n.toLowerCase()===prefer&&hasKey(n))||wb.SheetNames.find(hasKey);
+  if(!name)throw new Error(`No sheet with a "${key}" column found`);
+  return toObjs(X.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:""}),key);
 }
 let exljsP;
 const loadExcelJS=()=>window.ExcelJS?Promise.resolve(window.ExcelJS):(exljsP=exljsP||new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js";s.onload=()=>ok(window.ExcelJS);s.onerror=()=>{exljsP=null;no(new Error("Couldn't load the Excel writer — check your internet"))};document.head.appendChild(s)}));
@@ -785,22 +1087,57 @@ const thumbJpeg=(src,max=220)=>new Promise(res=>{const im=new Image();im.crossOr
   im.onload=()=>{try{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));
     const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.8))}catch(e){res(null)}};
   im.onerror=()=>res(null);im.src=src});
-async function buildProductsWorkbook(EJ,L,img){
-  const wb=new EJ.Workbook(),ws=wb.addWorksheet("Products");
-  const C=[["photo",12],["sku",14],["name",34],["brand",16],["barcode",16],["category",20],["subcategory",24],["type",22],["categorySlug",40],["imageUrl",32],["mrp",11],["price",11],["cost",11],["gst",8],["qty",8],["reorder",9],["unit",8],["location",16],["description",36]];
-  ws.columns=C.map(([h,w])=>({header:h,key:h,width:w}));
-  const hr=ws.getRow(1);hr.font={name:"Arial",bold:true,color:{argb:"FFFFFFFF"}};hr.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF1F3A34"}};hr.height=22;
-  ws.getColumn("sku").numFmt="@";ws.getColumn("barcode").numFmt="@";
-  let n=0;
-  for(const p of L){
-    const row=ws.addRow({sku:p.sku,name:p.name,brand:p.brand||"",barcode:String(p.barcode||""),category:p.categoryName||"",subcategory:p.subcategoryName||"",type:p.typeName||"",categorySlug:p.fullSlug||"",imageUrl:p.imageUrl||"",mrp:p.mrp,price:p.price,cost:p.cost,gst:p.gst,qty:p.qty,reorder:p.reorder,unit:p.unit||"",location:p.location||"",description:p.description||""});
-    row.alignment={vertical:"middle"};
-    const d=img[p.id];
-    if(d){row.height=48;const id=wb.addImage({base64:d,extension:"jpeg"});ws.addImage(id,{tl:{col:0.08,row:row.number-1+0.08},ext:{width:60,height:60}});n++}
+const XH="FF1F3A34";
+// One writer for every file the app produces, so they all look and read the same.
+async function buildWorkbook(EJ,sheets){
+  const wb=new EJ.Workbook();wb.creator=S.settings.storeName||"Store Inventory";wb.created=new Date();
+  for(const sh of sheets){
+    const ws=wb.addWorksheet(sh.name);
+    ws.columns=sh.cols.map(c=>({header:c[0],key:c[0],width:c[1]}));
+    const hr=ws.getRow(1);
+    hr.font={name:"Arial",bold:true,color:{argb:"FFFFFFFF"}};
+    hr.fill={type:"pattern",pattern:"solid",fgColor:{argb:XH}};
+    hr.alignment={horizontal:"center",vertical:"middle"};hr.height=22;
+    sh.cols.forEach(c=>{if(c[2])ws.getColumn(c[0]).numFmt=c[2]});
+    sh.rows.forEach(r=>{const row=ws.addRow(r);row.font={name:"Arial",size:10};row.alignment={vertical:"middle"}});
+    if(sh.images)for(const k in sh.images){
+      const rn=2+(+k);if(rn>ws.rowCount+1)continue;
+      ws.getRow(rn).height=48;
+      const im=wb.addImage({base64:sh.images[k],extension:"jpeg"});
+      ws.addImage(im,{tl:{col:0.08,row:rn-1+0.08},ext:{width:60,height:60}});
+    }
+    ws.views=[{state:"frozen",ySplit:1,xSplit:sh.freeze||0}];
+    if(sh.rows.length)ws.autoFilter={from:{row:1,column:1},to:{row:1,column:sh.cols.length}};
   }
-  ws.views=[{state:"frozen",ySplit:1,xSplit:3}];
-  return{buf:await wb.xlsx.writeBuffer(),n};
+  return wb.xlsx.writeBuffer();
 }
+function dlx(name,buf){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+  a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+// products in, {rowIndex: jpegDataUrl} out — fetches stored photos, shrinks links
+async function photoMap(list){
+  const EJ=await loadExcelJS();
+  const need=list.filter(p=>p&&p.hasImage&&!IMG.cache.get(p.id));
+  for(let i=0;i<need.length;i+=20)await Promise.all(need.slice(i,i+20).map(async p=>{
+    try{const s=await getDoc(doc(db,"productImages",p.id));if(s.exists())IMG.cache.set(p.id,s.data().data)}catch(e){}}));
+  const images={};let failed=0;
+  for(let i=0;i<list.length;i+=8)await Promise.all(list.slice(i,i+8).map(async(p,j)=>{
+    if(!p)return;
+    let d=p.imageUrl?await thumbJpeg(p.imageUrl):null;
+    if(!d&&IMG.cache.get(p.id))d=await thumbJpeg(IMG.cache.get(p.id));
+    if(d)images[i+j]=d;else if(p.imageUrl||p.hasImage)failed++;
+  }));
+  return{images,failed,EJ};
+}
+const MONEY="#,##0.00";
+const PCOLS_X=[["photo",11],["sku",14,"@"],["name",34],["brand",16],["barcode",18,"@"],["category",20],["subcategory",24],["type",22],["categorySlug",40],["imageUrl",30],
+  ["mrp",12,MONEY],["price",12,MONEY],["cost",12,MONEY],["gst",7],["qty",7],["booked",8],["available",10],["reorder",9],["unit",7],["location",18],["description",34]];
+const prow=p=>({sku:p.sku,name:p.name,brand:p.brand||"",barcode:String(p.barcode||""),category:p.categoryName||"",subcategory:p.subcategoryName||"",type:p.typeName||"",
+  categorySlug:p.fullSlug||"",imageUrl:p.imageUrl||"",mrp:num(p.mrp),price:num(p.price),cost:num(p.cost),gst:num(p.gst),qty:+p.qty||0,booked:bk(p),available:avail(p),
+  reorder:+p.reorder||0,unit:p.unit||"",location:p.location||"",description:p.description||""});
+const prodOf=pid=>S.products.find(p=>p.id===pid)||null;
 async function buildTemplate(EJ,tax,lists){
   const colL=n=>{let s="";while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s};
   const wb=new EJ.Workbook();wb.calcProperties={fullCalcOnLoad:true};
@@ -853,37 +1190,95 @@ async function buildTemplate(EJ,tax,lists){
    ["category / subcategory / type","Pick from the dropdowns. Type is optional; sub-category is optional for category-level items."],["imageUrl","Optional link to a product photo. Photos can also be added per product in the app."],
    ["mrp / price / cost","Rupees. price = selling price including GST. mrp defaults to price if blank."],["gst","Percent included in the price. Blank = 18."],["qty","Opening stock for NEW products only."],["reorder","Low-stock alert level. Blank = 2."],["unit","pcs, set, pair, etc. Blank = pcs."],["location","Pick a rack/location. A new one is added to your list automatically on import."]];
   T.forEach((r,i)=>{const a=how.getCell(i+1,1),b=how.getCell(i+1,2);a.value=r[0];b.value=r[1];a.font=AR({bold:true});b.font=AR();b.alignment={wrapText:true,vertical:"top"}});
+  const T2=[["",""],["Customers sheet","Fill name and phone (both required), plus optional email, address and notes. Import it from Customers > Import Excel. A phone number that already exists updates that customer instead of adding a second one."]];
+  T2.forEach((r,i)=>{const n=T.length+i+1,a=how.getCell(n,1),b=how.getCell(n,2);a.value=r[0];b.value=r[1];a.font=AR({bold:true});b.font=AR();b.alignment={wrapText:true,vertical:"top"}});
+  const cu=wb.addWorksheet("Customers");
+  [["name",26,1],["phone",18,1],["email",26],["address",36],["notes",30]].forEach(([hh,w,k],i)=>{const cell=cu.getCell(1,i+1);cell.value=hh;hdr(cell,k?"FFC8873A":"FF1F3A34");cu.getColumn(i+1).width=w});
+  cu.getRow(1).height=22;cu.getColumn(2).numFmt="@";
+  ["EXAMPLE - delete this row","9876543210","name@email.com","Moradabad","Walk-in from Kanth Road"].forEach((v,i)=>{const c2=cu.getCell(2,i+1);c2.value=v;c2.font=AR({color:{argb:"FF0000FF"}})});
+  cu.views=[{state:"frozen",ySplit:1}];
   how.getCell("A1").font={name:"Arial",size:14,bold:true};hdr(how.getCell("A8"),"FF1F3A34");hdr(how.getCell("B8"),"FF1F3A34");
   wb.views=[{activeTab:1}];
   return wb.xlsx.writeBuffer();
 }
 window.exportProducts=async()=>{
   const L=filteredProducts();if(!L.length)return toast("No products to export",1);
-  toast("Preparing export with photos…");
+  toast("Building Excel with photos…");
   try{
-    const EJ=await loadExcelJS(),img={};let failed=0;
-    const need=L.filter(p=>p.hasImage&&!IMG.cache.get(p.id));
-    for(let i=0;i<need.length;i+=20)await Promise.all(need.slice(i,i+20).map(async p=>{try{const s=await getDoc(doc(db,"productImages",p.id));if(s.exists())IMG.cache.set(p.id,s.data().data)}catch(e){}}));
-    for(let i=0;i<L.length;i+=8)await Promise.all(L.slice(i,i+8).map(async p=>{
-      let d=p.imageUrl?await thumbJpeg(p.imageUrl):null;
-      if(!d&&IMG.cache.get(p.id))d=await thumbJpeg(IMG.cache.get(p.id));
-      if(d)img[p.id]=d;else if(p.imageUrl||p.hasImage)failed++}));
-    const{buf,n}=await buildProductsWorkbook(EJ,L,img);
-    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download="products-"+dkey()+".xlsx";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-    toast(`Exported ${L.length} products, ${n} with photos${failed?` (${failed} photos couldn't be embedded; links stay in the imageUrl column)`:""}`);
+    const{images,failed,EJ}=await photoMap(L);
+    dlx("products-"+dkey()+".xlsx",await buildWorkbook(EJ,[{name:"Products",cols:PCOLS_X,rows:L.map(prow),images,freeze:3}]));
+    toast(`Exported ${L.length} products${failed?` · ${failed} photo(s) couldn't be embedded (links kept in imageUrl)`:""}`);
   }catch(e){toast(e.message,1)}
 };
-window.exportSales=()=>{
-  const rows=[["invoice","date","customer","phone","payment","status","items","subtotal","discount","gst_included","total","sold_by"]];
-  S.sales.forEach(s=>rows.push([s.invoiceNo,s.dateKey,s.customer?.name,s.customer?.phone,s.payment,s.status,s.items.map(i=>i.name+" x"+i.qty).join("; "),s.subtotal,s.discount,s.gstAmount,s.total,s.soldByName]));
-  dl("sales-"+dkey()+".csv",rows.map(r=>r.map(csvCell).join(",")).join("\n"));
+window.exportSales=async()=>{
+  const L=S.sales.filter(s=>!S.salesDay||s.dateKey===S.salesDay);
+  if(!L.length)return toast("No sales to export",1);
+  toast("Building Excel with photos…");
+  try{
+    const lines=[];L.forEach(s=>s.items.forEach(i=>lines.push({s,i})));
+    const{images,EJ}=await photoMap(lines.map(({i})=>prodOf(i.pid)));
+    dlx("sales-"+(S.salesDay||dkey())+".xlsx",await buildWorkbook(EJ,[
+      {name:"Sales",freeze:1,cols:[["invoice",16],["date",12],["time",9],["customer",24],["phone",16,"@"],["payment",16],["status",12],["items",46],
+        ["subtotal",12,MONEY],["discount",12,MONEY],["gst_included",13,MONEY],["advance",12,MONEY],["total",12,MONEY],["booking",14],["sold_by",18]],
+       rows:L.map(s=>({invoice:s.invoiceNo,date:s.dateKey,time:new Date(tms(s.createdAt)).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}),
+        customer:s.customer?.name||"Walk-in",phone:String(s.customer?.phone||""),payment:s.payment,status:s.status||"completed",
+        items:s.items.map(i=>`${i.name} x${i.qty}`).join("; "),subtotal:num(s.subtotal),discount:num(s.discount),gst_included:num(s.gstAmount),
+        advance:num(s.advance),total:num(s.total),booking:s.bookingNo||"",sold_by:s.soldByName||""}))},
+      {name:"Sale items",freeze:3,images,cols:[["photo",11],["invoice",16],["date",12],["sku",14,"@"],["name",34],["category",28],["qty",7],
+        ["price",12,MONEY],["line_total",13,MONEY],["gst",7],["customer",22],["phone",16,"@"]],
+       rows:lines.map(({s,i})=>{const p=prodOf(i.pid);return{invoice:s.invoiceNo,date:s.dateKey,sku:i.sku,name:i.name,
+        category:p?[p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" > "):"",qty:i.qty,price:num(i.price),
+        line_total:num(i.lineTotal??i.price*i.qty),gst:num(i.gst),customer:s.customer?.name||"Walk-in",phone:String(s.customer?.phone||"")}})}
+    ]));
+    toast(`Exported ${L.length} bill(s)`);
+  }catch(e){toast(e.message,1)}
 };
-window.exportMoves=()=>{
-  const rows=[["date","product","sku","type","change","before","after","note","by"]];
-  S.moves.forEach(m=>rows.push([new Date(tms(m.createdAt)).toISOString(),m.productName,m.sku,m.type,m.delta,m.before,m.after,m.note,m.byName]));
-  dl("stock-log-"+dkey()+".csv",rows.map(r=>r.map(csvCell).join(",")).join("\n"));
+window.exportMoves=async()=>{
+  const L=S.moves;if(!L.length)return toast("No stock movements to export",1);
+  toast("Building Excel with photos…");
+  try{
+    const{images,EJ}=await photoMap(L.map(m=>prodOf(m.productId)));
+    dlx("stock-log-"+dkey()+".xlsx",await buildWorkbook(EJ,[{name:"Stock log",freeze:3,images,
+      cols:[["photo",11],["date",12],["time",9],["sku",14,"@"],["product",34],["type",12],["change",9],["before",9],["after",9],["location",18],["note",34],["by",18]],
+      rows:L.map(m=>{const p=prodOf(m.productId);return{date:dkey(new Date(tms(m.createdAt))),time:new Date(tms(m.createdAt)).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}),
+        sku:m.sku,product:m.productName,type:m.type,change:m.delta,before:m.before,after:m.after,location:p?.location||"",note:m.note||"",by:m.byName||""}})}]));
+    toast(`Exported ${L.length} movements`);
+  }catch(e){toast(e.message,1)}
 };
-window.openImport=()=>{
+window.exportCustomers=async()=>{
+  const L=S.customers;if(!L.length)return toast("No customers to export",1);
+  try{
+    const EJ=await loadExcelJS();
+    dlx("customers-"+dkey()+".xlsx",await buildWorkbook(EJ,[{name:"Customers",freeze:2,
+      cols:[["name",26],["phone",18,"@"],["email",26],["address",34],["notes",28],["bills",8],["total_spent",14,MONEY],["open_bookings",14],["advance_held",14,MONEY],["last_purchase",18],["added",18]],
+      rows:L.map(c=>{const st=custStats(c);return{name:c.name,phone:String(c.phone||""),email:c.email||"",address:c.address||"",notes:c.notes||"",
+        bills:st.sales.length,total_spent:st.spend,open_bookings:st.open.length,advance_held:st.open.reduce((a,b)=>a+num(b.advance),0),
+        last_purchase:st.last?fdt(st.last):"",added:c.createdAt?fdt(tms(c.createdAt)):""}})}]));
+    toast(`Exported ${L.length} customers`);
+  }catch(e){toast(e.message,1)}
+};
+window.exportBookings=async()=>{
+  const L=S.bookings;if(!L.length)return toast("No bookings to export",1);
+  toast("Building Excel with photos…");
+  try{
+    const lines=[];L.forEach(b=>b.items.forEach(i=>lines.push({b,i})));
+    const{images,EJ}=await photoMap(lines.map(({i})=>prodOf(i.pid)));
+    dlx("bookings-"+dkey()+".xlsx",await buildWorkbook(EJ,[
+      {name:"Bookings",freeze:1,cols:[["booking_no",14],["status",12],["booked_on",12],["customer",24],["phone",16,"@"],["items",44],
+        ["order_value",13,MONEY],["gst_included",13,MONEY],["booking_amount",15,MONEY],["balance_due",13,MONEY],["delivery_date",14],["invoice",16],["notes",30],["taken_by",18]],
+       rows:L.map(b=>({booking_no:b.bookingNo,status:b.status,booked_on:b.dateKey||dkey(new Date(tms(b.createdAt))),customer:b.customerName,phone:String(b.customerPhone||""),
+        items:b.items.map(i=>`${i.name} x${i.qty}`).join("; "),order_value:num(b.total),gst_included:num(b.gstAmount),booking_amount:num(b.advance),
+        balance_due:num(b.total)-num(b.advance),delivery_date:b.deliveryDate||"",invoice:b.invoiceNo||"",notes:b.notes||"",taken_by:b.createdByName||""}))},
+      {name:"Booking items",freeze:3,images,cols:[["photo",11],["booking_no",14],["status",12],["sku",14,"@"],["name",34],["qty",7],["price",12,MONEY],["line_total",13,MONEY],
+        ["customer",22],["phone",16,"@"],["delivery_date",14]],
+       rows:lines.map(({b,i})=>({booking_no:b.bookingNo,status:b.status,sku:i.sku,name:i.name,qty:i.qty,price:num(i.price),
+        line_total:num(i.lineTotal??i.price*i.qty),customer:b.customerName,phone:String(b.customerPhone||""),delivery_date:b.deliveryDate||""}))}
+    ]));
+    toast(`Exported ${L.length} bookings`);
+  }catch(e){toast(e.message,1)}
+};
+window.openImport=(kind="products")=>{
+  if(kind==="customers")return openImportCustomers();
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal"><h3>Import products from Excel</h3>
   <p class="mute small">Upload the filled <b>Inventory Import Template (.xlsx)</b>. Category, sub-category and type are matched by name and the category slug is saved automatically. Existing SKUs are updated (stock is left unchanged); new SKUs are created with the given qty.</p>
   <p><button class="btn sec sm" id="imp-tpl" type="button">Download Excel template</button> <span class="small mute">built from your current categories and lists</span></p>
@@ -920,7 +1315,7 @@ window.openImport=()=>{
           const ex=bySku[key]||seen[key];
           if(ex){if(!r.barcode)delete d.barcode;b.update(doc(db,"products",ex.id),d);u++}
           else{const ref=doc(collection(db,"products")),q=Math.max(0,Math.floor(num(r.qty)));seen[key]={id:ref.id};
-            b.set(ref,{...d,imageUrl:r.imageUrl||"",hasImage:false,qty:q,createdAt:serverTimestamp()});
+            b.set(ref,{...d,imageUrl:r.imageUrl||"",hasImage:false,qty:q,booked:0,createdAt:serverTimestamp()});
             if(q>0)b.set(doc(collection(db,"movements")),mv(ref.id,r.name,r.sku,"opening",q,0,q,"Excel import"));n++}});
         await b.commit()}
       const known=new Set(allLocations().map(x=>x.toLowerCase())),addLoc=[...new Set(good.map(({r})=>String(r.location||"").trim()).filter(x=>x&&!known.has(x.toLowerCase())))];
@@ -929,6 +1324,47 @@ window.openImport=()=>{
     }catch(e){toast(e.message,1);$("#imp-go").disabled=false;$("#imp-go").textContent="Import"}
   };
 };
+window.openImportCustomers=()=>{
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal"><h3>Import customers from Excel</h3>
+  <p class="mute small">Use the <b>Customers</b> sheet of the import template: <code>name</code> and <code>phone</code> are required, <code>email</code>, <code>address</code> and <code>notes</code> are optional. A phone number that already exists updates that customer.</p>
+  <p><button class="btn sec sm" id="ic-tpl" type="button">Download Excel template</button></p>
+  <input type="file" id="ic-f" accept=".xlsx,.xls,.csv"><div id="ic-r" class="small" style="margin-top:10px"></div>
+  <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Close</button><button class="btn" id="ic-go" disabled>Import</button></div></div></div>`;
+  let good=[];
+  $("#ic-tpl").onclick=async()=>{try{const EJ=await loadExcelJS();dlx("Inventory_Import_Template.xlsx",await buildTemplate(EJ,TAXONOMY,S.lists))}catch(e){toast(e.message,1)}};
+  $("#ic-f").onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;$("#ic-r").textContent="Reading…";good=[];$("#ic-go").disabled=true;
+    try{
+      const rows=await readFileRows(f,"phone","customers"),bad=[],seen=new Set();let skipped=0;
+      rows.forEach(r=>{
+        const name=String(r.name||"").trim(),phone=String(r.phone||"").trim(),k=custKey(phone);
+        if(/^example\b/i.test(name)){skipped++;return}
+        if(!name||!phone)return bad.push(`Row ${r._row}: name and phone are required`);
+        if(k.length<6)return bad.push(`Row ${r._row} (${name}): "${phone}" is not a valid phone number`);
+        if(seen.has(k))return bad.push(`Row ${r._row} (${name}): phone ${phone} appears twice in the file`);
+        seen.add(k);good.push({name,phone,email:String(r.email||"").trim(),address:String(r.address||"").trim(),notes:String(r.notes||"").trim()});
+      });
+      const upd=good.filter(g=>findCustByPhone(g.phone)).length;
+      $("#ic-r").innerHTML=`${rows.length} rows read · <b>${good.length} ready</b> (${good.length-upd} new, ${upd} updated)${skipped?` · ${skipped} example row skipped`:""}`+
+        (bad.length?` · <span style="color:var(--bad)">${bad.length} with problems (skipped)</span><div style="margin-top:6px;max-height:140px;overflow:auto;color:var(--bad)">${bad.slice(0,30).map(esc).join("<br>")}</div>`:"");
+      $("#ic-go").disabled=!good.length;
+    }catch(x){$("#ic-r").innerHTML=`<span style="color:var(--bad)">${esc(x.message)}</span>`}
+  };
+  $("#ic-go").onclick=async()=>{
+    const btn=$("#ic-go");btn.disabled=true;btn.textContent="Importing…";let n=0,u=0;
+    try{
+      for(let i=0;i<good.length;i+=200){const b=writeBatch(db);
+        good.slice(i,i+200).forEach(g=>{const ex=findCustByPhone(g.phone);
+          if(ex){const d={name:g.name,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+            ["email","address","notes"].forEach(k=>{if(g[k])d[k]=g[k]});
+            b.update(doc(db,"customers",ex.id),d);u++}
+          else{b.set(doc(collection(db,"customers")),{...g,createdAt:serverTimestamp(),createdBy:S.user.uid});n++}});
+        await b.commit()}
+      closeModal();toast(`Imported: ${n} new, ${u} updated`);
+    }catch(e){toast(e.message,1);btn.disabled=false;btn.textContent="Import"}
+  };
+};
+
 /* ---------- Barcodes & labels ---------- */
 const ean13check=b12=>{let s=0;for(let i=0;i<12;i++)s+=(+b12[i])*(i%2?3:1);return(10-s%10)%10};
 const isEAN13=c=>/^\d{13}$/.test(c)&&ean13check(c.slice(0,12))===+c[12];
@@ -994,10 +1430,12 @@ window.openLabels=function(){
   };
   $("#lb-xlsx").onclick=async()=>{
     const L=list().filter(p=>p.barcode);if(!L.length)return toast("No products with a barcode in this selection",1);
-    try{const X=await loadXLSX();
-      const rows=[["sku","name","category","barcode","price"],...L.map(p=>[p.sku,p.name,[p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" › "),String(p.barcode),p.price])];
-      const ws=X.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:14},{wch:36},{wch:36},{wch:16},{wch:10}];
-      const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,"Barcodes");X.writeFile(wb,"barcode-list-"+dkey()+".xlsx");
+    try{
+      const{images,EJ}=await photoMap(L);
+      dlx("barcode-list-"+dkey()+".xlsx",await buildWorkbook(EJ,[{name:"Barcodes",freeze:3,images,
+        cols:[["photo",11],["sku",14,"@"],["name",34],["barcode",18,"@"],["category",30],["location",18],["price",12,MONEY],["qty",7]],
+        rows:L.map(p=>({sku:p.sku,name:p.name,barcode:String(p.barcode),category:[p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" > "),
+          location:p.location||"",price:num(p.price),qty:+p.qty||0}))}]));
     }catch(e){toast(e.message,1)}
   };
   $("#lb-print").onclick=async()=>{

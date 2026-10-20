@@ -26,13 +26,23 @@ service cloud.firestore {
       allow read: if isStaff();
       allow create, delete: if isAdmin();
       allow update: if isAdmin() || (isStaff() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['qty','updatedAt','updatedBy']));
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['qty','booked','updatedAt','updatedBy']));
     }
 
     // Product photos (stored separately so the product list stays fast).
     match /productImages/{id} {
       allow read: if isStaff();
       allow write: if isAdmin();
+    }
+
+    // Customers and bookings: staff may add and update; only an admin deletes.
+    match /customers/{id} {
+      allow read, create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+    match /bookings/{id} {
+      allow read, create, update: if isStaff();
+      allow delete: if isAdmin();
     }
 
     match /sales/{id} {
