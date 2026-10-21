@@ -600,7 +600,8 @@ function vSell(el){
   const custInfo=()=>{const ph=$("#c-ph").value.trim(),ex=findCustByPhone(ph);const box=$("#c-cinfo");
     if(!ex){box.innerHTML=ph&&custKey(ph).length>=6?`<span class="mute">New customer — saved automatically with this sale</span>`:"";return}
     if(!$("#c-name").value.trim())$("#c-name").value=ex.name||"";
-    const st=custStats(ex);box.innerHTML=`<span class="tag ok">Saved customer</span> ${esc(ex.name)} · ${st.sales.length} past ${st.sales.length===1?"bill":"bills"} · ${inr(st.spend)} spent${st.open.length?` · <span style="color:var(--warn)">${st.open.length} open booking(s)</span>`:""}`};
+    const st=custStats(ex),led=custLedger(ex);
+    box.innerHTML=`<span class="tag ok">Saved customer</span> ${esc(ex.name)} · ${st.sales.length} past ${st.sales.length===1?"bill":"bills"} · ${inr(st.spend)} spent${st.open.length?` · ${st.open.length} open booking(s)`:""} ${led.balance?balTag(led.balance):""} <a href="#customer/${ex.id}">ledger</a>`};
   $("#c-ph").oninput=()=>{keepCust();custInfo()};custInfo();
   ["#c-name","#c-ph","#c-pay"].forEach(i=>$(i).onchange=keepCust);
   $("#c-done").onclick=completeSale;
@@ -687,43 +688,127 @@ const findCustByPhone=ph=>{const k=custKey(ph);return k.length>=6?S.customers.fi
 function custStats(c){
   const k=custKey(c.phone);
   const match=o=>o.customerId===c.id||(k&&custKey(o.customerPhone||o.customer?.phone)===k);
-  const sales=S.sales.filter(s=>s.status!=="void"&&match(s));
+  const allSales=S.sales.filter(match);
+  const sales=allSales.filter(s=>s.status!=="void");
   const bookings=S.bookings.filter(match);
-  return{sales,bookings,open:bookings.filter(b=>b.status==="booked"),spend:sales.reduce((a,s)=>a+num(s.total),0),
+  return{sales,allSales,bookings,open:bookings.filter(b=>b.status==="booked"),spend:sales.reduce((a,s)=>a+num(s.total),0),
     last:sales.length?Math.max(...sales.map(s=>tms(s.createdAt))):0};
 }
 function vCustomers(el){
   const q=S.cf.q.trim(),qk=custKey(q),ql=q.toLowerCase();
   let L=S.customers.filter(c=>!q||(qk&&custKey(c.phone).includes(qk))||`${c.name} ${c.email||""}`.toLowerCase().includes(ql));
-  L=L.map(c=>({c,st:custStats(c)})).sort((a,b)=>b.st.last-a.st.last||a.c.name.localeCompare(b.c.name));
+  L=L.map(c=>({c,st:custStats(c),led:custLedger(c)})).sort((a,b)=>a.led.balance-b.led.balance||b.st.last-a.st.last||a.c.name.localeCompare(b.c.name));
   el.innerHTML=`<div class="top"><h2>Customers <span class="mute small">(${S.customers.length})</span></h2>
    <div class="row"><button class="btn" onclick="openCustomer()">+ Add customer</button><button class="btn sec" onclick="openImport('customers')">Import Excel</button><button class="btn sec" onclick="exportCustomers()">Export</button></div></div>
+  ${(()=>{const all=S.customers.map(custLedger),due=all.filter(x=>x.balance<0),cr=all.filter(x=>x.balance>0);
+    return all.length?`<div class="grid stats" style="margin-bottom:12px">
+     <div class="card stat"><div class="k">Pending from customers</div><div class="v" style="color:var(--bad)">${inr(due.reduce((a,x)=>a+x.pending,0))}</div><div class="s">${due.length} customer(s) owe money</div></div>
+     <div class="card stat"><div class="k">Credit with shop</div><div class="v" style="color:var(--ok)">${inr(cr.reduce((a,x)=>a+x.credit,0))}</div><div class="s">${cr.length} with advance or refund due</div></div>
+     <div class="card stat"><div class="k">Billed to date</div><div class="v">${inr(all.reduce((a,x)=>a+x.billed,0))}</div><div class="s">received ${inr(all.reduce((a,x)=>a+x.paid,0))}</div></div></div>`:""})()}
   <div class="card" style="margin-bottom:12px"><input id="cf-q" inputmode="tel" placeholder="Search by phone number, name or email…" value="${esc(S.cf.q)}"></div>
-  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Customer</th><th>Phone</th><th class="n">Bills</th><th class="n">Spent</th><th>Bookings</th><th></th></tr></thead><tbody>
-  ${L.slice(0,200).map(({c,st})=>`<tr><td data-l="Customer"><a href="#customer/${c.id}"><b>${esc(c.name)}</b></a><br><span class="small mute">${esc(c.email||"")}${st.last?` · last ${fdt(st.last)}`:""}</span></td>
-   <td data-l="Phone"><a href="tel:${esc(c.phone)}">${esc(c.phone)}</a></td><td data-l="Bills" class="n">${st.sales.length}</td><td data-l="Spent" class="n">${inr(st.spend)}</td>
+  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Customer</th><th>Phone</th><th class="n">Bills</th><th class="n">Spent</th><th class="n">Balance</th><th>Bookings</th><th></th></tr></thead><tbody>
+  ${L.slice(0,200).map(({c,st,led})=>`<tr><td data-l="Customer"><a href="#customer/${c.id}"><b>${esc(c.name)}</b></a><br><span class="small mute">${esc(c.email||"")}${st.last?` · last ${fdt(st.last)}`:""}</span></td>
+   <td data-l="Phone"><a href="tel:${esc(c.phone)}">${esc(c.phone)}</a></td><td data-l="Bills" class="n">${st.sales.length}</td><td data-l="Spent" class="n">${inr(st.spend)}</td><td data-l="Balance" class="n">${led.balance?`<span style="color:${led.balance<0?"var(--bad)":"var(--ok)"}">${inr(led.balance)}</span>`:`<span class="mute">—</span>`}</td>
    <td data-l="Bookings">${st.open.length?`<span class="tag low">${st.open.length} open</span>`:`<span class="mute small">—</span>`}</td>
-   <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="bookFor('${c.id}')">Book</button><button class="btn sm sec" onclick="openCustomer('${c.id}')">Edit</button></div></td></tr>`).join("")||`<tr><td colspan="6" class="mute">${S.customers.length?"No customer matches that search.":"No customers yet — they are saved automatically when you bill a phone number."}</td></tr>`}
+   <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="bookFor('${c.id}')">Book</button><button class="btn sm sec" onclick="openCustomer('${c.id}')">Edit</button></div></td></tr>`).join("")||`<tr><td colspan="7" class="mute">${S.customers.length?"No customer matches that search.":"No customers yet — they are saved automatically when you bill a phone number."}</td></tr>`}
   </tbody></table></div>`;
   const i=$("#cf-q");i.oninput=()=>{S.cf.q=i.value;clearTimeout(vCustomers.t);vCustomers.t=setTimeout(()=>{render();const n=$("#cf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
 }
+const r2=n=>Math.round((+n||0)*100)/100;
+const isCredit=p=>/credit/i.test(String(p||""));
+/* A customer statement. Charges are what the shop has billed, Paid is what it has received.
+   Running balance = paid - charged, so a pending amount shows as a negative number.
+   Goods are charged once, when the booking is raised; the delivery invoice only records the balance paid. */
+function custLedger(c){
+  const st=custStats(c),ev=[];
+  st.bookings.forEach(b=>{
+    const adv=num(b.advance),items=b.items.map(i=>`${i.name} ×${i.qty}`).join(", ");
+    ev.push({ms:tms(b.createdAt),kind:"booking",ref:b.bookingNo,link:`#booking/${b.id}`,status:b.status,
+      what:`Booking ${b.bookingNo}`,
+      detail:items+(b.status==="booked"&&b.deliveryDate?` · delivery ${b.deliveryDate}`:"")+(adv?` · booking amount ${inr(adv)} received`:""),
+      charge:num(b.total),paid:adv});
+    if(b.status==="cancelled")ev.push({ms:tms(b.cancelledAt||b.createdAt)+1,kind:"cancel",ref:b.bookingNo,link:`#booking/${b.id}`,
+      what:`Booking ${b.bookingNo} cancelled`,detail:adv?"order reversed · booking amount stays as credit until refunded":"order reversed",
+      charge:-num(b.total),paid:0});
+  });
+  st.allSales.forEach(s=>{
+    const dead=s.status==="void",linked=!!s.bookingId,adv=num(s.advance);
+    const items=s.items.map(i=>`${i.name} ×${i.qty}`).join(", ");
+    ev.push({ms:tms(s.createdAt),kind:dead?"void":"sale",ref:s.invoiceNo,sale:s.id,
+      what:linked?`Invoice ${s.invoiceNo} · ${s.bookingNo} delivered`:`Invoice ${s.invoiceNo}`,
+      detail:items+` · ${s.payment}`+(dead?" · voided, no effect on the balance":linked?` · charged on the booking, balance ${inr(r2(num(s.total)-adv))} collected`:isCredit(s.payment)?" · on credit, not yet received":""),
+      charge:dead?0:(linked?0:num(s.total)),
+      paid:dead?0:(linked?r2(num(s.total)-adv):(isCredit(s.payment)?0:num(s.total)))});
+  });
+  ev.sort((a,b)=>a.ms-b.ms);
+  let run=0;ev.forEach(e=>{run=r2(run+r2(e.paid)-r2(e.charge));e.bal=run});
+  const billed=r2(ev.reduce((a,e)=>a+e.charge,0)),paid=r2(ev.reduce((a,e)=>a+e.paid,0));
+  return{rows:ev,billed,paid,balance:r2(paid-billed),pending:Math.max(0,r2(billed-paid)),credit:Math.max(0,r2(paid-billed))};
+}
+const balTag=b=>b<0?`<span class="tag out">${inr(Math.abs(b))} pending</span>`:b>0?`<span class="tag ok">${inr(b)} credit</span>`:`<span class="tag">settled</span>`;
 function vCustomer(el){
   const c=S.customers.find(x=>x.id===S.detailCust);
   if(!c){el.innerHTML=`<div class="top"><h2>Customer not found</h2><button class="btn sec" onclick="go('customers')">← Back</button></div>`;return}
-  const st=custStats(c);
+  const st=custStats(c),L=custLedger(c);
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('customers')">← Back</button><h2>${esc(c.name)}</h2></div>
-   <div class="row"><button class="btn sec" onclick="bookFor('${c.id}')">New booking</button><button class="btn" onclick="openCustomer('${c.id}')">Edit</button></div></div>
+   <div class="row"><button class="btn sec" onclick="bookFor('${c.id}')">New booking</button><button class="btn sec" onclick="printStatement('${c.id}')">Print statement</button><button class="btn sec" onclick="exportLedger('${c.id}')">Export ledger</button><button class="btn" onclick="openCustomer('${c.id}')">Edit</button></div></div>
   <div class="grid stats" style="margin-bottom:12px">
-   <div class="card stat"><div class="k">Phone</div><div class="v" style="font-size:19px"><a href="tel:${esc(c.phone)}">${esc(c.phone)}</a></div><div class="s">${esc(c.email||"")}</div></div>
-   <div class="card stat"><div class="k">Total spent</div><div class="v">${inr(st.spend)}</div><div class="s">${st.sales.length} bill(s)</div></div>
-   <div class="card stat"><div class="k">Open bookings</div><div class="v">${st.open.length}</div><div class="s">${inr(st.open.reduce((a,b)=>a+num(b.advance),0))} advance held</div></div>
-   <div class="card stat"><div class="k">Address</div><div class="v" style="font-size:14px;font-weight:400">${esc(c.address||"—")}</div><div class="s">${esc(c.notes||"")}</div></div></div>
-  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
-   <div class="card"><h3 style="margin-bottom:8px">Purchase history</h3>
-    ${st.sales.map(s=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span><b>${esc(s.invoiceNo)}</b><br><span class="small mute">${fdt(tms(s.createdAt))} · ${s.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")}</span></span><span style="text-align:right">${inr(s.total)}<br><button class="btn sm sec" onclick="reprint('${s.id}')">Print</button></span></div>`).join("")||`<p class="mute">No purchases yet.</p>`}</div>
-   <div class="card"><h3 style="margin-bottom:8px">Bookings</h3>
-    ${st.bookings.map(b=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span><a href="#booking/${b.id}"><b>${esc(b.bookingNo)}</b></a> <span class="tag ${b.status==="booked"?"low":b.status==="delivered"?"ok":"out"}">${esc(b.status)}</span><br><span class="small mute">${b.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")} · delivery ${esc(b.deliveryDate||"—")}</span></span><span style="text-align:right">${inr(b.total)}<br><span class="small mute">adv ${inr(b.advance)}</span></span></div>`).join("")||`<p class="mute">No bookings yet.</p>`}</div></div>`;
+   <div class="card stat"><div class="k">Phone</div><div class="v" style="font-size:19px"><a href="tel:${esc(c.phone)}">${esc(c.phone)}</a></div><div class="s">${esc(c.email||"")}${c.address?" · "+esc(c.address):""}</div></div>
+   <div class="card stat"><div class="k">Billed</div><div class="v">${inr(L.billed)}</div><div class="s">${st.sales.length} bill(s) · ${st.bookings.length} booking(s)</div></div>
+   <div class="card stat"><div class="k">Received</div><div class="v">${inr(L.paid)}</div><div class="s">${st.open.length} open booking(s)</div></div>
+   <div class="card stat"><div class="k">${L.balance<0?"Pending from customer":L.balance>0?"Credit with shop":"Balance"}</div>
+    <div class="v" style="color:${L.balance<0?"var(--bad)":L.balance>0?"var(--ok)":"inherit"}">${L.balance?inr(L.balance):"₹0.00"}</div>
+    <div class="s">${L.balance<0?"booked / unpaid amount":L.balance>0?"advance held or refund due":"nothing outstanding"}</div></div></div>
+  <div class="card" style="padding:6px 12px">
+   <div class="row" style="justify-content:space-between;padding:10px 2px 4px"><h3>Ledger</h3><span class="small mute">Charges are billed amounts · Paid is money received · a negative balance is pending from the customer</span></div>
+   <table class="resp"><thead><tr><th>Date</th><th>Particulars</th><th class="n">Charges</th><th class="n">Paid</th><th class="n">Balance</th><th></th></tr></thead><tbody>
+   ${L.rows.map(e=>`<tr${e.kind==="void"?' style="opacity:.55"':""}><td data-l="Date" class="small">${fdt(e.ms)}</td>
+    <td data-l="Particulars">${e.link?`<a href="${e.link}"><b>${esc(e.what)}</b></a>`:`<b>${esc(e.what)}</b>`}${e.status?` <span class="tag ${e.status==="booked"?"low":e.status==="delivered"?"ok":"out"}">${esc(e.status)}</span>`:""}${e.kind==="void"?` <span class="tag out">void</span>`:""}<br><span class="small mute">${esc(e.detail)}</span></td>
+    <td data-l="Charges" class="n">${e.charge?inr(e.charge):"—"}</td>
+    <td data-l="Paid" class="n">${e.paid?inr(e.paid):"—"}</td>
+    <td data-l="Balance" class="n" style="color:${e.bal<0?"var(--bad)":e.bal>0?"var(--ok)":"inherit"}">${inr(e.bal)}</td>
+    <td data-l="">${e.sale?`<button class="btn sm sec" onclick="reprint('${e.sale}')">Print</button>`:""}</td></tr>`).join("")
+   ||`<tr><td colspan="6" class="mute">Nothing billed or booked for this customer yet.</td></tr>`}
+   </tbody>${L.rows.length?`<tfoot><tr><th></th><th>Total</th><th class="n">${inr(L.billed)}</th><th class="n">${inr(L.paid)}</th><th class="n" style="color:${L.balance<0?"var(--bad)":L.balance>0?"var(--ok)":"inherit"}">${inr(L.balance)}</th><th></th></tr></tfoot>`:""}</table></div>
+  ${c.notes?`<p class="small mute" style="margin-top:10px">Note: ${esc(c.notes)}</p>`:""}`;
 }
+window.exportLedger=async id=>{
+  const c=S.customers.find(x=>x.id===id);if(!c)return;
+  const L=custLedger(c);if(!L.rows.length)return toast("Nothing to export for this customer",1);
+  try{
+    const EJ=await loadExcelJS();
+    dlx(`ledger-${custKey(c.phone)||"customer"}-${dkey()}.xlsx`,await buildWorkbook(EJ,[{name:"Ledger",freeze:2,
+      cols:[["date",12],["time",9],["reference",16],["particulars",40],["details",52],["status",12],["charges",14,MONEY],["paid",14,MONEY],["balance",14,MONEY]],
+      rows:[...L.rows.map(e=>({date:dkey(new Date(e.ms)),time:new Date(e.ms).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}),
+        reference:e.ref||"",particulars:e.what,details:e.detail,status:e.kind==="void"?"void":(e.status||""),
+        charges:e.charge||0,paid:e.paid||0,balance:e.bal})),
+        {particulars:"TOTAL",charges:L.billed,paid:L.paid,balance:L.balance},
+        {particulars:L.balance<0?"PENDING FROM CUSTOMER":L.balance>0?"CREDIT WITH SHOP":"SETTLED",balance:L.balance}]}]));
+    toast("Ledger exported");
+  }catch(e){toast(e.message,1)}
+};
+window.printStatement=id=>{
+  const c=S.customers.find(x=>x.id===id);if(!c)return;
+  const L=custLedger(c),st=S.settings;
+  const w=window.open("","_blank","width=820,height=900");if(!w)return toast("Allow pop-ups to print",1);
+  w.document.write(`<html><head><title>Statement ${esc(c.name)}</title><style>
+  body{font:12px Arial,Helvetica,sans-serif;max-width:760px;margin:16px auto;color:#000}
+  h2,h3{margin:0}table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border-bottom:1px solid #ccc;padding:6px 5px;text-align:left;vertical-align:top}
+  th{background:#1f3a34;color:#fff;font-size:11px;text-transform:uppercase}
+  .n{text-align:right;white-space:nowrap}.c{text-align:center}.m{color:#555;font-size:11px}
+  tfoot th{background:#efebe0;color:#000}</style></head><body>
+  <h2>${esc(st.storeName)}</h2><div class="m">${esc(st.address||"")}${st.phone?" · Ph "+esc(st.phone):""}${st.gstin?" · GSTIN "+esc(st.gstin):""}</div>
+  <h3 style="margin-top:14px">Customer statement</h3>
+  <div class="m">${esc(c.name)} · ${esc(c.phone)}${c.address?" · "+esc(c.address):""}<br>Printed ${fdt(Date.now())}</div>
+  <table><thead><tr><th>Date</th><th>Particulars</th><th class="n">Charges</th><th class="n">Paid</th><th class="n">Balance</th></tr></thead><tbody>
+  ${L.rows.map(e=>`<tr><td>${fdt(e.ms)}</td><td>${esc(e.what)}${e.kind==="void"?" (void)":""}<br><span class="m">${esc(e.detail)}</span></td>
+   <td class="n">${e.charge?inr(e.charge):"—"}</td><td class="n">${e.paid?inr(e.paid):"—"}</td><td class="n">${inr(e.bal)}</td></tr>`).join("")||`<tr><td colspan="5">No transactions yet.</td></tr>`}
+  </tbody><tfoot><tr><th colspan="2">Total</th><th class="n">${inr(L.billed)}</th><th class="n">${inr(L.paid)}</th><th class="n">${inr(L.balance)}</th></tr></tfoot></table>
+  <p><b>${L.balance<0?`Pending from customer: ${inr(Math.abs(L.balance))}`:L.balance>0?`Credit with shop: ${inr(L.balance)}`:"Account settled."}</b></p>
+  <p class="m">A negative balance is an amount still to be received, including goods booked but not yet paid for.</p>
+  <div class="c m">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close();
+};
 window.openCustomer=function(id){
   const c=S.customers.find(x=>x.id===id)||{};
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:520px"><h3>${id?"Edit customer":"Add customer"}</h3>
@@ -780,7 +865,7 @@ function vNewBooking(el){
   const keep=()=>{S.bphone=$("#bk-ph").value;S.bname=$("#bk-name").value;S.badv=num($("#bk-adv").value);S.bdate=$("#bk-date").value;S.bnotes=$("#bk-notes").value};
   const info=()=>{const ex=findCustByPhone($("#bk-ph").value);const box=$("#bk-cinfo");
     if(ex){S.bcustId=ex.id;if(!$("#bk-name").value.trim()){$("#bk-name").value=ex.name;S.bname=ex.name}
-      const st=custStats(ex);box.innerHTML=`<span class="tag ok">Saved customer</span> ${st.sales.length} bill(s) · ${inr(st.spend)} spent`}
+      const st=custStats(ex),led=custLedger(ex);box.innerHTML=`<span class="tag ok">Saved customer</span> ${st.sales.length} bill(s) · ${inr(st.spend)} spent ${led.balance?balTag(led.balance):""}`}
     else{S.bcustId="";box.innerHTML=custKey($("#bk-ph").value).length>=6?`<span class="mute">New customer — saved with this booking</span>`:""}};
   $("#bk-ph").oninput=()=>{keep();info()};info();
   ["#bk-name","#bk-adv","#bk-date","#bk-notes"].forEach(i=>{$(i).onchange=keep;$(i).oninput=keep});
@@ -861,7 +946,7 @@ function vBooking(el){
   const bal=num(b.total)-num(b.advance),sale=b.saleId?S.sales.find(s=>s.id===b.saleId):null;
   const R=[["Booking no.",esc(b.bookingNo)],["Status",`<span class="tag ${b.status==="booked"?"low":b.status==="delivered"?"ok":"out"}">${esc(b.status)}</span>`],
    ["Customer",`${esc(b.customerName)} · <a href="tel:${esc(b.customerPhone)}">${esc(b.customerPhone)}</a>${b.customerId?` · <a href="#customer/${b.customerId}">open customer</a>`:""}`],
-   ["Order value",inr(b.total)],["GST included",inr(b.gstAmount)],["Booking amount received",inr(b.advance)],["Balance due",inr(bal)],
+   ["Order value",inr(b.total)],["GST included",inr(b.gstAmount)],["Booking amount received",inr(b.advance)],["Balance due",`${inr(bal)}${b.status==="booked"&&bal>0?` <span class="tag out">pending</span>`:""}`],
    ["Tentative delivery",esc(b.deliveryDate||"—")],["Notes",esc(b.notes||"—")],["Taken by",esc(b.createdByName||"")+" · "+fdt(tms(b.createdAt))],
    ["Invoice",sale?`<a href="#" onclick="reprint('${sale.id}');return false">${esc(sale.invoiceNo)}</a>`:(b.status==="delivered"?"—":"not billed yet")]];
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('bookings')">← Back</button><h2>${esc(b.bookingNo)}</h2></div>
@@ -1298,9 +1383,11 @@ window.exportCustomers=async()=>{
   try{
     const EJ=await loadExcelJS();
     dlx("customers-"+dkey()+".xlsx",await buildWorkbook(EJ,[{name:"Customers",freeze:2,
-      cols:[["name",26],["phone",18,"@"],["email",26],["address",34],["notes",28],["bills",8],["total_spent",14,MONEY],["open_bookings",14],["advance_held",14,MONEY],["last_purchase",18],["added",18]],
-      rows:L.map(c=>{const st=custStats(c);return{name:c.name,phone:String(c.phone||""),email:c.email||"",address:c.address||"",notes:c.notes||"",
+      cols:[["name",26],["phone",18,"@"],["email",26],["address",34],["notes",28],["bills",8],["total_spent",14,MONEY],["open_bookings",14],["advance_held",14,MONEY],
+        ["billed",14,MONEY],["received",14,MONEY],["balance",14,MONEY],["pending",14,MONEY],["last_purchase",18],["added",18]],
+      rows:L.map(c=>{const st=custStats(c),led=custLedger(c);return{name:c.name,phone:String(c.phone||""),email:c.email||"",address:c.address||"",notes:c.notes||"",
         bills:st.sales.length,total_spent:st.spend,open_bookings:st.open.length,advance_held:st.open.reduce((a,b)=>a+num(b.advance),0),
+        billed:led.billed,received:led.paid,balance:led.balance,pending:led.pending,
         last_purchase:st.last?fdt(st.last):"",added:c.createdAt?fdt(tms(c.createdAt)):""}})}]));
     toast(`Exported ${L.length} customers`);
   }catch(e){toast(e.message,1)}
