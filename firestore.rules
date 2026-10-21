@@ -4,8 +4,19 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function prof() { return get(/databases/$(db)/documents/users/$(request.auth.uid)).data; }
     function hasProf() { return signedIn() && exists(/databases/$(db)/documents/users/$(request.auth.uid)); }
-    function isStaff() { return hasProf() && prof().role in ['staff','admin']; }
-    function isAdmin() { return hasProf() && prof().role == 'admin'; }
+    function role() { return prof().role == 'staff' ? 'sales' : prof().role; }   // 'staff' was the old name for 'sales'
+    function isStaff() { return hasProf() && role() in ['sales','manager','admin']; }
+    function isAdmin() { return hasProf() && role() == 'admin'; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    // What a manager or sales executive may do is set by the admin and kept in settings/perms.
+    function permDoc() {
+      return exists(/databases/$(db)/documents/settings/perms)
+        ? get(/databases/$(db)/documents/settings/perms).data : {};
+    }
+    function can(k) {
+      return isAdmin() || (hasProf() && permDoc().get(role(), {}).get(k, false) == true);
+    }
+    function movesStock() { return can('stockIn') || can('transfer') || can('stockOut') || can('setCount'); }
 
     // Staff profiles. There is NO self sign-up: only an admin creates these, and an
     // account with no profile here (or role 'disabled') can read and write nothing.
@@ -15,46 +26,78 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
-    // Store details, app mode, and the editable dropdown lists (locations, units, GST %, payment modes).
+    // Store details, app mode, and the editable dropdown lists.
     match /settings/{id} {
       allow read: if isStaff();
       allow write: if isAdmin();
     }
 
-    // Products: admin full control; staff may only change stock fields.
+    // Products: admin controls the catalogue. Staff never edit a product, but selling or
+    // booking has to move the stock numbers, so those two fields stay writable for them.
     match /products/{id} {
       allow read: if isStaff();
-      allow create, delete: if isAdmin();
-      allow update: if isAdmin() || (isStaff() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['qty','booked','updatedAt','updatedBy']));
+      allow create, delete: if can('editProducts');
+      allow update: if can('editProducts')
+        // receiving stock or moving it between locations
+        || (movesStock() && changed().hasOnly(['qty','booked','locQty','location','updatedAt','updatedBy']))
+        // selling or booking has to move the numbers, whoever is at the counter
+        || (isStaff() && changed().hasOnly(['qty','booked','locQty','location','updatedAt','updatedBy']));
     }
 
     // Product photos (stored separately so the product list stays fast).
     match /productImages/{id} {
       allow read: if isStaff();
-      allow write: if isAdmin();
+      allow write: if can('editProducts');
     }
 
-    // Customers and bookings: staff may add and update; only an admin deletes.
+    // Customers: staff may add a new one while billing; editing one is an admin job.
     match /customers/{id} {
-      allow read, create, update: if isStaff();
-      allow delete: if isAdmin();
-    }
-    match /bookings/{id} {
-      allow read, create, update: if isStaff();
+      allow read, create: if isStaff();
+      allow update: if can('editCustomer');
       allow delete: if isAdmin();
     }
 
+    // Bookings: staff raise them and may deliver them (which bills the customer),
+    // but changing the amounts, dates or cancelling is an admin job.
+    match /bookings/{id} {
+      allow read, create: if isStaff();
+      allow update: if isAdmin()
+        // delivering a booking bills it — any staff at the counter may do that
+        || (isStaff()
+            && changed().hasOnly(['status','deliveredAt','deliveredBy','saleId','invoiceNo','collectedOnDelivery'])
+            && resource.data.status == 'booked' && request.resource.data.status == 'delivered')
+        // cancelling, and changing the amounts, are separate permissions
+        || (can('cancelBooking') && request.resource.data.status == 'cancelled')
+        || (can('editBooking')
+            && changed().hasOnly(['advance','balance','deliveryDate','notes','updatedAt','updatedBy']));
+      allow delete: if isAdmin();
+    }
+
+    // Payments a customer deposits. Staff record them; only an admin corrects one.
+    match /payments/{id} {
+      allow read, create: if isStaff();
+      allow update, delete: if can('removePayment');
+    }
+
+    // Correction requests: anyone may raise one, only an admin decides it.
+    match /requests/{id} {
+      allow read: if isStaff();
+      allow create: if isStaff() && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+
+    // Sales are a record of what happened: staff write them, only an admin voids one.
     match /sales/{id} {
-      allow read: if isStaff();
-      allow create: if isStaff();
-      allow update: if isAdmin();
+      allow read, create: if isStaff();
+      allow update: if can('voidSale');
+      allow delete: if false;
     }
+    // Stock movement log: append-only for everyone.
     match /movements/{id} {
-      allow read: if isStaff();
-      allow create: if isStaff();
+      allow read, create: if isStaff();
+      allow update, delete: if false;
     }
-    // Shared counters for invoice numbers and in-store barcodes.
+    // Shared counters for invoice, booking and barcode numbers.
     match /counters/{id} {
       allow read, write: if isStaff();
     }
