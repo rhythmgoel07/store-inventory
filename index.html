@@ -107,6 +107,7 @@ table td.c,table th.c{text-align:center}
 .pcard .pb{padding:10px 12px 12px;display:grid;gap:3px;flex:1;align-content:start}
 .pcard .pn{font-weight:600;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5em}
 .pcard a.pn{color:var(--brand2);text-decoration:underline}
+.pcard .locs{line-height:1.35}.pcard .locs b{color:var(--ink);font-weight:600}
 .pcard .sku{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
 .pcard .meta{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:6px}
 .tb{margin-left:10px;display:inline-flex;gap:4px;vertical-align:middle}
@@ -150,11 +151,13 @@ const PERM_KEYS=[
   ["cancelBooking","Cancel a booking"],
   ["voidSale","Void a bill"],
   ["editCustomer","Edit a saved customer"],
-  ["removePayment","Remove a recorded payment"]];
+  ["removePayment","Remove a recorded payment"],
+  ["manageVendors","Add, edit and delete vendors"]];
 const DEFAULT_PERMS={
-  manager:{productPage:false,stockIn:true,transfer:true,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false},
-  sales:{productPage:false,stockIn:false,transfer:false,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false}};
-const DEFAULT_LISTS={locations:[],units:["pcs","set","pair","mtr","kg","box"],gstRates:[0,5,12,18,28],payModes:["Cash","UPI","Card","Bank transfer","Credit"]};
+  manager:{productPage:false,stockIn:true,transfer:true,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false,manageVendors:false},
+  sales:{productPage:false,stockIn:false,transfer:false,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false,manageVendors:false}};
+const DEFAULT_LISTS={locations:[],units:["pcs","set","pair","mtr","kg","box"],gstRates:[0,5,12,18,28],payModes:["Cash","UPI","Card","Bank transfer","Credit"],
+  billingMethods:["Payment against delivery","Advance payment","15 days credit","30 days credit","45 days credit","Monthly settlement","Consignment (sale or return)"]};
 const ref = n=>({id:n.id,name:n.name,slug:n.slug});
 
 /* ---------- Helpers ---------- */
@@ -234,7 +237,7 @@ const configured = firebaseConfig && firebaseConfig.apiKey && !/YOUR_/.test(fire
 let app,auth,db;
 const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",invoicePrefix:"INV",address:"",phone:"",gstin:"",footer:"Thank you for shopping with us!",allowNegative:false},
   products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",loc:"",stock:"all",sort:"name",limit:100},
-  lists:{...DEFAULT_LISTS},perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:""},bf:{q:"",status:"booked"},detailCust:null,detailBk:null,
+  lists:{...DEFAULT_LISTS},vendors:[],vf:{q:""},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:""},bf:{q:"",status:"booked"},detailCust:null,detailBk:null,
   bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bdate:"",bnotes:"",bq:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",unsub:[]};
 
 if(configured){
@@ -327,6 +330,7 @@ function startListeners(){
   on(collection(db,"products"),s=>{S.products=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"sales"),orderBy("createdAt","desc"),limit(500)),s=>{S.sales=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(collection(db,"customers"),s=>{S.customers=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  on(collection(db,"vendors"),s=>{S.vendors=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"bookings"),orderBy("createdAt","desc"),limit(500)),s=>{S.bookings=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"payments"),orderBy("createdAt","desc"),limit(1000)),s=>{S.payments=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"requests"),orderBy("createdAt","desc"),limit(300)),s=>{S.requests=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
@@ -347,19 +351,19 @@ else onAuthStateChanged(auth,async u=>{
 });
 
 /* ---------- Shell ---------- */
-const NAV=[["dashboard","Dashboard","▦"],["products","Products","▤"],["sell","Sell","₹",true],["bookings","Bookings","🔖",true],["customers","Customers","👤",true],["stock","Stock","⇅"],["sales","Sales","☰",true],["categories","Categories","⌗"],["approvals","Approvals","✓"],["team","Staff","👥",false,true],["settings","Settings","⚙"]];
+const NAV=[["dashboard","Dashboard","▦"],["products","Products","▤"],["sell","Sell","₹",true],["bookings","Bookings","🔖",true],["customers","Customers","👤",true],["stock","Stock","⇅"],["sales","Sales","☰",true],["categories","Categories","⌗"],["vendors","Vendors","🏭",false,false,"manageVendors"],["approvals","Approvals","✓"],["team","Staff","👥",false,true],["settings","Settings","⚙"]];
 const SALES_VIEWS=["sell","sales","bookings","customers","newbooking","booking","customer"];
-function navItems(){return NAV.filter(n=>(!n[3]||fullMode())&&(!n[4]||isAdmin()))}
-const DETAIL={product:"products",customer:"customers",booking:"bookings"};
+function navItems(){return NAV.filter(n=>(!n[3]||fullMode())&&(!n[4]||isAdmin())&&(!n[5]||can(n[5])))}
+const DETAIL={product:"products",customer:"customers",booking:"bookings",vendor:"vendors"};
 function setView(v){S.view=v;if(!DETAIL[v]&&location.hash)history.replaceState(null,"",location.pathname+location.search);window.scrollTo(0,0);render()}
 const navOn=k=>S.view===k||DETAIL[S.view]===k||(S.view==="newbooking"&&k==="bookings");
 function routeFromHash(){
-  const m=location.hash.match(/^#(product|customer|booking)\/(.+)$/);
+  const m=location.hash.match(/^#(product|customer|booking|vendor)\/(.+)$/);
   if(m&&S.profile){
     const id=decodeURIComponent(m[2]);
     if(m[1]==="product"&&!can("productPage")){S.view="products";return}
     S.view=m[1];
-    if(m[1]==="product")S.detailId=id;else if(m[1]==="customer")S.detailCust=id;else S.detailBk=id;
+    if(m[1]==="product")S.detailId=id;else if(m[1]==="customer")S.detailCust=id;else if(m[1]==="vendor")S.detailVendor=id;else S.detailBk=id;
   }
   else if(DETAIL[S.view])S.view=DETAIL[S.view];
 }
@@ -369,6 +373,7 @@ function render(soft){
   if(!S.profile||!activeRole(S.profile.role))return;
   if(!fullMode()&&SALES_VIEWS.includes(S.view))S.view="dashboard";
   if(S.view==="team"&&!isAdmin())S.view="dashboard";
+  if((S.view==="vendors"||S.view==="vendor")&&!can("manageVendors"))S.view="dashboard";
   // don't clobber inputs while typing during snapshot updates
   if(soft&&document.activeElement&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)&&$("main")?.contains(document.activeElement))return;
   const items=navItems();
@@ -379,7 +384,7 @@ function render(soft){
    <main id="main"></main></div>
    <div class="bottom">${items.slice(0,4).map(n=>`<button class="${navOn(n[0])?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}${items.length>4?`<button class="${items.slice(4).some(n=>navOn(n[0]))?"on":""}" onclick="openMore()"><span>⋯</span>More</button>`:""}</div>`;
   const v={dashboard:vDash,products:vProducts,product:vProduct,sell:vSell,stock:vStock,sales:vSales,categories:vCats,settings:vSettings,
-    customers:vCustomers,customer:vCustomer,bookings:vBookings,booking:vBooking,newbooking:vNewBooking,team:vTeam,approvals:vApprovals}[S.view]||vDash;
+    customers:vCustomers,customer:vCustomer,bookings:vBookings,booking:vBooking,newbooking:vNewBooking,team:vTeam,approvals:vApprovals,vendors:vVendors,vendor:vVendor}[S.view]||vDash;
   v($("#main"));
   hydrateImages();
 }
@@ -446,7 +451,8 @@ function pcard(p){
   const adm=can("productPage"),href="#product/"+encodeURIComponent(p.id);
   return `<div class="pcard ${adm?"adm":""}" ${adm?`onclick="location.hash='${href.slice(1)}'"`:""}>${cardImg(p)}<div class="pb">
    ${adm?`<a class="pn" href="${href}" onclick="event.stopPropagation()">${esc(p.name)}</a>`:`<div class="pn">${esc(p.name)}</div>`}
-   <div class="sku">${esc(p.sku)}</div><div><b>MRP ${inr(p.mrp??p.price)}</b></div><div class="small mute">📍 ${esc(p.location||"—")}</div>
+   <div class="sku">${esc(p.sku)}</div><div><b>MRP ${inr(p.mrp??p.price)}</b></div><div class="small mute locs">📍 ${(()=>{const e=locEntries(p);
+     return e.length?e.map(([k,v])=>`${esc(k)} ×<b>${v}</b>`).join(" · "):esc(p.location||"—")})()}</div>
    ${bk(p)?`<div class="small" style="color:var(--warn)">🔖 ${bk(p)} booked · ${avail(p)} free</div>`:""}
    <div class="meta"><span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">Stock ${p.qty}</span>${isManager()?`<button class="btn sm sec" onclick="event.stopPropagation();openStock('${p.id}')">Stock</button>`:`<span class="small mute">${esc(p.unit||"pcs")}</span>`}</div></div></div>`;
 }
@@ -473,7 +479,7 @@ function vProduct(el){
   if(!p){el.innerHTML=`<div class="top"><h2>Product not found</h2><button class="btn sec" onclick="go('products')">← Back</button></div><div class="card"><p class="mute">It may have been deleted, or products are still loading.</p></div>`;return}
   const by=id=>S.users.find(u=>u.id===id)?.name||"";
   const margin=p.price>0&&p.cost>0?`${inr(p.price-p.cost)} (${((p.price-p.cost)/p.price*100).toFixed(1)}% of selling price)`:"—";
-  const R=[["Name",esc(p.name)],["SKU",esc(p.sku)],["Barcode",esc(p.barcode||"—")],["Vendor",esc(vend(p)||"—")],
+  const R=[["Name",esc(p.name)],["SKU",esc(p.sku)],["Barcode",esc(p.barcode||"—")],["Vendor",(()=>{const v=vendorOf(p);return v?`<a href="#vendor/${v.id}">${esc(v.name)}</a>${v.billingMethod?` <span class="small mute">· ${esc(v.billingMethod)}${v.creditDays?` (${v.creditDays} days)`:""}</span>`:""}`:esc(vend(p)||"—")})()],
     ["Category",esc([p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" › ")||"—")],["Category slug",esc(p.fullSlug||"—")],
     ["MRP",inr(p.mrp)],["Selling price",inr(p.price)],["Cost price",inr(p.cost)],["Margin",margin],["GST",(p.gst??0)+"% (included in price)"],
     ["Stock",`<span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${p.qty} ${esc(p.unit||"pcs")}</span>`],["Booked",bk(p)?`${bk(p)} ${esc(p.unit||"pcs")} reserved for bookings · ${avail(p)} free`:"—"],["Reorder level",p.reorder??"—"],["Location",esc(locText(p)||p.location||"—")],
@@ -503,7 +509,10 @@ window.openProduct=function(id){
    <div><label>Type</label><select id="p-type"><option value="">—</option>${sub?o(sub.subcategories,p.typeId):""}</select></div>
    <div><label>SKU *</label><div class="row" style="flex-wrap:nowrap"><input id="p-sku" value="${esc(p.sku)}"><button class="btn sec sm" id="p-auto" type="button">Auto</button></div></div>
    <div><label>Barcode</label><div class="row" style="flex-wrap:nowrap"><input id="p-bar" value="${esc(p.barcode)}"><button class="btn sec sm" id="p-genbar" type="button" ${p.barcode?'disabled title="Barcode already assigned"':""}>Generate</button></div></div>
-   <div><label>Vendor</label><input id="p-vendor" list="vendorlist" value="${esc(vend(p))}"><datalist id="vendorlist">${[...new Set(S.products.map(vend).filter(Boolean))].sort(natcmp).map(b=>`<option value="${esc(b)}">`).join("")}</datalist></div>
+   <div><label>Vendor</label><div class="row" style="flex-wrap:nowrap"><select id="p-vendor">${
+     (()=>{const names=[...new Set([...S.vendors.filter(v=>v.active!==false).map(v=>v.name),...S.products.map(vend).filter(Boolean)])].sort(natcmp);
+       return `<option value="">—</option>`+withCur(names,vend(p)).map(n=>`<option ${vend(p)===n?"selected":""}>${esc(n)}</option>`).join("")})()
+   }</select>${can("manageVendors")?`<button class="btn sec sm" type="button" id="p-vendadd" title="Add a vendor">＋</button>`:""}</div></div>
    <div><label>MRP (₹)</label><input id="p-mrp" type="number" step="0.01" value="${p.mrp??""}"></div>
    <div><label>Selling price (₹) *</label><input id="p-price" type="number" step="0.01" value="${p.price??""}"></div>
    <div><label>Cost price (₹)</label><input id="p-cost" type="number" step="0.01" value="${p.cost??""}"></div>
@@ -533,6 +542,7 @@ window.openProduct=function(id){
       if(id){await updateDoc(doc(db,"products",id),{barcode:c,updatedAt:serverTimestamp(),updatedBy:S.user.uid});toast("Barcode "+c+" assigned")}
       else toast("Barcode ready — it is saved with the product")}
     catch(e){b.disabled=false;toast(e.message,1)}};
+  $("#p-vendadd")&&($("#p-vendadd").onclick=()=>{closeModal();go("vendors");openVendor()});
   $("#p-locadd").onclick=async()=>{
     const v=(prompt("New location / rack name:")||"").trim();if(!v)return;
     const sel=$("#p-loc"),have=[...sel.options].find(o=>o.value.toLowerCase()===v.toLowerCase());
@@ -555,7 +565,8 @@ async function saveProduct(id){
   const hasImage=IMGSTATE.newImg?true:IMGSTATE.rm?false:!!old.hasImage;
   const barcode=v("#p-bar")||old.barcode||"";
   if(barcode&&S.products.some(x=>x.barcode===barcode&&x.id!==id))return toast("That barcode is already used by another product",1);
-  const d={name,sku,barcode,vendor:v("#p-vendor"),
+  const vname=v("#p-vendor"),vrec=S.vendors.find(x=>norm(x.name)===norm(vname));
+  const d={name,sku,barcode,vendor:vname,vendorId:vrec?.id||"",
     categoryId:cat.id,categoryName:cat.name,categorySlug:cat.slug,
     subcategoryId:sub?.id||"",subcategoryName:sub?.name||"",subcategorySlug:sub?.slug||"",
     typeId:type?.id||"",typeName:type?.name||"",typeSlug:type?.slug||"",
@@ -661,7 +672,7 @@ function vStock(el){
   ${locRows.length?`<div class="card" style="margin-bottom:12px"><h3 style="margin-bottom:8px">Stock by location</h3>
    <div class="pill-row">${locRows.map(([k,v])=>`<span class="tag">${esc(k)} — <b>${v.units}</b> units · ${v.items} item(s)</span>`).join("")}</div></div>`:""}
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
-   <div class="card"><h3 style="margin-bottom:8px">Low &amp; out of stock (${low.length})</h3>${low.slice(0,40).map(p=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)}<br><span class="small mute">${esc(p.sku)} · reorder at ${p.reorder}</span></span><span class="row"><span class="tag ${outStock(p)?"out":"low"}">${p.qty}</span>${adm?`<button class="btn sm sec" onclick="openStock('${p.id}','in')">+</button>`:""}${!can("setCount")?rqBtn("stock.set",p.id,`${p.name} (${p.sku})`,{qty:p.qty}):""}</span></div>`).join("")||`<p class="mute">Nothing low right now.</p>`}</div>
+   <div class="card"><h3 style="margin-bottom:8px">Low &amp; out of stock (${low.length})</h3>${low.slice(0,40).map(p=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)}<br><span class="small mute">${esc(p.sku)} · reorder at ${p.reorder}${locEntries(p).length>1?" · "+esc(locText(p)):""}</span></span><span class="row"><span class="tag ${outStock(p)?"out":"low"}">${p.qty}</span>${adm?`<button class="btn sm sec" onclick="openStock('${p.id}','in')">+</button>`:""}${!can("setCount")?rqBtn("stock.set",p.id,`${p.name} (${p.sku})`,{qty:p.qty}):""}</span></div>`).join("")||`<p class="mute">Nothing low right now.</p>`}</div>
    <div class="card"><h3 style="margin-bottom:8px">Movement log</h3>${S.moves.slice(0,60).map(m=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(m.productName)}<br><span class="small mute">${esc(m.type)} · ${esc(m.note||"")} · ${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><span style="text-align:right"><b style="color:${m.type==="transfer"?"var(--mute)":m.delta>=0?"var(--ok)":"var(--bad)"}">${m.type==="transfer"?"moved":(m.delta>0?"+":"")+m.delta}</b><br><span class="small mute">→ ${m.after}</span></span></div>`).join("")||`<p class="mute">No movements yet.</p>`}</div></div>`;
   const q=$("#st-q");if(!q)return;q.oninput=()=>{const t=q.value.toLowerCase().trim();$("#st-res").innerHTML=t?S.products.filter(p=>`${p.name} ${p.sku} ${p.barcode||""}`.toLowerCase().includes(t)).slice(0,8).map(p=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)} <span class="small mute">${esc(p.sku)}</span></span><span class="row"><span class="tag">${p.qty}</span>${adm?`<button class="btn sm" onclick="openStock('${p.id}')">Update</button>`:""}</span></div>`).join(""):""};
   q.onkeydown=e=>{if(e.key==="Enter"){const t=q.value.trim().toLowerCase();const p=S.products.find(x=>x.barcode&&x.barcode.toLowerCase()===t||x.sku.toLowerCase()===t);if(p){q.value="";openStock(p.id)}}};
@@ -997,6 +1008,162 @@ window.delPayment=async id=>{
   const p=S.payments.find(x=>x.id===id);if(!p)return;
   if(!confirm(`Remove the payment of ${inr(p.amount)} dated ${p.date}? This cannot be undone.`))return;
   try{await deleteDoc(doc(db,"payments",id));toast("Payment removed")}catch(e){toast(e.message,1)}
+};
+
+/* ---------- Vendors ---------- */
+const vendorOf=p=>S.vendors.find(v=>v.id===p.vendorId)||S.vendors.find(v=>norm(v.name)===norm(vend(p)))||null;
+const vendorStats=v=>{
+  const items=S.products.filter(p=>p.vendorId===v.id||norm(vend(p))===norm(v.name));
+  const units=items.reduce((a,p)=>a+(+p.qty||0),0);
+  return{items,units,cost:items.reduce((a,p)=>a+(+p.qty||0)*num(p.cost),0),retail:items.reduce((a,p)=>a+(+p.qty||0)*num(p.price),0),
+    low:items.filter(p=>outStock(p)||lowStock(p)).length};
+};
+function vVendors(el){
+  const q=S.vf.q.trim().toLowerCase();
+  const L=S.vendors.filter(v=>!q||`${v.name} ${v.contact||""} ${v.phone||""} ${v.city||""} ${v.billingMethod||""}`.toLowerCase().includes(q))
+    .map(v=>({v,st:vendorStats(v)})).sort((a,b)=>a.v.name.localeCompare(b.v.name));
+  const unlisted=[...new Set(S.products.map(vend).filter(Boolean))].filter(n=>!S.vendors.some(v=>norm(v.name)===norm(n)));
+  el.innerHTML=`<div class="top"><h2>Vendors <span class="mute small">(${S.vendors.length})</span></h2>
+   <div class="row"><button class="btn" onclick="openVendor()">+ Add vendor</button><button class="btn sec" onclick="exportVendors()">Export</button></div></div>
+  ${S.vendors.length?`<div class="grid stats" style="margin-bottom:12px">
+   <div class="card stat"><div class="k">Vendors</div><div class="v">${S.vendors.length}</div><div class="s">${S.products.filter(p=>vend(p)).length} products sourced</div></div>
+   <div class="card stat"><div class="k">Stock on hand (cost)</div><div class="v">${inr(L.reduce((a,x)=>a+x.st.cost,0))}</div><div class="s">retail ${inr(L.reduce((a,x)=>a+x.st.retail,0))}</div></div>
+   <div class="card stat"><div class="k">Needs restocking</div><div class="v" style="color:var(--warn)">${L.reduce((a,x)=>a+x.st.low,0)}</div><div class="s">low or out of stock</div></div></div>`:""}
+  ${unlisted.length?`<div class="card" style="margin-bottom:12px"><b>${unlisted.length} vendor name${unlisted.length===1?"":"s"} used on products but not in this list</b>
+   <p class="mute small">These came from typed-in or imported names. Add them so they appear in the dropdown with their billing method and notes.</p>
+   <div class="pill-row">${unlisted.slice(0,24).map(n=>`<button class="btn sm sec" onclick='openVendor(null,${JSON.stringify(n)})'>+ ${esc(n)}</button>`).join("")}</div></div>`:""}
+  <div class="card" style="margin-bottom:12px"><input id="vf-q" placeholder="Search vendor, contact, phone, city or billing method…" value="${esc(S.vf.q)}"></div>
+  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Vendor</th><th>Contact</th><th>Billing</th><th class="n">Products</th><th class="n">Stock value</th><th></th></tr></thead><tbody>
+  ${L.map(({v,st})=>`<tr><td data-l="Vendor"><a href="#vendor/${v.id}"><b>${esc(v.name)}</b></a>${v.active===false?` <span class="tag out">inactive</span>`:""}<br><span class="small mute">${esc(v.city||"")}${v.gstin?" · GSTIN "+esc(v.gstin):""}</span></td>
+   <td data-l="Contact">${esc(v.contact||"—")}<br>${v.phone?`<a class="small" href="tel:${esc(v.phone)}">${esc(v.phone)}</a>`:""}</td>
+   <td data-l="Billing" class="small">${esc(v.billingMethod||"—")}${v.creditDays?`<br><span class="mute">${v.creditDays} days</span>`:""}</td>
+   <td data-l="Products" class="n">${st.items.length}<br><span class="small mute">${st.units} units</span></td>
+   <td data-l="Stock value" class="n">${inr(st.cost)}</td>
+   <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="openVendor('${v.id}')">Edit</button></div></td></tr>`).join("")
+   ||`<tr><td colspan="6" class="mute">No vendors yet — add the people you buy from.</td></tr>`}
+  </tbody></table></div>`;
+  const i=$("#vf-q");i.oninput=()=>{S.vf.q=i.value;clearTimeout(vVendors.t);vVendors.t=setTimeout(()=>{render();const n=$("#vf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
+}
+function vVendor(el){
+  const v=S.vendors.find(x=>x.id===S.detailVendor);
+  if(!v){el.innerHTML=`<div class="top"><h2>Vendor not found</h2><button class="btn sec" onclick="go('vendors')">← Back</button></div>`;return}
+  const st=vendorStats(v),notes=(v.log||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0));
+  const R=[["Contact person",esc(v.contact||"—")],["Phone",v.phone?`<a href="tel:${esc(v.phone)}">${esc(v.phone)}</a>`:"—"],["Email",esc(v.email||"—")],
+   ["GSTIN",esc(v.gstin||"—")],["Address",esc([v.address,v.city].filter(Boolean).join(", ")||"—")],
+   ["Billing method",esc(v.billingMethod||"—")],["Credit period",v.creditDays?`${v.creditDays} days`:"—"],
+   ["Bank / payment details",esc(v.bank||"—")],["Standing note",esc(v.notes||"—")],
+   ["Status",v.active===false?`<span class="tag out">inactive</span>`:`<span class="tag ok">active</span>`]];
+  el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('vendors')">← Back</button><h2>${esc(v.name)}</h2></div>
+   <div class="row"><button class="btn sec" onclick="addVendorNote('${v.id}')">+ Add note</button><button class="btn" onclick="openVendor('${v.id}')">Edit</button></div></div>
+  <div class="grid stats" style="margin-bottom:12px">
+   <div class="card stat"><div class="k">Products</div><div class="v">${st.items.length}</div><div class="s">${st.units} units in stock</div></div>
+   <div class="card stat"><div class="k">Stock value (cost)</div><div class="v">${inr(st.cost)}</div><div class="s">retail ${inr(st.retail)}</div></div>
+   <div class="card stat"><div class="k">Needs restocking</div><div class="v" style="color:var(--warn)">${st.low}</div><div class="s">low or out of stock</div></div>
+   <div class="card stat"><div class="k">Billing</div><div class="v" style="font-size:15px;font-weight:600">${esc(v.billingMethod||"—")}</div><div class="s">${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?v.creditDays+" days credit":esc(v.contact||v.city||"")}</div></div></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+   <div class="card" style="padding:6px 14px"><table>${R.map(r=>`<tr><td class="mute" style="width:42%">${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table></div>
+   <div class="card"><h3 style="margin-bottom:8px">Notes (${notes.length})</h3>
+    ${notes.map((n,ix)=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(n.text)}<br><span class="small mute">${esc(n.date||"")} · ${esc(n.by||"")}</span></span>${can("manageVendors")?`<button class="btn sm sec" onclick="delVendorNote('${v.id}',${n.t})">Remove</button>`:""}</div>`).join("")
+     ||`<p class="mute">No notes yet. Use <b>+ Add note</b> for things like price revisions, delivery habits or disputes.</p>`}</div></div>
+  <div class="card" style="margin-top:12px;padding:6px 12px"><h3 style="margin:10px 2px 4px">Products from this vendor</h3>
+   <table class="resp"><thead><tr><th>Product</th><th>Category</th><th class="n">Cost</th><th class="n">Price</th><th class="n">Stock</th></tr></thead><tbody>
+   ${st.items.slice(0,200).map(p=>`<tr><td data-l="Product">${can("productPage")?`<a href="#product/${p.id}">${esc(p.name)}</a>`:esc(p.name)}<br><span class="small mute">${esc(p.sku)}</span></td>
+    <td data-l="Category" class="small">${esc([p.categoryName,p.subcategoryName].filter(Boolean).join(" › "))}</td>
+    <td data-l="Cost" class="n">${inr(p.cost)}</td><td data-l="Price" class="n">${inr(p.price)}</td>
+    <td data-l="Stock" class="n"><span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${p.qty}</span></td></tr>`).join("")
+    ||`<tr><td colspan="5" class="mute">No products linked to this vendor yet.</td></tr>`}
+   </tbody></table></div>`;
+}
+window.openVendor=function(id,preset){
+  if(!can("manageVendors"))return toast("You don't have permission to manage vendors",1);
+  const v=S.vendors.find(x=>x.id===id)||{name:preset||"",active:true};
+  const methods=S.lists.billingMethods||[];
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:620px"><h3>${id?"Edit vendor":"Add vendor"}</h3>
+  <div class="f">
+   <div class="full"><label>Vendor name *</label><input id="v-name" value="${esc(v.name)}"></div>
+   <div><label>Contact person</label><input id="v-contact" value="${esc(v.contact)}"></div>
+   <div><label>Phone</label><input id="v-phone" inputmode="tel" value="${esc(v.phone)}"></div>
+   <div><label>Email</label><input id="v-email" type="email" value="${esc(v.email)}"></div>
+   <div><label>GSTIN</label><input id="v-gstin" value="${esc(v.gstin)}"></div>
+   <div class="full"><label>Address</label><input id="v-address" value="${esc(v.address)}"></div>
+   <div><label>City</label><input id="v-city" value="${esc(v.city)}"></div>
+   <div><label>Billing method</label><select id="v-bm"><option value="">—</option>${withCur(methods,v.billingMethod).map(m=>`<option ${v.billingMethod===m?"selected":""}>${esc(m)}</option>`).join("")}</select></div>
+   <div><label>Credit period (days)</label><input id="v-days" type="number" min="0" value="${v.creditDays??""}"></div>
+   <div class="full"><label>Bank / payment details</label><input id="v-bank" placeholder="Account, UPI id, cheque in favour of…" value="${esc(v.bank)}"></div>
+   <div class="full"><label>Standing note</label><textarea id="v-notes" rows="2" placeholder="Delivers Tuesdays · 2% discount above 10 pieces · always confirm fabric code">${esc(v.notes)}</textarea></div>
+   <label style="display:flex;gap:8px;align-items:center;color:var(--ink);font-size:14px"><input type="checkbox" id="v-active" style="width:auto" ${v.active===false?"":"checked"}> Active (shown in the product dropdown)</label>
+  </div>
+  <div class="row" style="margin-top:14px;justify-content:space-between"><div>${id?`<button class="btn bad sm" id="v-del">Delete</button>`:""}</div>
+   <div class="row"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="v-save">Save</button></div></div></div></div>`;
+  $("#v-save").onclick=async()=>{
+    const name=$("#v-name").value.trim();
+    if(!name)return toast("Vendor name is required",1);
+    const dup=S.vendors.find(x=>norm(x.name)===norm(name)&&x.id!==id);
+    if(dup)return toast("There is already a vendor with that name",1);
+    const d={name,contact:$("#v-contact").value.trim(),phone:$("#v-phone").value.trim(),email:$("#v-email").value.trim(),
+      gstin:$("#v-gstin").value.trim(),address:$("#v-address").value.trim(),city:$("#v-city").value.trim(),
+      billingMethod:$("#v-bm").value,creditDays:num($("#v-days").value),bank:$("#v-bank").value.trim(),
+      notes:$("#v-notes").value.trim(),active:$("#v-active").checked,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+    const btn=$("#v-save");btn.disabled=true;
+    try{
+      if(id){
+        await updateDoc(doc(db,"vendors",id),d);
+        const old=S.vendors.find(x=>x.id===id);
+        if(old&&norm(old.name)!==norm(name)){  // keep the products' vendor name in step
+          const hit=S.products.filter(p=>p.vendorId===id||norm(vend(p))===norm(old.name));
+          for(let i=0;i<hit.length;i+=200){const bt=writeBatch(db);
+            hit.slice(i,i+200).forEach(p=>bt.update(doc(db,"products",p.id),{vendor:name,vendorId:id,updatedAt:serverTimestamp(),updatedBy:S.user.uid}));
+            await bt.commit()}
+        }
+      }else{
+        const r=doc(collection(db,"vendors"));
+        await setDoc(r,{...d,log:[],createdAt:serverTimestamp(),createdBy:S.user.uid});
+        if(preset){ // adopt the products that already carry this typed-in name
+          const hit=S.products.filter(p=>!p.vendorId&&norm(vend(p))===norm(preset));
+          for(let i=0;i<hit.length;i+=200){const bt=writeBatch(db);
+            hit.slice(i,i+200).forEach(p=>bt.update(doc(db,"products",p.id),{vendorId:r.id,vendor:name,updatedAt:serverTimestamp(),updatedBy:S.user.uid}));
+            await bt.commit()}
+        }
+      }
+      closeModal();toast("Vendor saved");
+    }catch(e){toast(e.message,1);btn.disabled=false}
+  };
+  $("#v-del")&&($("#v-del").onclick=async()=>{
+    const st=vendorStats(v);
+    if(!confirm(st.items.length
+      ? `Delete ${v.name}? ${st.items.length} product(s) name this vendor — they keep the name as plain text but lose the link, the billing method and these notes.`
+      : `Delete ${v.name}? This cannot be undone.`))return;
+    try{await deleteDoc(doc(db,"vendors",id));closeModal();if(S.view==="vendor")go("vendors");toast("Vendor deleted")}catch(e){toast(e.message,1)}
+  });
+};
+window.addVendorNote=async id=>{
+  if(!can("manageVendors"))return toast("You don't have permission to add vendor notes",1);
+  const v=S.vendors.find(x=>x.id===id);if(!v)return;
+  const text=(prompt(`Note about ${v.name}:`)||"").trim();if(!text)return;
+  try{await updateDoc(doc(db,"vendors",id),{log:[...(v.log||[]),{t:Date.now(),date:dkey(),by:S.profile.name,text}]});toast("Note added")}
+  catch(e){toast(e.message,1)}
+};
+window.delVendorNote=async(id,t)=>{
+  if(!can("manageVendors"))return;
+  const v=S.vendors.find(x=>x.id===id);if(!v||!confirm("Remove this note?"))return;
+  try{await updateDoc(doc(db,"vendors",id),{log:(v.log||[]).filter(n=>n.t!==t)});toast("Note removed")}catch(e){toast(e.message,1)}
+};
+window.exportVendors=async()=>{
+  if(!S.vendors.length)return toast("No vendors to export",1);
+  try{
+    const EJ=await loadExcelJS();
+    dlx("vendors-"+dkey()+".xlsx",await buildWorkbook(EJ,[
+      {name:"Vendors",freeze:1,cols:[["name",26],["contact",20],["phone",16,"@"],["email",24],["gstin",18],["address",30],["city",16],
+        ["billing_method",26],["credit_days",12],["bank_details",28],["standing_note",36],["products",10],["units_in_stock",14],["stock_value_cost",16,MONEY],["status",10]],
+       rows:S.vendors.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(v=>{const st=vendorStats(v);
+         return{name:v.name,contact:v.contact||"",phone:String(v.phone||""),email:v.email||"",gstin:v.gstin||"",address:v.address||"",city:v.city||"",
+           billing_method:v.billingMethod||"",credit_days:v.creditDays||0,bank_details:v.bank||"",standing_note:v.notes||"",
+           products:st.items.length,units_in_stock:st.units,stock_value_cost:st.cost,status:v.active===false?"inactive":"active"}})},
+      {name:"Vendor notes",freeze:2,cols:[["date",12],["vendor",26],["note",60],["added_by",18]],
+       rows:S.vendors.flatMap(v=>(v.log||[]).map(n=>({date:n.date||"",vendor:v.name,note:n.text,added_by:n.by||""})))
+         .sort((a,b)=>String(b.date).localeCompare(String(a.date)))}]));
+    toast(`Exported ${S.vendors.length} vendors`);
+  }catch(e){toast(e.message,1)}
 };
 
 /* ---------- Correction requests ---------- */
@@ -1472,6 +1639,7 @@ function vSettings(el){
    ${listCard("units","Units","Pieces, sets, metres…")}
    ${listCard("gstRates","GST rates (%)","Choices in the product form.")}
    ${listCard("payModes","Payment modes","Choices on the billing screen.")}
+   ${listCard("billingMethods","Vendor billing methods","How you settle with a vendor. Picked on each vendor's page.")}
    <div class="card" style="grid-column:1/-1"><h3 style="margin-bottom:6px">Staff accounts</h3>
     <p class="mute small">Staff logins are created and managed on their own screen.</p>
     <p><button class="btn" onclick="go('team')">Open the Staff screen</button></p></div>`:""}
@@ -1803,7 +1971,8 @@ window.openImport=(kind="products")=>{
     try{
       for(let i=0;i<good.length;i+=150){const b=writeBatch(db);
         good.slice(i,i+150).forEach(({r,m})=>{const c=m.cat,s=m.sub,t=m.type;const key=r.sku.toLowerCase();
-          const d={sku:r.sku,name:r.name,vendor:r.vendor||"",barcode:r.barcode||"",categoryId:c.id,categoryName:c.name,categorySlug:c.slug,
+          const vr=r.vendor?S.vendors.find(x=>norm(x.name)===norm(r.vendor)):null;
+          const d={sku:r.sku,name:r.name,vendor:r.vendor||"",vendorId:vr?.id||"",barcode:r.barcode||"",categoryId:c.id,categoryName:c.name,categorySlug:c.slug,
             subcategoryId:s?.id||"",subcategoryName:s?.name||"",subcategorySlug:s?.slug||"",typeId:t?.id||"",typeName:t?.name||"",typeSlug:t?.slug||"",fullSlug:(t||s||c).slug,
             mrp:num(r.mrp)||num(r.price),price:num(r.price),cost:num(r.cost),gst:r.gst===undefined||r.gst===""?18:num(r.gst),reorder:r.reorder===undefined||r.reorder===""?2:num(r.reorder),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
           if(r.imageUrl)d.imageUrl=r.imageUrl;
