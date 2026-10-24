@@ -50,6 +50,27 @@ service cloud.firestore {
       allow write: if can('editProducts');
     }
 
+    // Vendors: everyone may read them (the product form needs the list);
+    // adding, editing and deleting is a permission the admin grants.
+    match /vendors/{id} {
+      allow read: if isStaff();
+      allow create, update, delete: if can('manageVendors');
+    }
+
+    // Purchase bills from vendors and the payments made to them: the vendor ledger.
+    // Recording is a permission the admin grants; correcting one is admin-only.
+    match /purchases/{id} {
+      allow read: if isStaff();
+      allow create: if can('vendorLedger');
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    match /vendorPayments/{id} {
+      allow read: if isStaff();
+      allow create: if can('vendorLedger');
+      allow update, delete: if isAdmin();
+    }
+
     // Customers: staff may add a new one while billing; editing one is an admin job.
     match /customers/{id} {
       allow read, create: if isStaff();

@@ -30,6 +30,7 @@ Three roles: **admin**, **manager**, **sales executive** (plus **disabled**, whi
 
 **Everything else you decide yourself**, on the Staff screen under *What each role may do* — tick it for manager, for sales executive, for both or for neither:
 - Open the full product page (cost price, margin, history)
+- Add, edit and delete vendors
 - Receive stock (stock in) · Transfer stock between locations · Take stock out · Set the counted quantity
 - Add and edit products, prices and photos
 - Change a saved booking without approval · Cancel a booking · Void a bill · Edit a saved customer · Remove a recorded payment
@@ -45,7 +46,7 @@ Nobody except an admin can change something already saved. A manager or sales ex
 - Managers and sales executives see only their own requests on that screen.
 
 ## Stock and locations
-- Stock is tracked **per location**, so one SKU can sit partly on the floor and partly in the godown. The product page, the stock screen and the Excel export all show the split; the card shows wherever most of it is.
+- Stock is tracked **per location**, so one SKU can sit partly on the floor and partly in the godown. Every screen shows the split — the product card reads `📍 Godown Rack 3 ×1 · Floor 1 - A2 ×1`, and the product page, stock screen and Excel export show it too. A transfer never changes the SKU, the barcode or the total; it only moves pieces between places.
 - **Stock in** adds to the total and to the place you choose. **Transfer** moves pieces between places without changing the total. **Stock out** and **Set count** change the total. Who may do each is set on the Staff screen.
 - **Selling asks where the stock comes from**: every line on the Sell screen has a *Take from* dropdown listing each place and how many are there. If you ask for more than that place holds, the app says so and takes the rest from the next place with stock. Delivering a booking asks the same for any item sitting in more than one place.
 - Each sale remembers where its pieces came from — it shows in the movement log and in the `taken_from` column of the sales export.
@@ -62,7 +63,7 @@ Nobody except an admin can change something already saved. A manager or sales ex
 - **Categories screen**: rename, add inside, or delete categories, sub-categories and types (✎ ＋ ✕).
 
 ## Data fields per product
-name, SKU, barcode, vendor, category / sub-category / type (id, name, slug from your taxonomy, plus `fullSlug` of the deepest level), MRP, selling price, cost, GST %, stock, reorder level, unit, location, notes, timestamps, updated-by.
+name, SKU, barcode, vendor, dimension + dimension unit, category / sub-category / type (id, name, slug from your taxonomy, plus `fullSlug` of the deepest level), MRP, selling price, cost, GST %, stock, reorder level, unit, location, notes, timestamps, updated-by.
 
 ## Notes
 - Works offline for browsing and stock changes (syncs when back online). **Completing a sale needs an internet connection** so two staff can never sell the same last piece.
@@ -103,3 +104,29 @@ Products → Export gives an .xlsx with a **photo** column (pictures embedded, 2
 - **Cancel booking** (admin) releases the reserved stock. **Print slip** gives the customer a booking slip with the balance and delivery date.
 - Edit lets you update the booking amount, delivery date and notes as things change.
 - Dashboard shows open bookings, advance held and upcoming deliveries; overdue dates turn red.
+
+## Vendors
+A module of its own (sidebar → **Vendors**), open to admins and to anyone you tick *Add, edit and delete vendors* for.
+- Each vendor keeps contact person, phone, email, GSTIN, address and city, a **billing method**, a **credit period** in days, bank or UPI details, a **standing note** and an active/inactive flag.
+- **Billing methods** are an editable list like the others — Settings → Dropdown lists → *Vendor billing methods*. Out of the box: payment against delivery, advance payment, 15/30/45 days credit, monthly settlement, consignment (sale or return).
+- **Notes**: besides the standing note, **+ Add note** keeps a dated log per vendor — price revisions, delivery habits, disputes — each stamped with the date and who wrote it.
+- The vendor's page shows how many products come from them, units in stock, stock value at cost and retail, how many need restocking, and the product list itself.
+- **In the product form the vendor is now a dropdown** fed by this list, with a **＋** that jumps straight to adding one. Vendor names typed in before (or imported) still work: the Vendors screen lists them as "used on products but not in this list" with one-tap buttons to adopt them, which links every product carrying that name. Renaming a vendor updates its products too.
+- Deleting a vendor warns you how many products name it; those products keep the name as plain text but lose the link, the billing method and the notes.
+- **Export** gives an .xlsx with Vendors (including stock value and ledger balance), Purchases, Vendor payments and Vendor notes sheets.
+
+### Vendor ledger
+Each vendor page carries a dated statement, the mirror of the customer one.
+- **+ Purchase** records a bill: bill number, date, line items picked from your products (quantity and rate, the rate defaulting to the product's cost), other charges such as freight or GST, and a note. Tick **also add these pieces to stock** and the same action receives the goods into a location and writes the movement log entry — leave it unticked if the stock already came in through Stock in, or it would be counted twice.
+- **+ Payment** records what you paid: amount, date, mode (cash, UPI, bank transfer, cheque, adjustment — an editable list), reference such as a UTR or cheque number, and whether it is **against bills** or **an advance**.
+- The ledger runs date-wise with **Billed**, **Paid** and a running **Balance**. Balance is paid minus billed, so **a negative number is still payable to the vendor** and a positive number is an advance lying with them. The tile at the top says which.
+- **Print statement** gives an A4 vendor statement; **Export ledger** saves the same as Excel with a TOTAL row.
+- The Vendors list shows each vendor's balance and totals the payables across all of them.
+- Recording purchases and payments is its own permission (*Record vendor purchases and payments*), separate from adding or editing vendors. Removing a purchase or a payment is admin-only. Removing a purchase does not pull the stock back out — adjust that separately.
+
+## Dimensions
+- Every product has a **Dimension / size** field and a separate **Dimension unit** field, so `16x16` and `inch` stay in their own columns — in the form, in the Excel export and in the import template.
+- The unit comes from an editable list (Settings → Dropdown lists → *Dimension units*): inch, cm, ft, mm, m, sq ft out of the box.
+- The size shows on the **product card** (`📐 16x16 inch`) wherever a product has one, so cushion covers and bedsheets are told apart at a glance, and on the Sell and New booking pickers next to the SKU.
+- **Searching**: the search box matches the size, and an **All sizes** dropdown lists the sizes present in whatever category you are browsing — pick Furnishings and you get furnishing sizes. Changing category clears a size that no longer applies.
+- Barcode labels print the size under the SKU, and it appears in the products, barcode-list and sale-items exports.
