@@ -107,6 +107,7 @@ table td.c,table th.c{text-align:center}
 .pcard .pb{padding:10px 12px 12px;display:grid;gap:3px;flex:1;align-content:start}
 .pcard .pn{font-weight:600;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5em}
 .pcard a.pn{color:var(--brand2);text-decoration:underline}
+.pcard .dim{color:var(--accent);font-weight:600}
 .pcard .locs{line-height:1.35}.pcard .locs b{color:var(--ink);font-weight:600}
 .pcard .sku{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
 .pcard .meta{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:6px}
@@ -157,7 +158,7 @@ const DEFAULT_PERMS={
   manager:{productPage:false,stockIn:true,transfer:true,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false,manageVendors:false},
   sales:{productPage:false,stockIn:false,transfer:false,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false,manageVendors:false}};
 const DEFAULT_LISTS={locations:[],units:["pcs","set","pair","mtr","kg","box"],gstRates:[0,5,12,18,28],payModes:["Cash","UPI","Card","Bank transfer","Credit"],
-  billingMethods:["Payment against delivery","Advance payment","15 days credit","30 days credit","45 days credit","Monthly settlement","Consignment (sale or return)"]};
+  dimUnits:["inch","cm","ft","mm","m","sq ft"],billingMethods:["Payment against delivery","Advance payment","15 days credit","30 days credit","45 days credit","Monthly settlement","Consignment (sale or return)"]};
 const ref = n=>({id:n.id,name:n.name,slug:n.slug});
 
 /* ---------- Helpers ---------- */
@@ -168,6 +169,16 @@ const num = v=>{const n=parseFloat(v);return isNaN(n)?0:n};
 const dkey = (d=new Date())=>{const z=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`};
 const tms = ts=>ts?.toMillis?ts.toMillis():(ts?.seconds?ts.seconds*1000:Date.now());
 const fdt = ms=>new Date(ms).toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+/* Firebase errors are terse; say what to actually do about them. */
+function emsg(e){
+  const s=((e&&(e.code||""))+" "+((e&&e.message)||"")).toLowerCase();
+  if(s.includes("permission-denied")||s.includes("insufficient permissions"))
+    return "The database refused this. Usually the security rules published in Firebase are older than this app — an admin should paste firestore.rules into Firestore \u2192 Rules and press Publish. If they are current, your role does not allow this action.";
+  if(s.includes("unavailable")||s.includes("failed to get")||s.includes("network")||s.includes("offline"))
+    return "Can't reach the database right now — check the internet connection and try again.";
+  if(s.includes("not-found"))return "That record no longer exists — reload and try again.";
+  return (e&&e.message)||"Something went wrong";
+}
 function toast(m,err){const t=$("#toast");t.innerHTML=`<div class="toast ${err?"err":""}">${esc(m)}</div>`;clearTimeout(toast.t);toast.t=setTimeout(()=>t.innerHTML="",3200)}
 function dl(name,text,type="text/csv"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 const csvCell=v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
@@ -236,7 +247,7 @@ window.openCamera=async function(onShot){
 const configured = firebaseConfig && firebaseConfig.apiKey && !/YOUR_/.test(firebaseConfig.apiKey);
 let app,auth,db;
 const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",invoicePrefix:"INV",address:"",phone:"",gstin:"",footer:"Thank you for shopping with us!",allowNegative:false},
-  products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",loc:"",stock:"all",sort:"name",limit:100},
+  products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",dim:"",loc:"",stock:"all",sort:"name",limit:100},
   lists:{...DEFAULT_LISTS},vendors:[],vf:{q:""},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:""},bf:{q:"",status:"booked"},detailCust:null,detailBk:null,
   bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bdate:"",bnotes:"",bq:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",unsub:[]};
 
@@ -256,6 +267,11 @@ const isManager = ()=>isAdmin()||can("stockIn")||can("transfer")||can("stockOut"
 const activeRole = r=>["admin","manager","sales","staff"].includes(r);
 const fullMode = ()=>S.settings.mode==="full";
 const vend = p=>p.vendor??p.brand??"";
+// A product's size is kept as the measurement in one field and its unit in another,
+// so "16x16" + "inch" stay separate for filtering, exports and labels.
+const dimOf = p=>String(p?.dimension||"").trim();
+const dimUnitOf = p=>String(p?.dimUnit||"").trim();
+const dimText = p=>{const d=dimOf(p);return d?(d+(dimUnitOf(p)?" "+dimUnitOf(p):"")):""};
 /* Stock can sit in more than one place. locQty is a {location: quantity} map and qty stays the
    total. Products saved before this existed have no map, so their whole stock is read as sitting
    at their single location. */
@@ -299,7 +315,7 @@ function authScreen(msg=""){
    <div class="row" style="justify-content:flex-end"><a href="javascript:void(0)" id="a-fp">Forgot password</a></div>
    <p class="mute small">There is no sign-up. Ask the store admin to create your account.</p>
   </div></div>`;
-  $("#a-fp").onclick=async e=>{e.preventDefault();const em=$("#a-email").value.trim();if(!em)return toast("Enter your email first",1);try{await sendPasswordResetEmail(auth,em);toast("If that email has an account, a reset link is on its way")}catch(x){toast(x.message,1)}};
+  $("#a-fp").onclick=async e=>{e.preventDefault();const em=$("#a-email").value.trim();if(!em)return toast("Enter your email first",1);try{await sendPasswordResetEmail(auth,em);toast("If that email has an account, a reset link is on its way")}catch(x){toast(emsg(x),1)}};
   const go=async()=>{
     const email=$("#a-email").value.trim(),pass=$("#a-pass").value;
     try{await signInWithEmailAndPassword(auth,email,pass)}
@@ -428,8 +444,9 @@ function vDash(el){
 function filteredProducts(){
   const f=S.pf,q=f.q.toLowerCase();
   let L=S.products.filter(p=>{
-    if(q&&!(`${p.name} ${p.sku} ${p.barcode||""} ${vend(p)} ${p.location||""}`.toLowerCase().includes(q)))return false;
+    if(q&&!(`${p.name} ${p.sku} ${p.barcode||""} ${vend(p)} ${p.location||""} ${dimText(p)}`.toLowerCase().includes(q)))return false;
     if(f.loc&&String(p.location||"").toLowerCase()!==f.loc.toLowerCase())return false;
+    if(f.dim&&dimText(p).toLowerCase()!==f.dim.toLowerCase())return false;
     if(f.cat&&p.categoryId!==f.cat)return false;if(f.sub&&p.subcategoryId!==f.sub)return false;
     if(f.stock==="low"&&!lowStock(p))return false;if(f.stock==="out"&&!outStock(p))return false;if(f.stock==="in"&&outStock(p))return false;
     return true});
@@ -453,25 +470,30 @@ function pcard(p){
    ${adm?`<a class="pn" href="${href}" onclick="event.stopPropagation()">${esc(p.name)}</a>`:`<div class="pn">${esc(p.name)}</div>`}
    <div class="sku">${esc(p.sku)}</div><div><b>MRP ${inr(p.mrp??p.price)}</b></div><div class="small mute locs">📍 ${(()=>{const e=locEntries(p);
      return e.length?e.map(([k,v])=>`${esc(k)} ×<b>${v}</b>`).join(" · "):esc(p.location||"—")})()}</div>
+   ${dimText(p)?`<div class="small dim">📐 ${esc(dimText(p))}</div>`:""}
    ${bk(p)?`<div class="small" style="color:var(--warn)">🔖 ${bk(p)} booked · ${avail(p)} free</div>`:""}
    <div class="meta"><span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">Stock ${p.qty}</span>${isManager()?`<button class="btn sm sec" onclick="event.stopPropagation();openStock('${p.id}')">Stock</button>`:`<span class="small mute">${esc(p.unit||"pcs")}</span>`}</div></div></div>`;
 }
 function vProducts(el){
   const L=filteredProducts(),f=S.pf,locs=allLocations();
+  // sizes offered are those of the category being browsed, so furnishings show furnishing sizes
+  const inScope=S.products.filter(p=>(!f.cat||p.categoryId===f.cat)&&(!f.sub||p.subcategoryId===f.sub));
+  const dims=[...new Set(inScope.map(dimText).filter(Boolean))].sort(natcmp);
   el.innerHTML=`<div class="top"><h2>Products <span class="mute small">(${L.length})</span></h2>
    <div class="row">${can("editProducts")?`<button class="btn" onclick="openProduct()">+ Add product</button><button class="btn sec" onclick="openImport()">Import Excel</button>`:""}${can("productPage")?`<button class="btn sec" onclick="exportProducts()">Export</button>`:""}<button class="btn sec" onclick="openLabels()">Barcode labels</button></div></div>
   <div class="card" style="margin-bottom:12px"><div class="f">
-   <div class="full"><input id="pf-q" placeholder="Search name, SKU, barcode, vendor, location…" value="${esc(f.q)}"></div>
+   <div class="full"><input id="pf-q" placeholder="Search name, SKU, barcode, vendor, size, location…" value="${esc(f.q)}"></div>
    <select id="pf-cat">${catOptions(f.cat)}</select><select id="pf-sub">${subOptions(f.cat,f.sub)}</select>
    <select id="pf-loc"><option value="">All locations</option>${locs.map(x=>`<option ${f.loc.toLowerCase()===x.toLowerCase()?"selected":""}>${esc(x)}</option>`).join("")}</select>
+   ${dims.length||f.dim?`<select id="pf-dim"><option value="">All sizes</option>${withCur(dims,f.dim).map(d=>`<option ${f.dim===d?"selected":""}>${esc(d)}</option>`).join("")}</select>`:""}
    <select id="pf-stock">${[["all","All stock"],["in","In stock"],["low","Low stock"],["out","Out of stock"]].map(o=>`<option value="${o[0]}" ${f.stock===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select>
    <select id="pf-sort">${[["name","Sort: Name"],["qty","Sort: Stock (low first)"],["price","Sort: Price (high first)"],["new","Sort: Newest"]].map(o=>`<option value="${o[0]}" ${f.sort===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select>
   </div></div>
   ${L.length?`<div class="pgrid">${L.slice(0,f.limit).map(pcard).join("")}</div>`:`<div class="card"><p class="mute">No products found.</p></div>`}
   ${L.length>f.limit?`<p style="text-align:center;margin-top:12px"><button class="btn sec" onclick="S.pf.limit+=100;render()">Show more</button></p>`:""}`;
-  const bind=(id,k,reset)=>{const e=$(id);e.oninput=e.onchange=()=>{S.pf[k]=e.value;S.pf.limit=100;if(reset)S.pf.sub="";render()}};
+  const bind=(id,k,reset)=>{const e=$(id);e.oninput=e.onchange=()=>{S.pf[k]=e.value;S.pf.limit=100;if(reset){S.pf.sub="";S.pf.dim=""}render()}};
   const q=$("#pf-q");q.oninput=()=>{S.pf.q=q.value;S.pf.limit=100;clearTimeout(vProducts.t);vProducts.t=setTimeout(()=>{render();const n=$("#pf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
-  bind("#pf-cat","cat",1);bind("#pf-sub","sub");bind("#pf-loc","loc");bind("#pf-stock","stock");bind("#pf-sort","sort");
+  bind("#pf-cat","cat",1);bind("#pf-sub","sub");bind("#pf-loc","loc");if($("#pf-dim"))bind("#pf-dim","dim");bind("#pf-stock","stock");bind("#pf-sort","sort");
 }
 function vProduct(el){
   if(!can("productPage")){el.innerHTML="";return}
@@ -482,7 +504,7 @@ function vProduct(el){
   const R=[["Name",esc(p.name)],["SKU",esc(p.sku)],["Barcode",esc(p.barcode||"—")],["Vendor",(()=>{const v=vendorOf(p);return v?`<a href="#vendor/${v.id}">${esc(v.name)}</a>${v.billingMethod?` <span class="small mute">· ${esc(v.billingMethod)}${v.creditDays?` (${v.creditDays} days)`:""}</span>`:""}`:esc(vend(p)||"—")})()],
     ["Category",esc([p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" › ")||"—")],["Category slug",esc(p.fullSlug||"—")],
     ["MRP",inr(p.mrp)],["Selling price",inr(p.price)],["Cost price",inr(p.cost)],["Margin",margin],["GST",(p.gst??0)+"% (included in price)"],
-    ["Stock",`<span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${p.qty} ${esc(p.unit||"pcs")}</span>`],["Booked",bk(p)?`${bk(p)} ${esc(p.unit||"pcs")} reserved for bookings · ${avail(p)} free`:"—"],["Reorder level",p.reorder??"—"],["Location",esc(locText(p)||p.location||"—")],
+    ["Stock",`<span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${p.qty} ${esc(p.unit||"pcs")}</span>`],["Dimension",dimText(p)?`${esc(dimOf(p))} <span class="mute">${esc(dimUnitOf(p))}</span>`:"—"],["Booked",bk(p)?`${bk(p)} ${esc(p.unit||"pcs")} reserved for bookings · ${avail(p)} free`:"—"],["Reorder level",p.reorder??"—"],["Location",esc(locText(p)||p.location||"—")],
     ["Image link",p.imageUrl?`<a href="${esc(p.imageUrl)}" target="_blank" rel="noopener">${esc(p.imageUrl)}</a>`:(p.hasImage?"Uploaded photo":"—")],
     ["Notes",esc(p.description||"—")],["Added",p.createdAt?fdt(tms(p.createdAt)):"—"],["Last updated",(p.updatedAt?fdt(tms(p.updatedAt)):"—")+(by(p.updatedBy)?" by "+esc(by(p.updatedBy)):"")]];
   const mv=S.moves.filter(m=>m.productId===p.id).slice(0,15);
@@ -519,6 +541,8 @@ window.openProduct=function(id){
    <div><label>GST % (included in price)</label><select id="p-gst">${withCur(S.lists.gstRates.map(Number),p.gst==null?p.gst:+p.gst).map(g=>`<option ${+p.gst===+g?"selected":""}>${g}</option>`).join("")}</select></div>
    <div><label>${id?"Stock (use Stock button to change)":"Opening stock"}</label><input id="p-qty" type="number" value="${p.qty}" ${id?"disabled":""}></div>
    <div><label>Reorder level</label><input id="p-re" type="number" value="${p.reorder??2}"></div>
+   <div><label>Dimension / size</label><input id="p-dim" value="${esc(p.dimension)}" placeholder="16x16"></div>
+   <div><label>Dimension unit</label><select id="p-dimunit"><option value="">—</option>${withCur(S.lists.dimUnits||[],p.dimUnit).map(u=>`<option ${p.dimUnit===u?"selected":""}>${esc(u)}</option>`).join("")}</select></div>
    <div><label>Unit</label><select id="p-unit">${withCur(S.lists.units,p.unit).map(u=>`<option ${p.unit===u?"selected":""}>${esc(u)}</option>`).join("")}</select></div>
    <div><label>Location / rack</label><div class="row" style="flex-wrap:nowrap"><select id="p-loc"><option value="">—</option>${withCur(allLocations(),p.location).map(x=>`<option ${p.location===x?"selected":""}>${esc(x)}</option>`).join("")}</select><button class="btn sec sm" type="button" id="p-locadd" title="Add a new location">＋</button></div></div>
    <div class="full"><label>Notes / description</label><textarea id="p-desc" rows="2">${esc(p.description)}</textarea></div>
@@ -529,7 +553,7 @@ window.openProduct=function(id){
   <div class="row" style="margin-top:16px;justify-content:space-between"><div>${id?`<button class="btn bad sm" id="p-del">Delete</button>`:""}</div><div class="row"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="p-save">Save</button></div></div></div></div>`;
   IMGSTATE={newImg:null,rm:false};hydrateImages();
   const setShot=d=>{IMGSTATE.newImg=d;IMGSTATE.rm=false;$("#p-imgurl").value="";$("#p-prev").innerHTML=`<img src="${d}" style="width:84px;height:84px;border-radius:8px;object-fit:cover">`};
-  $("#p-file").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{setShot(await compressImage(f))}catch(x){toast(x.message,1)}};
+  $("#p-file").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{setShot(await compressImage(f))}catch(x){toast(emsg(x),1)}};
   $("#p-cam").onclick=()=>openCamera(setShot);
   $("#p-rmimg").onclick=()=>{IMGSTATE={newImg:null,rm:true};$("#p-imgurl").value="";$("#p-prev").innerHTML=thumb({},84)};
   $("#p-imgurl").oninput=e=>{const u=e.target.value.trim();if(u){IMGSTATE.newImg=null;$("#p-prev").innerHTML=`<img src="${esc(u)}" style="width:84px;height:84px;border-radius:8px;object-fit:cover" onerror="this.style.visibility='hidden'">`}};
@@ -541,14 +565,14 @@ window.openProduct=function(id){
     try{const [c]=await nextBarcodes(1);$("#p-bar").value=c;
       if(id){await updateDoc(doc(db,"products",id),{barcode:c,updatedAt:serverTimestamp(),updatedBy:S.user.uid});toast("Barcode "+c+" assigned")}
       else toast("Barcode ready — it is saved with the product")}
-    catch(e){b.disabled=false;toast(e.message,1)}};
+    catch(e){b.disabled=false;toast(emsg(e),1)}};
   $("#p-vendadd")&&($("#p-vendadd").onclick=()=>{closeModal();go("vendors");openVendor()});
   $("#p-locadd").onclick=async()=>{
     const v=(prompt("New location / rack name:")||"").trim();if(!v)return;
     const sel=$("#p-loc"),have=[...sel.options].find(o=>o.value.toLowerCase()===v.toLowerCase());
     if(!have){sel.add(new Option(v,v))}
     sel.value=have?have.value:v;
-    if(!S.lists.locations.some(x=>String(x).toLowerCase()===v.toLowerCase())){try{await saveList("locations",[...S.lists.locations,v].sort(natcmp));toast("Location added")}catch(e){toast(e.message,1)}}
+    if(!S.lists.locations.some(x=>String(x).toLowerCase()===v.toLowerCase())){try{await saveList("locations",[...S.lists.locations,v].sort(natcmp));toast("Location added")}catch(e){toast(emsg(e),1)}}
   };
   $("#p-save").onclick=()=>saveProduct(id);
   $("#p-del")&&($("#p-del").onclick=async()=>{if(!confirm("Delete this product permanently? Sales history is kept."))return;await deleteDoc(doc(db,"products",id));if(S.products.find(x=>x.id===id)?.hasImage)await deleteDoc(doc(db,"productImages",id)).catch(()=>{});closeModal();toast("Deleted")});
@@ -572,6 +596,7 @@ async function saveProduct(id){
     typeId:type?.id||"",typeName:type?.name||"",typeSlug:type?.slug||"",
     fullSlug:(type||sub||cat).slug,imageUrl,hasImage,
     mrp:num(v("#p-mrp"))||num(v("#p-price")),price:num(v("#p-price")),cost:num(v("#p-cost")),gst:num(v("#p-gst")),
+    dimension:v("#p-dim"),dimUnit:v("#p-dim")?v("#p-dimunit"):"",
     reorder:num(v("#p-re")),unit:v("#p-unit"),location:v("#p-loc"),description:v("#p-desc"),active:true,
     updatedAt:serverTimestamp(),updatedBy:S.user.uid};
   try{
@@ -585,7 +610,7 @@ async function saveProduct(id){
     else if(IMGSTATE.rm&&old.hasImage){b.delete(doc(db,"productImages",r.id));IMG.cache.delete(r.id)}
     await b.commit();
     closeModal();toast("Saved");
-  }catch(e){toast(e.message,1)}
+  }catch(e){toast(emsg(e),1)}
 }
 function mv(pid,pname,sku,type,delta,before,after,note){return{productId:pid,productName:pname,sku,type,delta,before,after,note:note||"",by:S.user.uid,byName:S.profile.name,createdAt:serverTimestamp()}}
 window.closeModal=()=>{closeCamera();$("#modal").innerHTML=""};
@@ -659,7 +684,7 @@ window.openStock=function(id,only){
           fromLoc:mode==="transfer"?from:"",toLoc:mode==="transfer"?to:(mode==="set"?"":to)});
       });
       closeModal();toast(mode==="transfer"?`Moved ${q} to ${to}`:"Stock updated");
-    }catch(e){toast(e.message,1);btn.disabled=false}
+    }catch(e){toast(emsg(e),1);btn.disabled=false}
   };
 };
 function vStock(el){
@@ -697,7 +722,7 @@ function vSell(el){
   const t=cartTotals();
   el.innerHTML=`<div class="top"><h2>New sale</h2><button class="btn sec" onclick="S.cart=[];S.cartDiscount=0;render()">Clear</button></div>
   <div class="pos"><div><input id="pos-q" placeholder="Scan barcode or search…" value="${esc(S.posQ)}" style="margin-bottom:10px">
-   <div class="items">${L.map(p=>`<button class="item" onclick="addCart('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
+   <div class="items">${L.map(p=>`<button class="item" onclick="addCart('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Cart (${S.cart.length})</h3>
    ${S.cart.map((i,ix)=>{const p=S.products.find(x=>x.id===i.pid),ent=p?locEntries(p):[],at=ent.find(([k])=>k===i.loc),short=at?Math.max(0,i.qty-at[1]):i.qty;
     return `<div class="cartline"><div><b>${esc(i.name)}</b><br><span class="small mute">${inr(i.price)} each</span></div><div style="text-align:right"><b>${inr(i.price*i.qty)}</b></div>
@@ -795,7 +820,7 @@ window.reprint=id=>{const s=S.sales.find(x=>x.id===id);if(s)printReceipt(s)};
 window.voidSale=async id=>{
   if(!can("voidSale"))return toast("You don't have permission to void a bill",1);
   const s=S.sales.find(x=>x.id===id);if(!s||!confirm("Void "+s.invoiceNo+"? Stock will be returned."))return;
-  try{await doVoidSale(id);toast("Sale voided")}catch(e){toast(e.message,1)}
+  try{await doVoidSale(id);toast("Sale voided")}catch(e){toast(emsg(e),1)}
 };
 async function doVoidSale(id){
   const s=S.sales.find(x=>x.id===id);
@@ -920,7 +945,7 @@ window.exportLedger=async id=>{
         {particulars:"TOTAL",charges:L.billed,paid:L.paid,balance:L.balance},
         {particulars:L.balance<0?"PENDING FROM CUSTOMER":L.balance>0?"CREDIT WITH SHOP":"SETTLED",balance:L.balance}]}]));
     toast("Ledger exported");
-  }catch(e){toast(e.message,1)}
+  }catch(e){toast(emsg(e),1)}
 };
 window.printStatement=id=>{
   const c=S.customers.find(x=>x.id===id);if(!c)return;
@@ -961,10 +986,10 @@ window.openCustomer=function(id){
     const dup=S.customers.find(x=>custKey(x.phone)===custKey(phone)&&x.id!==id);
     if(dup)return toast(`That phone already belongs to ${dup.name}`,1);
     const d={name,phone,email:$("#cu-em").value.trim(),address:$("#cu-ad").value.trim(),notes:$("#cu-no").value.trim(),updatedAt:serverTimestamp(),updatedBy:S.user.uid};
-    try{if(id)await updateDoc(doc(db,"customers",id),d);else await setDoc(doc(collection(db,"customers")),{...d,createdAt:serverTimestamp(),createdBy:S.user.uid});closeModal();toast("Saved")}catch(e){toast(e.message,1)}
+    try{if(id)await updateDoc(doc(db,"customers",id),d);else await setDoc(doc(collection(db,"customers")),{...d,createdAt:serverTimestamp(),createdBy:S.user.uid});closeModal();toast("Saved")}catch(e){toast(emsg(e),1)}
   };
   $("#cu-del")&&($("#cu-del").onclick=async()=>{if(!confirm("Delete this customer? Their bills and bookings stay."))return;
-    try{await deleteDoc(doc(db,"customers",id));closeModal();if(S.view==="customer")go("customers");else render();toast("Deleted")}catch(e){toast(e.message,1)}});
+    try{await deleteDoc(doc(db,"customers",id));closeModal();if(S.view==="customer")go("customers");else render();toast("Deleted")}catch(e){toast(emsg(e),1)}});
 };
 
 /* ---------- Payments ---------- */
@@ -1000,14 +1025,14 @@ window.openPayment=function(custId,bookingId){
         mode:$("#pm-mode").value,note:$("#pm-note").value.trim(),
         createdBy:S.user.uid,createdByName:S.profile.name,createdAt:serverTimestamp()});
       closeModal();toast(`Payment of ${inr(amt)} recorded`);
-    }catch(e){toast(e.message,1);btn.disabled=false}
+    }catch(e){toast(emsg(e),1);btn.disabled=false}
   };
 };
 window.delPayment=async id=>{
   if(!can("removePayment"))return toast("You don't have permission to remove a payment",1);
   const p=S.payments.find(x=>x.id===id);if(!p)return;
   if(!confirm(`Remove the payment of ${inr(p.amount)} dated ${p.date}? This cannot be undone.`))return;
-  try{await deleteDoc(doc(db,"payments",id));toast("Payment removed")}catch(e){toast(e.message,1)}
+  try{await deleteDoc(doc(db,"payments",id));toast("Payment removed")}catch(e){toast(emsg(e),1)}
 };
 
 /* ---------- Vendors ---------- */
@@ -1126,14 +1151,14 @@ window.openVendor=function(id,preset){
         }
       }
       closeModal();toast("Vendor saved");
-    }catch(e){toast(e.message,1);btn.disabled=false}
+    }catch(e){toast(emsg(e),1);btn.disabled=false}
   };
   $("#v-del")&&($("#v-del").onclick=async()=>{
     const st=vendorStats(v);
     if(!confirm(st.items.length
       ? `Delete ${v.name}? ${st.items.length} product(s) name this vendor — they keep the name as plain text but lose the link, the billing method and these notes.`
       : `Delete ${v.name}? This cannot be undone.`))return;
-    try{await deleteDoc(doc(db,"vendors",id));closeModal();if(S.view==="vendor")go("vendors");toast("Vendor deleted")}catch(e){toast(e.message,1)}
+    try{await deleteDoc(doc(db,"vendors",id));closeModal();if(S.view==="vendor")go("vendors");toast("Vendor deleted")}catch(e){toast(emsg(e),1)}
   });
 };
 window.addVendorNote=async id=>{
@@ -1141,12 +1166,12 @@ window.addVendorNote=async id=>{
   const v=S.vendors.find(x=>x.id===id);if(!v)return;
   const text=(prompt(`Note about ${v.name}:`)||"").trim();if(!text)return;
   try{await updateDoc(doc(db,"vendors",id),{log:[...(v.log||[]),{t:Date.now(),date:dkey(),by:S.profile.name,text}]});toast("Note added")}
-  catch(e){toast(e.message,1)}
+  catch(e){toast(emsg(e),1)}
 };
 window.delVendorNote=async(id,t)=>{
   if(!can("manageVendors"))return;
   const v=S.vendors.find(x=>x.id===id);if(!v||!confirm("Remove this note?"))return;
-  try{await updateDoc(doc(db,"vendors",id),{log:(v.log||[]).filter(n=>n.t!==t)});toast("Note removed")}catch(e){toast(e.message,1)}
+  try{await updateDoc(doc(db,"vendors",id),{log:(v.log||[]).filter(n=>n.t!==t)});toast("Note removed")}catch(e){toast(emsg(e),1)}
 };
 window.exportVendors=async()=>{
   if(!S.vendors.length)return toast("No vendors to export",1);
@@ -1163,7 +1188,7 @@ window.exportVendors=async()=>{
        rows:S.vendors.flatMap(v=>(v.log||[]).map(n=>({date:n.date||"",vendor:v.name,note:n.text,added_by:n.by||""})))
          .sort((a,b)=>String(b.date).localeCompare(String(a.date)))}]));
     toast(`Exported ${S.vendors.length} vendors`);
-  }catch(e){toast(e.message,1)}
+  }catch(e){toast(emsg(e),1)}
 };
 
 /* ---------- Correction requests ---------- */
@@ -1200,7 +1225,7 @@ window.askCorrection=function(kind,targetId,label,current){
       await setDoc(doc(collection(db,"requests")),{kind,targetId,label,changes,before:cur,reason:why,status:"pending",
         requestedBy:S.user.uid,requestedByName:S.profile.name,requestedRole:ROLE(),createdAt:serverTimestamp()});
       closeModal();toast("Sent to the admin for approval");
-    }catch(e){toast(e.message,1);btn.disabled=false}
+    }catch(e){toast(emsg(e),1);btn.disabled=false}
   };
 };
 const rqBtn=(kind,id,label,cur)=>{
@@ -1218,7 +1243,7 @@ window.decideRequest=async(id,ok)=>{
     if(ok)await applyRequest(r);
     await updateDoc(doc(db,"requests",id),{status:ok?"approved":"rejected",decidedBy:S.user.uid,decidedByName:S.profile.name,decidedAt:serverTimestamp(),decisionNote:note});
     toast(ok?"Approved and applied":"Request rejected");
-  }catch(e){toast(e.message,1)}
+  }catch(e){toast(emsg(e),1)}
 };
 async function applyRequest(r){
   const c=r.changes||{};
@@ -1281,7 +1306,7 @@ function vNewBooking(el){
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('bookings')">← Back</button><h2>New booking</h2></div>
    <button class="btn sec" onclick="S.bcart=[];S.badv=0;render()">Clear items</button></div>
   <div class="pos"><div><input id="bk-q" placeholder="Scan barcode or search products…" value="${esc(S.bq)}" style="margin-bottom:10px">
-   <div class="items">${L.map(p=>`<button class="item" onclick="addBk('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
+   <div class="items">${L.map(p=>`<button class="item" onclick="addBk('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Booking (${S.bcart.length} item${S.bcart.length===1?"":"s"})</h3>
    ${S.bcart.map((i,ix)=>`<div class="cartline"><div><b>${esc(i.name)}</b><br><span class="small mute">${inr(i.price)} each</span></div><div style="text-align:right"><b>${inr(i.price*i.qty)}</b></div>
     <div class="qty"><button onclick="bkQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="bkSet(${ix},this.value)"><button onclick="bkQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.bcart.splice(${ix},1);render()">Remove</button></div></div>`).join("")||`<p class="mute">Tap a product to add it.</p>`}
@@ -1412,14 +1437,14 @@ window.editBooking=id=>{
   $("#eb-save").onclick=async()=>{
     const adv=num($("#eb-adv").value);
     if(adv>num(b.total))return toast("Booking amount is more than the order value",1);
-    try{await updateDoc(doc(db,"bookings",id),{advance:adv,balance:Math.round((num(b.total)-adv)*100)/100,deliveryDate:$("#eb-date").value,notes:$("#eb-no").value.trim(),updatedAt:serverTimestamp(),updatedBy:S.user.uid});closeModal();toast("Booking updated")}catch(e){toast(e.message,1)}
+    try{await updateDoc(doc(db,"bookings",id),{advance:adv,balance:Math.round((num(b.total)-adv)*100)/100,deliveryDate:$("#eb-date").value,notes:$("#eb-no").value.trim(),updatedAt:serverTimestamp(),updatedBy:S.user.uid});closeModal();toast("Booking updated")}catch(e){toast(emsg(e),1)}
   };
 };
 window.cancelBooking=async id=>{
   if(!can("cancelBooking"))return toast("You don't have permission to cancel a booking",1);
   const b=S.bookings.find(x=>x.id===id);if(!b||b.status!=="booked")return;
   if(!confirm(`Cancel ${b.bookingNo}? The reserved stock is released. Any booking amount refund is handled outside the app.`))return;
-  try{await doCancelBooking(id);toast("Booking cancelled, stock released")}catch(e){toast(e.message,1)}
+  try{await doCancelBooking(id);toast("Booking cancelled, stock released")}catch(e){toast(emsg(e),1)}
 };
 async function doCancelBooking(id){
   const b=S.bookings.find(x=>x.id===id);
@@ -1489,7 +1514,7 @@ async function doDeliver(id,collect,mode,recd,picks){
     printReceipt({invoiceNo:inv,items:b.items,subtotal:num(b.total),discount:0,total:num(b.total),gstAmount:num(b.gstAmount),
       customer:{name:b.customerName,phone:b.customerPhone},payment:mode||"Booking balance",advance:r2(recd),balanceLeft:left,bookingNo:b.bookingNo,
       soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
-  }catch(e){toast(e.message,1);const g=$("#dv-go");if(g){g.disabled=false;g.textContent="Deliver & bill"}}
+  }catch(e){toast(emsg(e),1);const g=$("#dv-go");if(g){g.disabled=false;g.textContent="Deliver & bill"}}
 }
 window.printBooking=id=>{
   const b=S.bookings.find(x=>x.id===id);if(!b)return;const st=S.settings;
@@ -1556,7 +1581,7 @@ window.taxAct=async(ev,op,cid,sid,tid)=>{
       for(let i=0;i<aff.length;i+=400){const b=writeBatch(db);aff.slice(i,i+400).forEach(p=>b.update(doc(db,"products",p.id),{[nk]:renamed.name}));await b.commit()}
     }
     toast("Saved");
-  }catch(e){toast(e.message,1)}
+  }catch(e){toast(emsg(e),1)}
 };
 window.filterTo=(key,id)=>{
   S.pf={q:"",cat:"",sub:"",loc:"",stock:"all",sort:"name",limit:100};
@@ -1610,12 +1635,12 @@ function vTeam(el){
     document.querySelectorAll('#main input[type=checkbox][data-k]').forEach(c=>{out[c.dataset.role][c.dataset.k]=c.checked});return out};
   $("#pm-save").onclick=async()=>{
     const btn=$("#pm-save");btn.disabled=true;
-    try{await setDoc(doc(db,"settings","perms"),readPerms(),{merge:true});toast("Permissions saved")}catch(e){toast(e.message,1)}
+    try{await setDoc(doc(db,"settings","perms"),readPerms(),{merge:true});toast("Permissions saved")}catch(e){toast(emsg(e),1)}
     btn.disabled=false;
   };
   $("#pm-reset").onclick=async()=>{
     if(!confirm("Put every permission back to the standard setting?"))return;
-    try{await setDoc(doc(db,"settings","perms"),JSON.parse(JSON.stringify(DEFAULT_PERMS)));toast("Permissions reset")}catch(e){toast(e.message,1)}
+    try{await setDoc(doc(db,"settings","perms"),JSON.parse(JSON.stringify(DEFAULT_PERMS)));toast("Permissions reset")}catch(e){toast(emsg(e),1)}
   };
 }
 
@@ -1636,7 +1661,8 @@ function vSettings(el){
    ${isAdmin()?`<button class="btn" id="s-save">Save settings</button>`:`<p class="mute small">Only admin can change settings.</p>`}</div></div>
   ${isAdmin()?`<div class="card" style="grid-column:1/-1"><h3>Dropdown lists</h3><p class="mute small">These feed the dropdowns across the app. Categories, sub-categories and types are edited on the Categories screen.</p></div>
    ${listCard("locations","Locations / racks","Used in the product form and as a search filter. Renaming updates every product in that location.")}
-   ${listCard("units","Units","Pieces, sets, metres…")}
+   ${listCard("units","Units","How stock is counted: pieces, sets, metres…")}
+   ${listCard("dimUnits","Dimension units","The unit beside a product's size: inch, cm, ft…")}
    ${listCard("gstRates","GST rates (%)","Choices in the product form.")}
    ${listCard("payModes","Payment modes","Choices on the billing screen.")}
    ${listCard("billingMethods","Vendor billing methods","How you settle with a vendor. Picked on each vendor's page.")}
@@ -1646,7 +1672,7 @@ function vSettings(el){
   </div>`;
   if(isAdmin()){
     $("#s-save").onclick=async()=>{const mode=document.querySelector("input[name=mode]:checked").value;
-      try{await setDoc(doc(db,"settings","store"),{storeName:$("#s-nm").value.trim()||"My Store",address:$("#s-ad").value.trim(),phone:$("#s-ph").value.trim(),gstin:$("#s-gs").value.trim(),invoicePrefix:$("#s-pf").value.trim()||"INV",footer:$("#s-ft").value.trim(),allowNegative:$("#s-neg").checked,mode},{merge:true});toast("Settings saved")}catch(e){toast(e.message,1)}};
+      try{await setDoc(doc(db,"settings","store"),{storeName:$("#s-nm").value.trim()||"My Store",address:$("#s-ad").value.trim(),phone:$("#s-ph").value.trim(),gstin:$("#s-gs").value.trim(),invoicePrefix:$("#s-pf").value.trim()||"INV",footer:$("#s-ft").value.trim(),allowNegative:$("#s-neg").checked,mode},{merge:true});toast("Settings saved")}catch(e){toast(emsg(e),1)}};
   }
 }
 function listCard(key,title,hint){
@@ -1661,13 +1687,13 @@ window.listAdd=async key=>{
   const el=$("#li-"+key);let v=el.value.trim();if(!v)return;
   if(key==="gstRates"){v=parseFloat(v);if(isNaN(v)||v<0||v>100)return toast("Enter a GST rate between 0 and 100",1)}
   const arr=S.lists[key];if(arr.some(x=>String(x).toLowerCase()===String(v).toLowerCase()))return toast("Already in the list",1);
-  try{await saveList(key,sortList(key,[...arr,v]));el.value=""}catch(e){toast(e.message,1)}
+  try{await saveList(key,sortList(key,[...arr,v]));el.value=""}catch(e){toast(emsg(e),1)}
 };
 window.listDel=async(key,i)=>{
   const arr=S.lists[key],v=arr[i];
   const pk={locations:"location",units:"unit"}[key],used=pk?S.products.filter(p=>p[pk]===v).length:0;
   if(!confirm(`Remove "${v}" from the list?${used?` ${used} product${used>1?"s":""} keep it, but it won't be offered in the dropdown.`:""}`))return;
-  try{await saveList(key,arr.filter((_,j)=>j!==i))}catch(e){toast(e.message,1)}
+  try{await saveList(key,arr.filter((_,j)=>j!==i))}catch(e){toast(emsg(e),1)}
 };
 window.listRename=async(key,i)=>{
   const arr=S.lists[key],old=arr[i],nv=(prompt("New name:",old)||"").trim();if(!nv||nv===old)return;
@@ -1676,7 +1702,7 @@ window.listRename=async(key,i)=>{
     await saveList(key,sortList(key,arr.map((x,j)=>j===i?nv:x)));
     const pk={locations:"location",units:"unit"}[key];
     if(pk){const aff=S.products.filter(p=>p[pk]===old);for(let k=0;k<aff.length;k+=400){const b=writeBatch(db);aff.slice(k,k+400).forEach(p=>b.update(doc(db,"products",p.id),{[pk]:nv}));await b.commit()}}
-  }catch(e){toast(e.message,1)}
+  }catch(e){toast(emsg(e),1)}
 };
 let secApp;
 async function createUser(){
@@ -1695,8 +1721,8 @@ async function createUser(){
   }catch(e){toast(e.code==="auth/email-already-in-use"?"That email already has an account. Use \"Send password reset\" in the list below, or add a profile for it":(e.code?e.code.replace("auth/","").replace(/-/g," "):e.message),1)}
   btn.disabled=false;
 }
-window.resetPw=async email=>{try{await sendPasswordResetEmail(auth,email);toast("Password reset link sent to "+email)}catch(e){toast(e.message,1)}};
-window.setRole=async(id,role)=>{try{await updateDoc(doc(db,"users",id),{role});toast("Role updated")}catch(e){toast(e.message,1)}};
+window.resetPw=async email=>{try{await sendPasswordResetEmail(auth,email);toast("Password reset link sent to "+email)}catch(e){toast(emsg(e),1)}};
+window.setRole=async(id,role)=>{try{await updateDoc(doc(db,"users",id),{role});toast("Role updated")}catch(e){toast(emsg(e),1)}};
 
 /* ---------- Import / Export ---------- */
 const norm=s=>String(s??"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").trim();
@@ -1717,7 +1743,7 @@ function resolveCategory(r){
   const m=bySlug[String(r.categorySlug||"").trim()];
   return m?{cat:m.cat,sub:m.sub,type:m.type}:{err:"Category is blank"};
 }
-const HMAP={sku:"sku",name:"name",productname:"name",vendor:"vendor",brand:"vendor",supplier:"vendor",suppliername:"vendor",vendorname:"vendor",barcode:"barcode",category:"category",subcategory:"subcategory",subcat:"subcategory",type:"type",categoryslug:"categorySlug",imageurl:"imageUrl",image:"imageUrl",mrp:"mrp",price:"price",sellingprice:"price",cost:"cost",costprice:"cost",gst:"gst",qty:"qty",stock:"qty",reorder:"reorder",unit:"unit",location:"location",description:"description",phone:"phone",mobile:"phone",phoneno:"phone",phonenumber:"phone",mobileno:"phone",contact:"phone",contactno:"phone",customername:"name",email:"email",emailid:"email",address:"address",notes:"notes"};
+const HMAP={sku:"sku",name:"name",productname:"name",vendor:"vendor",brand:"vendor",supplier:"vendor",suppliername:"vendor",vendorname:"vendor",barcode:"barcode",category:"category",subcategory:"subcategory",subcat:"subcategory",type:"type",categoryslug:"categorySlug",imageurl:"imageUrl",image:"imageUrl",mrp:"mrp",price:"price",sellingprice:"price",cost:"cost",costprice:"cost",gst:"gst",qty:"qty",stock:"qty",reorder:"reorder",unit:"unit",location:"location",description:"description",dimension:"dimension",size:"dimension",dimensions:"dimension",measurement:"dimension",dimunit:"dimUnit",dimensionunit:"dimUnit",sizeunit:"dimUnit",unitofmeasurement:"dimUnit",uom:"dimUnit",phone:"phone",mobile:"phone",phoneno:"phone",phonenumber:"phone",mobileno:"phone",contact:"phone",contactno:"phone",customername:"name",email:"email",emailid:"email",address:"address",notes:"notes"};
 function toObjs(all,key="sku"){
   const hi=all.findIndex(r=>r.some(c=>String(c).trim().toLowerCase()===key));
   if(hi<0)throw new Error(`Could not find a header row with a "${key}" column`);
@@ -1791,9 +1817,9 @@ async function photoMap(list){
 }
 const MONEY="#,##0.00";
 const PCOLS_X=[["photo",11],["sku",14,"@"],["name",34],["vendor",18],["barcode",18,"@"],["category",20],["subcategory",24],["type",22],["categorySlug",40],["imageUrl",30],
-  ["mrp",12,MONEY],["price",12,MONEY],["cost",12,MONEY],["gst",7],["qty",7],["booked",8],["available",10],["reorder",9],["unit",7],["location",18],["locations",30],["description",34]];
+  ["mrp",12,MONEY],["price",12,MONEY],["cost",12,MONEY],["dimension",14],["dim_unit",11],["gst",7],["qty",7],["booked",8],["available",10],["reorder",9],["unit",7],["location",18],["locations",30],["description",34]];
 const prow=p=>({sku:p.sku,name:p.name,vendor:vend(p),barcode:String(p.barcode||""),category:p.categoryName||"",subcategory:p.subcategoryName||"",type:p.typeName||"",
-  categorySlug:p.fullSlug||"",imageUrl:p.imageUrl||"",mrp:num(p.mrp),price:num(p.price),cost:num(p.cost),gst:num(p.gst),qty:+p.qty||0,booked:bk(p),available:avail(p),
+  categorySlug:p.fullSlug||"",imageUrl:p.imageUrl||"",mrp:num(p.mrp),price:num(p.price),cost:num(p.cost),dimension:dimOf(p),dim_unit:dimUnitOf(p),gst:num(p.gst),qty:+p.qty||0,booked:bk(p),available:avail(p),
   reorder:+p.reorder||0,unit:p.unit||"",location:p.location||"",locations:locText(p),description:p.description||""});
 const prodOf=pid=>S.products.find(p=>p.id===pid)||null;
 async function buildTemplate(EJ,tax,lists){
@@ -1819,12 +1845,12 @@ async function buildTemplate(EJ,tax,lists){
   locs.forEach((x,k)=>ls.getCell(k+2,locCol).value=x);
   const maxSub=Math.max(10,...tax.map(c=>c.subcategories.length))+5,maxTyp=Math.max(10,0,...tax.flatMap(c=>c.subcategories.map(s=>s.subcategories.length)))+5;
   // Products
-  const C=[["sku",14,1],["name",34,1],["vendor",18],["barcode",16],["category",20,1],["subcategory",24],["type",24],["categorySlug",42,2],["imageUrl",30],["mrp",11],["price",11,1],["cost",11],["gst",8],["qty",8],["reorder",9],["unit",8],["location",18],["description",36]];
+  const C=[["sku",14,1],["name",34,1],["vendor",18],["barcode",16],["category",20,1],["subcategory",24],["type",24],["categorySlug",42,2],["imageUrl",30],["mrp",11],["price",11,1],["cost",11],["gst",8],["qty",8],["reorder",9],["unit",8],["location",18],["description",36],["dimension",14],["dimUnit",12]];
   C.forEach(([h,w,k],i)=>{const cell=ws.getCell(1,i+1);cell.value=h;hdr(cell,k===1?"FFC8873A":k===2?"FF6B7570":"FF1F3A34");ws.getColumn(i+1).width=w});
   ws.getRow(1).height=22;ws.getColumn(1).numFmt="@";ws.getColumn(4).numFmt="@";
   ws.getCell("H1").note="Filled in automatically from category / subcategory / type. Don't type here.";
   const c0=tax[0],s0=c0?.subcategories[0],t0=s0?.subcategories[0];
-  const ex=["SOF-1001","EXAMPLE - delete this row","Brasscity","8901234567890",c0?.name||"",s0?.name||"",t0?.name||"",null,"",45000,39999,28000,18,4,1,"pcs",locs[0]||"Floor 1 - A2","Delete this row before importing"];
+  const ex=["SOF-1001","EXAMPLE - delete this row","Brasscity","8901234567890",c0?.name||"",s0?.name||"",t0?.name||"",null,"",45000,39999,28000,18,4,1,"pcs",locs[0]||"Floor 1 - A2","Delete this row before importing","16x16","inch"];
   ex.forEach((v,i)=>{if(v!==null){const cell=ws.getCell(2,i+1);cell.value=v;cell.font=AR({color:{argb:"FF0000FF"}})}});
   for(let r=2;r<=1000;r++){
     const cell=ws.getCell(r,8);
@@ -1840,6 +1866,8 @@ async function buildTemplate(EJ,tax,lists){
   ws.dataValidations.add("G2:G1000",V(`OFFSET(Lists!$${colL(tS)}$1,1,MATCH($E2&"|"&$F2,${tRng},0)-1,COUNTA(OFFSET(Lists!$${colL(tS)}$1,1,MATCH($E2&"|"&$F2,${tRng},0)-1,${maxTyp},1)),1)`));
   ws.dataValidations.add("M2:M1000",V(`"${(lists.gstRates||[]).join(",")}"`));
   ws.dataValidations.add("P2:P1000",V(`"${(lists.units||[]).join(",")}"`));
+  ws.dataValidations.add(`${colL(C.length)}2:${colL(C.length)}1000`,V(`"${(lists.dimUnits||[]).join(",")}"`,{errorStyle:"warning",errorTitle:"New unit?",error:"That unit is not in your list yet — it will still import."}));
+  ws.getCell(`${colL(C.length-1)}1`).note="The measurement only, e.g. 16x16 or 90x100. Put inch / cm / ft in the next column.";
   if(locs.length)ws.dataValidations.add("Q2:Q1000",V(`Lists!$${colL(locCol)}$2:$${colL(locCol)}$${locs.length+1}`,{errorStyle:"warning",errorTitle:"New location?",error:"This location is not in your list yet. It will be added when you import."}));
   // How to use
   how.getColumn(1).width=20;how.getColumn(2).width=100;
@@ -1866,7 +1894,7 @@ window.exportProducts=async()=>{
     const{images,failed,EJ}=await photoMap(L);
     dlx("products-"+dkey()+".xlsx",await buildWorkbook(EJ,[{name:"Products",cols:PCOLS_X,rows:L.map(prow),images,freeze:3}]));
     toast(`Exported ${L.length} products${failed?` · ${failed} photo(s) couldn't be embedded (links kept in imageUrl)`:""}`);
-  }catch(e){toast(e.message,1)}
+  }catch(e){toast(emsg(e),1)}
 };
 window.exportSales=async()=>{
   const L=S.sales.filter(s=>!S.salesDay||s.dateKey===S.salesDay);
@@ -1882,14 +1910,14 @@ window.exportSales=async()=>{
         customer:s.customer?.name||"Walk-in",phone:String(s.customer?.phone||""),payment:s.payment,status:s.status||"completed",
         items:s.items.map(i=>`${i.name} x${i.qty}`).join("; "),subtotal:num(s.subtotal),discount:num(s.discount),gst_included:num(s.gstAmount),
         advance:num(s.advance),total:num(s.total),booking:s.bookingNo||"",sold_by:s.soldByName||""}))},
-      {name:"Sale items",freeze:3,images,cols:[["photo",11],["invoice",16],["date",12],["sku",14,"@"],["name",34],["category",28],["qty",7],
+      {name:"Sale items",freeze:3,images,cols:[["photo",11],["invoice",16],["date",12],["sku",14,"@"],["name",34],["dimension",14],["category",28],["qty",7],
         ["price",12,MONEY],["line_total",13,MONEY],["gst",7],["taken_from",18],["customer",22],["phone",16,"@"]],
-       rows:lines.map(({s,i})=>{const p=prodOf(i.pid);return{invoice:s.invoiceNo,date:s.dateKey,sku:i.sku,name:i.name,
+       rows:lines.map(({s,i})=>{const p=prodOf(i.pid);return{invoice:s.invoiceNo,date:s.dateKey,sku:i.sku,name:i.name,dimension:p?dimText(p):"",
         category:p?[p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" > "):"",qty:i.qty,price:num(i.price),
         line_total:num(i.lineTotal??i.price*i.qty),gst:num(i.gst),taken_from:i.takenFrom||"",customer:s.customer?.name||"Walk-in",phone:String(s.customer?.phone||"")}})}
     ]));
     toast(`Exported ${L.length} bill(s)`);
-  }catch(e){toast(e.message,1)}
+  }catch(e){toast(emsg(e),1)}
 };
 window.exportMoves=async()=>{
   const L=S.moves;if(!L.length)return toast("No stock movements to export",1);
@@ -1901,7 +1929,7 @@ window.exportMoves=async()=>{
       rows:L.map(m=>{const p=prodOf(m.productId);return{date:dkey(new Date(tms(m.createdAt))),time:new Date(tms(m.createdAt)).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}),
         sku:m.sku,product:m.productName,type:m.type,change:m.delta,before:m.before,after:m.after,from:m.fromLoc||"",to:m.toLoc||(p?.location||""),note:m.note||"",by:m.byName||""}})}]));
     toast(`Exported ${L.length} movements`);
-  }catch(e){toast(e.message,1)}
+  }catch(e){toast(emsg(e),1)}
 };
 window.exportCustomers=async()=>{
   const L=S.customers;if(!L.length)return toast("No customers to export",1);
@@ -1915,7 +1943,7 @@ window.exportCustomers=async()=>{
         billed:led.billed,received:led.paid,balance:led.balance,pending:led.pending,
         last_purchase:st.last?fdt(st.last):"",added:c.createdAt?fdt(tms(c.createdAt)):""}})}]));
     toast(`Exported ${L.length} customers`);
-  }catch(e){toast(e.message,1)}
+  }catch(e){toast(emsg(e),1)}
 };
 window.exportBookings=async()=>{
   const L=S.bookings;if(!L.length)return toast("No bookings to export",1);
@@ -1938,7 +1966,7 @@ window.exportBookings=async()=>{
         phone:String(p.customerPhone||""),amount:num(p.amount),mode:p.mode||"",note:p.note||"",entered_by:p.createdByName||""}))}
     ]));
     toast(`Exported ${L.length} bookings`);
-  }catch(e){toast(e.message,1)}
+  }catch(e){toast(emsg(e),1)}
 };
 window.openImport=(kind="products")=>{
   if(kind==="customers")return openImportCustomers();
@@ -1948,7 +1976,7 @@ window.openImport=(kind="products")=>{
   <input type="file" id="imp-f" accept=".xlsx,.xls,.csv"><div id="imp-r" class="small" style="margin-top:10px"></div>
   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Close</button><button class="btn" id="imp-go" disabled>Import</button></div></div></div>`;
   let good=[];
-  $("#imp-tpl").onclick=async()=>{try{const EJ=await loadExcelJS();const buf=await buildTemplate(EJ,TAXONOMY,S.lists);const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download="Inventory_Import_Template.xlsx";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}catch(e){toast(e.message,1)}};
+  $("#imp-tpl").onclick=async()=>{try{const EJ=await loadExcelJS();const buf=await buildTemplate(EJ,TAXONOMY,S.lists);const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download="Inventory_Import_Template.xlsx";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}catch(e){toast(emsg(e),1)}};
   $("#imp-f").onchange=async e=>{
     const f=e.target.files[0];if(!f)return;$("#imp-r").textContent="Reading…";good=[];$("#imp-go").disabled=true;
     try{
@@ -1974,6 +2002,7 @@ window.openImport=(kind="products")=>{
           const vr=r.vendor?S.vendors.find(x=>norm(x.name)===norm(r.vendor)):null;
           const d={sku:r.sku,name:r.name,vendor:r.vendor||"",vendorId:vr?.id||"",barcode:r.barcode||"",categoryId:c.id,categoryName:c.name,categorySlug:c.slug,
             subcategoryId:s?.id||"",subcategoryName:s?.name||"",subcategorySlug:s?.slug||"",typeId:t?.id||"",typeName:t?.name||"",typeSlug:t?.slug||"",fullSlug:(t||s||c).slug,
+            dimension:String(r.dimension||"").trim(),dimUnit:String(r.dimUnit||"").trim(),
             mrp:num(r.mrp)||num(r.price),price:num(r.price),cost:num(r.cost),gst:r.gst===undefined||r.gst===""?18:num(r.gst),reorder:r.reorder===undefined||r.reorder===""?2:num(r.reorder),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
           if(r.imageUrl)d.imageUrl=r.imageUrl;
           const ex=bySku[key]||seen[key];
@@ -1985,7 +2014,7 @@ window.openImport=(kind="products")=>{
       const known=new Set(allLocations().map(x=>x.toLowerCase())),addLoc=[...new Set(good.map(({r})=>String(r.location||"").trim()).filter(x=>x&&!known.has(x.toLowerCase())))];
       if(addLoc.length)await saveList("locations",[...S.lists.locations,...addLoc].sort(natcmp));
       closeModal();toast(`Imported: ${n} new, ${u} updated${addLoc.length?`, ${addLoc.length} new location${addLoc.length>1?"s":""} added to the list`:""}`);
-    }catch(e){toast(e.message,1);$("#imp-go").disabled=false;$("#imp-go").textContent="Import"}
+    }catch(e){toast(emsg(e),1);$("#imp-go").disabled=false;$("#imp-go").textContent="Import"}
   };
 };
 window.openImportCustomers=()=>{
@@ -1995,7 +2024,7 @@ window.openImportCustomers=()=>{
   <input type="file" id="ic-f" accept=".xlsx,.xls,.csv"><div id="ic-r" class="small" style="margin-top:10px"></div>
   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Close</button><button class="btn" id="ic-go" disabled>Import</button></div></div></div>`;
   let good=[];
-  $("#ic-tpl").onclick=async()=>{try{const EJ=await loadExcelJS();dlx("Inventory_Import_Template.xlsx",await buildTemplate(EJ,TAXONOMY,S.lists))}catch(e){toast(e.message,1)}};
+  $("#ic-tpl").onclick=async()=>{try{const EJ=await loadExcelJS();dlx("Inventory_Import_Template.xlsx",await buildTemplate(EJ,TAXONOMY,S.lists))}catch(e){toast(emsg(e),1)}};
   $("#ic-f").onchange=async e=>{
     const f=e.target.files[0];if(!f)return;$("#ic-r").textContent="Reading…";good=[];$("#ic-go").disabled=true;
     try{
@@ -2025,7 +2054,7 @@ window.openImportCustomers=()=>{
           else{b.set(doc(collection(db,"customers")),{...g,createdAt:serverTimestamp(),createdBy:S.user.uid});n++}});
         await b.commit()}
       closeModal();toast(`Imported: ${n} new, ${u} updated`);
-    }catch(e){toast(e.message,1);btn.disabled=false;btn.textContent="Import"}
+    }catch(e){toast(emsg(e),1);btn.disabled=false;btn.textContent="Import"}
   };
 };
 
@@ -2060,8 +2089,9 @@ function labelsHTML(items,o,svgFn){
 .nm{font-size:${roll?"6.5pt":"8pt"};line-height:1.15;max-height:2.3em;overflow:hidden;font-weight:600}
 .sk{font-size:${roll?"7.5pt":"9.5pt"};font-weight:700;display:flex;justify-content:space-between;gap:4px}
 .bc svg{display:block;width:100%;height:${roll?"8mm":"11mm"}}
+.dm{font-size:${roll?"6.5pt":"8pt"};font-weight:600}
 .no{font-size:${roll?"7pt":"8.5pt"};letter-spacing:.8px;text-align:center}`;
-  const body=items.map(p=>`<div class="lb"><div class="nm">${esc(p.name)}</div><div class="sk"><span>${esc(p.sku)}</span>${o.price?`<span>${inr(p.price)}</span>`:""}</div><div class="bc">${svgFn(p.barcode)}</div><div class="no">${esc(p.barcode)}</div></div>`).join("");
+  const body=items.map(p=>`<div class="lb"><div class="nm">${esc(p.name)}</div><div class="sk"><span>${esc(p.sku)}</span>${o.price?`<span>${inr(p.price)}</span>`:""}</div>${dimText(p)?`<div class="dm">${esc(dimText(p))}</div>`:""}<div class="bc">${svgFn(p.barcode)}</div><div class="no">${esc(p.barcode)}</div></div>`).join("");
   return `<!doctype html><html><head><meta charset="utf-8"><title>Barcode labels</title><style>${css}</style></head><body><div class="sheet">${body}</div>${o.noprint?"":"<script>onload=()=>setTimeout(()=>print(),500)<\/script>"}</body></html>`;
 }
 window.openLabels=function(){
@@ -2089,7 +2119,7 @@ window.openLabels=function(){
       const codes=await nextBarcodes(miss.length);
       for(let i=0;i<miss.length;i+=400){const b=writeBatch(db);miss.slice(i,i+400).forEach((p,j)=>b.update(doc(db,"products",p.id),{barcode:codes[i+j],updatedAt:serverTimestamp(),updatedBy:S.user.uid}));await b.commit()}
       miss.forEach((p,i)=>p.barcode=codes[i]);toast(`${miss.length} barcodes created`);
-    }catch(e){toast(e.message,1)}
+    }catch(e){toast(emsg(e),1)}
     btn.disabled=false;btn.textContent="Generate missing barcodes";info();
   };
   $("#lb-xlsx").onclick=async()=>{
@@ -2097,10 +2127,10 @@ window.openLabels=function(){
     try{
       const{images,EJ}=await photoMap(L);
       dlx("barcode-list-"+dkey()+".xlsx",await buildWorkbook(EJ,[{name:"Barcodes",freeze:3,images,
-        cols:[["photo",11],["sku",14,"@"],["name",34],["barcode",18,"@"],["category",30],["location",18],["price",12,MONEY],["qty",7]],
-        rows:L.map(p=>({sku:p.sku,name:p.name,barcode:String(p.barcode),category:[p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" > "),
+        cols:[["photo",11],["sku",14,"@"],["name",34],["dimension",14],["dim_unit",11],["barcode",18,"@"],["category",30],["location",18],["price",12,MONEY],["qty",7]],
+        rows:L.map(p=>({sku:p.sku,name:p.name,dimension:dimOf(p),dim_unit:dimUnitOf(p),barcode:String(p.barcode),category:[p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" > "),
           location:p.location||"",price:num(p.price),qty:+p.qty||0}))}]));
-    }catch(e){toast(e.message,1)}
+    }catch(e){toast(emsg(e),1)}
   };
   $("#lb-print").onclick=async()=>{
     const L=list().filter(p=>p.barcode);if(!L.length)return toast("No products with a barcode in this selection",1);
@@ -2110,7 +2140,7 @@ window.openLabels=function(){
     const w=window.open("","_blank");if(!w)return toast("Allow pop-ups to print",1);
     try{await loadJsBarcode();
       w.document.write(labelsHTML(items,{layout:$("#lb-layout").value,price:$("#lb-price").checked,border:$("#lb-border").checked},barcodeSVG));w.document.close();
-    }catch(e){w.close();toast(e.message,1)}
+    }catch(e){w.close();toast(emsg(e),1)}
   };
 };
 window.dl=dl;
