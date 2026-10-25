@@ -288,6 +288,10 @@ const dimText = p=>{const d=dimOf(p);return d?(d+(dimUnitOf(p)?" "+dimUnitOf(p):
 // Reorder levels are switched off for now. Flip this to true to bring the field back in the
 // product form; the data behind it is untouched, so nothing is lost while it is off.
 const SHOW_REORDER=false;
+// Billing method and credit period are off. Flip this to true to bring them back in the vendor
+// form, on the vendor page and list, on a purchase, in the statement and in the export.
+// Values already saved on a vendor are kept either way.
+const SHOW_BILLING=false;
 const CHARGE_HEADS=["Freight","GST","Loading","Packing","Transport","Insurance","Discount"];
 const UNLOC="Unassigned";
 const locMapOf=d=>{
@@ -315,7 +319,7 @@ const addTo=(m,loc,n)=>{const o={...m},k=String(loc||"").trim()||UNLOC;o[k]=(+o[
 const primaryLoc=m=>{const e=Object.entries(m).filter(([,v])=>+v>0).sort((a,b)=>b[1]-a[1]);return e.length?e[0][0]:""};
 const bk = p=>Math.max(0,+p.booked||0);
 const avail = p=>(+p.qty||0)-bk(p);
-const lowStock = p=>p.qty>0&&p.qty<=num(p.reorder);
+const lowStock = p=>SHOW_REORDER&&p.qty>0&&p.qty<=num(p.reorder);   // no amber while reorder levels are off
 const outStock = p=>p.qty<=0;
 
 /* ---------- Auth & boot ---------- */
@@ -1064,7 +1068,7 @@ const vendorStats=v=>{
 function vVendors(el){
   const q=S.vf.q.trim().toLowerCase();
   const L=S.vendors.filter(v=>(!S.vf.cat||v.category===S.vf.cat))
-    .filter(v=>!q||`${v.name} ${v.contact||""} ${v.contact2||""} ${v.phone||""} ${v.phone2||""} ${v.city||""} ${v.category||""} ${v.billingMethod||""}`.toLowerCase().includes(q))
+    .filter(v=>!q||`${v.name} ${v.contact||""} ${v.contact2||""} ${v.phone||""} ${v.phone2||""} ${v.city||""} ${v.category||""} ${SHOW_BILLING?(v.billingMethod||""):""}`.toLowerCase().includes(q))
     .map(v=>({v,st:vendorStats(v)})).sort((a,b)=>a.v.name.localeCompare(b.v.name));
   const unlisted=[...new Set(S.products.map(vend).filter(Boolean))].filter(n=>!S.vendors.some(v=>norm(v.name)===norm(n)));
   el.innerHTML=`<div class="top"><h2>Vendors <span class="mute small">(${S.vendors.length})</span></h2>
@@ -1083,16 +1087,16 @@ function vVendors(el){
    <div class="full"><input id="vf-q" placeholder="Search vendor, contact, phone, city, category or billing method…" value="${esc(S.vf.q)}"></div>
    <select id="vf-cat"><option value="">All categories</option>${withCur([...new Set([...(S.lists.vendorCategories||[]),...S.vendors.map(v=>v.category).filter(Boolean)])].sort(natcmp),S.vf.cat).map(c=>`<option ${S.vf.cat===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
   </div></div>
-  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Vendor</th><th>Category</th><th>Contact</th><th>Billing</th><th class="n">Products</th><th class="n">Stock value</th><th class="n">Balance</th><th></th></tr></thead><tbody>
+  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Vendor</th><th>Category</th><th>Contact</th>${SHOW_BILLING?"<th>Billing</th>":""}<th class="n">Products</th><th class="n">Stock value</th><th class="n">Balance</th><th></th></tr></thead><tbody>
   ${L.map(({v,st})=>`<tr><td data-l="Vendor"><a href="#vendor/${v.id}"><b>${esc(v.name)}</b></a>${v.active===false?` <span class="tag out">inactive</span>`:""}<br><span class="small mute">${esc(v.city||"")}${v.gstin?" · GSTIN "+esc(v.gstin):""}</span></td>
    <td data-l="Category" class="small">${esc(v.category||"—")}</td>
    <td data-l="Contact">${esc(v.contact||"—")}<br>${v.phone?`<a class="small" href="tel:${esc(v.phone)}">${esc(v.phone)}</a>`:""}${v.contact2?`<br><span class="small mute">${esc(v.contact2)}${v.phone2?" · "+esc(v.phone2):""}</span>`:""}</td>
-   <td data-l="Billing" class="small">${esc(v.billingMethod||"—")}${v.creditDays?`<br><span class="mute">${v.creditDays} days</span>`:""}</td>
+   ${SHOW_BILLING?`<td data-l="Billing" class="small">${esc(v.billingMethod||"—")}${v.creditDays?`<br><span class="mute">${v.creditDays} days</span>`:""}</td>`:""}
    <td data-l="Products" class="n">${st.items.length}<br><span class="small mute">${st.units} units</span></td>
    <td data-l="Stock value" class="n">${inr(st.cost)}</td>
    <td data-l="Balance" class="n">${(()=>{const L=vendorLedger(v);return L.balance?`<span style="color:${L.balance<0?"var(--bad)":"var(--ok)"}">${inr(L.balance)}</span>`:`<span class="mute">—</span>`})()}</td>
    <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="openVendor('${v.id}')">Edit</button></div></td></tr>`).join("")
-   ||`<tr><td colspan="8" class="mute">${S.vendors.length?"No vendor matches that search.":"No vendors yet — add the people you buy from."}</td></tr>`}
+   ||`<tr><td colspan="${SHOW_BILLING?8:7}" class="mute">${S.vendors.length?"No vendor matches that search.":"No vendors yet — add the people you buy from."}</td></tr>`}
   </tbody></table></div>`;
   const i=$("#vf-q");i.oninput=()=>{S.vf.q=i.value;clearTimeout(vVendors.t);vVendors.t=setTimeout(()=>{render();const n=$("#vf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
   $("#vf-cat").onchange=e=>{S.vf.cat=e.target.value;render()};
@@ -1106,7 +1110,7 @@ function vVendor(el){
    ...(v.contact2||v.phone2?[["Second contact",`${esc(v.contact2||"—")}${v.phone2?` · <a href="tel:${esc(v.phone2)}">${esc(v.phone2)}</a>`:""}`]]:[]),
    ["Email",esc(v.email||"—")],
    ["GSTIN",esc(v.gstin||"—")],["Address",esc([v.address,v.city].filter(Boolean).join(", ")||"—")],
-   ["Billing method",esc(v.billingMethod||"—")],["Credit period",v.creditDays?`${v.creditDays} days`:"—"],
+   ...(SHOW_BILLING?[["Billing method",esc(v.billingMethod||"—")],["Credit period",v.creditDays?`${v.creditDays} days`:"—"]]:[]),
    ["Bank / payment details",esc(v.bank||"—")],["Standing note",esc(v.notes||"—")],
    ["Status",v.active===false?`<span class="tag out">inactive</span>`:`<span class="tag ok">active</span>`]];
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('vendors')">← Back</button><h2>${esc(v.name)}</h2></div>
@@ -1120,7 +1124,7 @@ function vVendor(el){
    <div class="card stat"><div class="k">${L.balance<0?"Payable to vendor":L.balance>0?"Advance with vendor":"Account balance"}</div>
     <div class="v" style="color:${L.balance<0?"var(--bad)":L.balance>0?"var(--ok)":"inherit"}">${L.balance?inr(L.balance):"₹0.00"}</div>
     <div class="s">billed ${inr(L.billed)} · paid ${inr(L.paid)}</div></div>
-   <div class="card stat"><div class="k">Billing</div><div class="v" style="font-size:15px;font-weight:600">${esc(v.billingMethod||"—")}</div><div class="s">${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?v.creditDays+" days credit":esc(v.contact||v.city||"")}</div></div></div>
+   ${SHOW_BILLING?`<div class="card stat"><div class="k">Billing</div><div class="v" style="font-size:15px;font-weight:600">${esc(v.billingMethod||"—")}</div><div class="s">${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?v.creditDays+" days credit":esc(v.contact||v.city||"")}</div></div>`:""}</div>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
    <div class="card" style="padding:6px 14px"><table>${R.map(r=>`<tr><td class="mute" style="width:42%">${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table></div>
    <div class="card"><h3 style="margin-bottom:8px">Notes (${notes.length})</h3>
@@ -1223,7 +1227,7 @@ window.openPurchase=function(vid,keepState){
   window.puDraw=draw;
   if(!keepState){S.pcart=[];S.pq="";S.pchg=[];S.puBill="";S.puDate=dkey();S.puNote="";S.puLoc=allLocations()[0]||UNLOC;S.puStock=true;S.puLocTouched=false}
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:720px"><h3>Record a purchase from ${esc(v.name)}</h3>
-   <p class="mute small">${esc(v.billingMethod||"")}${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?` · ${v.creditDays} days credit`:""}</p>
+   ${SHOW_BILLING?`<p class="mute small">${esc(v.billingMethod||"")}${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?` · ${v.creditDays} days credit`:""}</p>`:""}
    <div id="pu-body"></div>
    <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="pu-go">Save purchase</button></div></div></div>`;
   draw();
@@ -1336,7 +1340,7 @@ window.printVendorStatement=id=>{
   <h2>${esc(st.storeName)}</h2><div class="m">${esc(st.address||"")}${st.phone?" · Ph "+esc(st.phone):""}${st.gstin?" · GSTIN "+esc(st.gstin):""}</div>
   <h3 style="margin-top:14px">Vendor statement</h3>
   <div class="m">${esc(v.name)}${v.contact?" · "+esc(v.contact):""}${v.phone?" · "+esc(v.phone):""}${v.gstin?" · GSTIN "+esc(v.gstin):""}<br>
-   ${esc(v.billingMethod||"")}${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?` · ${v.creditDays} days credit`:""} · Printed ${fdt(Date.now())}</div>
+   ${SHOW_BILLING?`${esc(v.billingMethod||"")}${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?` · ${v.creditDays} days credit`:""} · `:""}Printed ${fdt(Date.now())}</div>
   <table><thead><tr><th>Date</th><th>Particulars</th><th class="n">Billed</th><th class="n">Paid</th><th class="n">Balance</th></tr></thead><tbody>
   ${L.rows.map(e=>`<tr><td>${fdt(e.ms)}</td><td>${esc(e.what)}<br><span class="m">${esc(e.detail)}</span></td>
    <td class="n">${e.charge?inr(e.charge):"—"}</td><td class="n">${e.paid?inr(e.paid):"—"}</td><td class="n">${inr(e.bal)}</td></tr>`).join("")||`<tr><td colspan="5">No entries yet.</td></tr>`}
@@ -1362,8 +1366,8 @@ window.openVendor=function(id,preset){
    <div class="full"><label>Address</label><input id="v-address" value="${esc(v.address)}"></div>
    <div><label>City</label><input id="v-city" value="${esc(v.city)}"></div>
    <div><label>Email</label><input id="v-email" type="email" value="${esc(v.email)}"></div>
-   <div><label>Billing method</label><select id="v-bm"><option value="">—</option>${withCur(methods,v.billingMethod).map(m=>`<option ${v.billingMethod===m?"selected":""}>${esc(m)}</option>`).join("")}</select></div>
-   <div><label>Credit period (days)</label><input id="v-days" type="number" min="0" value="${v.creditDays??""}"></div>
+   ${SHOW_BILLING?`<div><label>Billing method</label><select id="v-bm"><option value="">—</option>${withCur(methods,v.billingMethod).map(m=>`<option ${v.billingMethod===m?"selected":""}>${esc(m)}</option>`).join("")}</select></div>
+   <div><label>Credit period (days)</label><input id="v-days" type="number" min="0" value="${v.creditDays??""}"></div>`:""}
    <div class="full"><label>Bank / payment details</label><input id="v-bank" placeholder="Account, UPI id, cheque in favour of…" value="${esc(v.bank)}"></div>
    <div class="full"><label>Standing note</label><textarea id="v-notes" rows="2" placeholder="Delivers Tuesdays · 2% discount above 10 pieces · always confirm fabric code">${esc(v.notes)}</textarea></div>
    <label style="display:flex;gap:8px;align-items:center;color:var(--ink);font-size:14px"><input type="checkbox" id="v-active" style="width:auto" ${v.active===false?"":"checked"}> Active (shown in the product dropdown)</label>
@@ -1387,7 +1391,8 @@ window.openVendor=function(id,preset){
       contact2:$("#v-contact2").value.trim(),phone2:$("#v-phone2").value.trim(),category:$("#v-cat").value,
       email:$("#v-email").value.trim(),
       gstin:$("#v-gstin").value.trim(),address:$("#v-address").value.trim(),city:$("#v-city").value.trim(),
-      billingMethod:$("#v-bm").value,creditDays:num($("#v-days").value),bank:$("#v-bank").value.trim(),
+      billingMethod:$("#v-bm")?$("#v-bm").value:(v.billingMethod||""),creditDays:$("#v-days")?num($("#v-days").value):num(v.creditDays),
+      bank:$("#v-bank").value.trim(),
       notes:$("#v-notes").value.trim(),active:$("#v-active").checked,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
     const btn=$("#v-save");btn.disabled=true;
     try{
@@ -1439,11 +1444,11 @@ window.exportVendors=async()=>{
     const EJ=await loadExcelJS();
     dlx("vendors-"+dkey()+".xlsx",await buildWorkbook(EJ,[
       {name:"Vendors",freeze:1,cols:[["name",26],["category",20],["contact",20],["phone",16,"@"],["contact_2",20],["phone_2",16,"@"],["email",24],["gstin",18],["address",30],["city",16],
-        ["billing_method",26],["credit_days",12],["bank_details",28],["standing_note",36],["products",10],["units_in_stock",14],["stock_value_cost",16,MONEY],["billed",14,MONEY],["paid",14,MONEY],["balance",14,MONEY],["payable",14,MONEY],["status",10]],
+        ...(SHOW_BILLING?[["billing_method",26],["credit_days",12]]:[]),["bank_details",28],["standing_note",36],["products",10],["units_in_stock",14],["stock_value_cost",16,MONEY],["billed",14,MONEY],["paid",14,MONEY],["balance",14,MONEY],["payable",14,MONEY],["status",10]],
        rows:S.vendors.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(v=>{const st=vendorStats(v);
          return{name:v.name,category:v.category||"",contact:v.contact||"",phone:String(v.phone||""),
            contact_2:v.contact2||"",phone_2:String(v.phone2||""),email:v.email||"",gstin:v.gstin||"",address:v.address||"",city:v.city||"",
-           billing_method:v.billingMethod||"",credit_days:v.creditDays||0,bank_details:v.bank||"",standing_note:v.notes||"",
+           ...(SHOW_BILLING?{billing_method:v.billingMethod||"",credit_days:v.creditDays||0}:{}),bank_details:v.bank||"",standing_note:v.notes||"",
            products:st.items.length,units_in_stock:st.units,stock_value_cost:st.cost,
            billed:vendorLedger(v).billed,paid:vendorLedger(v).paid,balance:vendorLedger(v).balance,payable:vendorLedger(v).payable,
            status:v.active===false?"inactive":"active"}})},
@@ -1935,7 +1940,7 @@ function vSettings(el){
    ${listCard("dimUnits","Dimension units","The unit beside a product's size: inch, cm, ft…")}
    ${listCard("gstRates","GST rates (%)","Choices in the product form.")}
    ${listCard("payModes","Payment modes","Choices on the billing screen.")}
-   ${listCard("billingMethods","Vendor billing methods","How you settle with a vendor. Picked on each vendor's page.")}
+   ${SHOW_BILLING?listCard("billingMethods","Vendor billing methods","How you settle with a vendor. Picked on each vendor's page."):""}
    ${listCard("vendorPayModes","Vendor payment modes","How you pay a vendor: cash, online, cheque…")}
    ${listCard("vendorCategories","Vendor categories","What a vendor supplies. Picked on each vendor and used to filter the vendor list.")}
    <div class="card" style="grid-column:1/-1"><h3 style="margin-bottom:6px">Staff accounts</h3>
