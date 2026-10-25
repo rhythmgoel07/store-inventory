@@ -159,7 +159,8 @@ const DEFAULT_PERMS={
   manager:{productPage:false,stockIn:true,transfer:true,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false,manageVendors:false,vendorLedger:false},
   sales:{productPage:false,stockIn:false,transfer:false,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false,manageVendors:false,vendorLedger:false}};
 const DEFAULT_LISTS={locations:[],units:["pcs","set","pair","mtr","kg","box"],gstRates:[0,5,12,18,28],payModes:["Cash","UPI","Card","Bank transfer","Credit"],
-  dimUnits:["inch","cm","ft","mm","m","sq ft"],vendorPayModes:["Cash","UPI","Bank transfer","Cheque","Adjustment / credit note"],billingMethods:["Payment against delivery","Advance payment","15 days credit","30 days credit","45 days credit","Monthly settlement","Consignment (sale or return)"]};
+  dimUnits:["inch","cm","ft","mm","m","sq ft"],vendorPayModes:["Cash","UPI","Bank transfer","Cheque","Adjustment / credit note"],
+  vendorCategories:["Furniture","Furnishing","Tableware","Decor","Plants and Planters","Lighting","Kitchen","Bath and Laundry"],billingMethods:["Payment against delivery","Advance payment","15 days credit","30 days credit","45 days credit","Monthly settlement","Consignment (sale or return)"]};
 const ref = n=>({id:n.id,name:n.name,slug:n.slug});
 
 /* ---------- Helpers ---------- */
@@ -249,7 +250,7 @@ const configured = firebaseConfig && firebaseConfig.apiKey && !/YOUR_/.test(fire
 let app,auth,db;
 const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",invoicePrefix:"INV",address:"",phone:"",gstin:"",footer:"Thank you for shopping with us!",allowNegative:false},
   products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",dim:"",loc:"",stock:"all",sort:"name",limit:100},
-  lists:{...DEFAULT_LISTS},vendors:[],purchases:[],vpays:[],pcart:[],pq:"",vf:{q:""},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:""},bf:{q:"",status:"booked"},detailCust:null,detailBk:null,
+  lists:{...DEFAULT_LISTS},vendors:[],purchases:[],vpays:[],pcart:[],pchg:[],pq:"",vf:{q:"",cat:""},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:""},bf:{q:"",status:"booked"},detailCust:null,detailBk:null,
   bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bdate:"",bnotes:"",bq:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",unsub:[]};
 
 if(configured){
@@ -287,6 +288,7 @@ const dimText = p=>{const d=dimOf(p);return d?(d+(dimUnitOf(p)?" "+dimUnitOf(p):
 // Reorder levels are switched off for now. Flip this to true to bring the field back in the
 // product form; the data behind it is untouched, so nothing is lost while it is off.
 const SHOW_REORDER=false;
+const CHARGE_HEADS=["Freight","GST","Loading","Packing","Transport","Insurance","Discount"];
 const UNLOC="Unassigned";
 const locMapOf=d=>{
   if(d&&d.locQty&&typeof d.locQty==="object")return{...d.locQty};
@@ -532,9 +534,9 @@ function vProduct(el){
 window.S=S;window.render=render;
 
 /* Product form */
-window.openProduct=function(id){
+window.openProduct=function(id,preset){
   if(!can("editProducts"))return toast("You don't have permission to add or edit products",1);
-  const p=S.products.find(x=>x.id===id)||{qty:1,reorder:0,gst:0,unit:"pcs",active:true};
+  const p=S.products.find(x=>x.id===id)||{qty:1,reorder:0,gst:0,unit:"pcs",active:true,...(preset||{})};
   const o=(arr,sel)=>arr.map(n=>`<option value="${n.id}" ${sel===n.id?"selected":""}>${esc(n.name)}</option>`).join("");
   const cat=TAXONOMY.find(c=>c.id===p.categoryId),sub=cat?.subcategories.find(s=>s.id===p.subcategoryId);
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal"><h3>${id?"Edit product":"Add product"}</h3>
@@ -613,9 +615,10 @@ async function saveProduct(id){
     dimension:v("#p-dim"),dimUnit:v("#p-dim")?v("#p-dimunit"):"",
     reorder:$("#p-re")?num(v("#p-re")):num(old.reorder),unit:v("#p-unit"),location:v("#p-loc"),description:v("#p-desc"),active:true,
     updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+  let r;
   try{
     const b=writeBatch(db);
-    const r=id?doc(db,"products",id):doc(collection(db,"products"));
+    r=id?doc(db,"products",id):doc(collection(db,"products"));
     if(id)b.update(r,d);
     else{const q=Math.max(0,Math.floor(num(v("#p-qty"))));
       b.set(r,{...d,qty:q,booked:0,locQty:q?{[d.location||UNLOC]:q}:{},createdAt:serverTimestamp()});
@@ -624,6 +627,7 @@ async function saveProduct(id){
     else if(IMGSTATE.rm&&old.hasImage){b.delete(doc(db,"productImages",r.id));IMG.cache.delete(r.id)}
     await b.commit();
     closeModal();toast("Saved");
+    const back=window.__afterProduct;window.__afterProduct=null;if(back)back(r.id);
   }catch(e){toast(emsg(e),1)}
 }
 function mv(pid,pname,sku,type,delta,before,after,note){return{productId:pid,productName:pname,sku,type,delta,before,after,note:note||"",by:S.user.uid,byName:S.profile.name,createdAt:serverTimestamp()}}
@@ -1059,7 +1063,8 @@ const vendorStats=v=>{
 };
 function vVendors(el){
   const q=S.vf.q.trim().toLowerCase();
-  const L=S.vendors.filter(v=>!q||`${v.name} ${v.contact||""} ${v.phone||""} ${v.city||""} ${v.billingMethod||""}`.toLowerCase().includes(q))
+  const L=S.vendors.filter(v=>(!S.vf.cat||v.category===S.vf.cat))
+    .filter(v=>!q||`${v.name} ${v.contact||""} ${v.contact2||""} ${v.phone||""} ${v.phone2||""} ${v.city||""} ${v.category||""} ${v.billingMethod||""}`.toLowerCase().includes(q))
     .map(v=>({v,st:vendorStats(v)})).sort((a,b)=>a.v.name.localeCompare(b.v.name));
   const unlisted=[...new Set(S.products.map(vend).filter(Boolean))].filter(n=>!S.vendors.some(v=>norm(v.name)===norm(n)));
   el.innerHTML=`<div class="top"><h2>Vendors <span class="mute small">(${S.vendors.length})</span></h2>
@@ -1074,24 +1079,32 @@ function vVendors(el){
   ${unlisted.length?`<div class="card" style="margin-bottom:12px"><b>${unlisted.length} vendor name${unlisted.length===1?"":"s"} used on products but not in this list</b>
    <p class="mute small">These came from typed-in or imported names. Add them so they appear in the dropdown with their billing method and notes.</p>
    <div class="pill-row">${unlisted.slice(0,24).map(n=>`<button class="btn sm sec" onclick='openVendor(null,${JSON.stringify(n)})'>+ ${esc(n)}</button>`).join("")}</div></div>`:""}
-  <div class="card" style="margin-bottom:12px"><input id="vf-q" placeholder="Search vendor, contact, phone, city or billing method…" value="${esc(S.vf.q)}"></div>
-  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Vendor</th><th>Contact</th><th>Billing</th><th class="n">Products</th><th class="n">Stock value</th><th class="n">Balance</th><th></th></tr></thead><tbody>
+  <div class="card" style="margin-bottom:12px"><div class="f">
+   <div class="full"><input id="vf-q" placeholder="Search vendor, contact, phone, city, category or billing method…" value="${esc(S.vf.q)}"></div>
+   <select id="vf-cat"><option value="">All categories</option>${withCur([...new Set([...(S.lists.vendorCategories||[]),...S.vendors.map(v=>v.category).filter(Boolean)])].sort(natcmp),S.vf.cat).map(c=>`<option ${S.vf.cat===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
+  </div></div>
+  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Vendor</th><th>Category</th><th>Contact</th><th>Billing</th><th class="n">Products</th><th class="n">Stock value</th><th class="n">Balance</th><th></th></tr></thead><tbody>
   ${L.map(({v,st})=>`<tr><td data-l="Vendor"><a href="#vendor/${v.id}"><b>${esc(v.name)}</b></a>${v.active===false?` <span class="tag out">inactive</span>`:""}<br><span class="small mute">${esc(v.city||"")}${v.gstin?" · GSTIN "+esc(v.gstin):""}</span></td>
-   <td data-l="Contact">${esc(v.contact||"—")}<br>${v.phone?`<a class="small" href="tel:${esc(v.phone)}">${esc(v.phone)}</a>`:""}</td>
+   <td data-l="Category" class="small">${esc(v.category||"—")}</td>
+   <td data-l="Contact">${esc(v.contact||"—")}<br>${v.phone?`<a class="small" href="tel:${esc(v.phone)}">${esc(v.phone)}</a>`:""}${v.contact2?`<br><span class="small mute">${esc(v.contact2)}${v.phone2?" · "+esc(v.phone2):""}</span>`:""}</td>
    <td data-l="Billing" class="small">${esc(v.billingMethod||"—")}${v.creditDays?`<br><span class="mute">${v.creditDays} days</span>`:""}</td>
    <td data-l="Products" class="n">${st.items.length}<br><span class="small mute">${st.units} units</span></td>
    <td data-l="Stock value" class="n">${inr(st.cost)}</td>
    <td data-l="Balance" class="n">${(()=>{const L=vendorLedger(v);return L.balance?`<span style="color:${L.balance<0?"var(--bad)":"var(--ok)"}">${inr(L.balance)}</span>`:`<span class="mute">—</span>`})()}</td>
    <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="openVendor('${v.id}')">Edit</button></div></td></tr>`).join("")
-   ||`<tr><td colspan="7" class="mute">No vendors yet — add the people you buy from.</td></tr>`}
+   ||`<tr><td colspan="8" class="mute">${S.vendors.length?"No vendor matches that search.":"No vendors yet — add the people you buy from."}</td></tr>`}
   </tbody></table></div>`;
   const i=$("#vf-q");i.oninput=()=>{S.vf.q=i.value;clearTimeout(vVendors.t);vVendors.t=setTimeout(()=>{render();const n=$("#vf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
+  $("#vf-cat").onchange=e=>{S.vf.cat=e.target.value;render()};
 }
 function vVendor(el){
   const v=S.vendors.find(x=>x.id===S.detailVendor);
   if(!v){el.innerHTML=`<div class="top"><h2>Vendor not found</h2><button class="btn sec" onclick="go('vendors')">← Back</button></div>`;return}
   const st=vendorStats(v),notes=(v.log||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0)),L=vendorLedger(v);
-  const R=[["Contact person",esc(v.contact||"—")],["Phone",v.phone?`<a href="tel:${esc(v.phone)}">${esc(v.phone)}</a>`:"—"],["Email",esc(v.email||"—")],
+  const R=[["Category",esc(v.category||"—")],
+   ["Contact person",esc(v.contact||"—")],["Phone",v.phone?`<a href="tel:${esc(v.phone)}">${esc(v.phone)}</a>`:"—"],
+   ...(v.contact2||v.phone2?[["Second contact",`${esc(v.contact2||"—")}${v.phone2?` · <a href="tel:${esc(v.phone2)}">${esc(v.phone2)}</a>`:""}`]]:[]),
+   ["Email",esc(v.email||"—")],
    ["GSTIN",esc(v.gstin||"—")],["Address",esc([v.address,v.city].filter(Boolean).join(", ")||"—")],
    ["Billing method",esc(v.billingMethod||"—")],["Credit period",v.creditDays?`${v.creditDays} days`:"—"],
    ["Bank / payment details",esc(v.bank||"—")],["Standing note",esc(v.notes||"—")],
@@ -1142,7 +1155,7 @@ function vendorLedger(v){
   const ev=[];
   vendPurchases(v).forEach(p=>ev.push({ms:dayMs(p.date)||tms(p.createdAt),kind:"purchase",ref:p.billNo||"",pid:p.id,
     what:`Purchase${p.billNo?" · bill "+p.billNo:""}`,
-    detail:[(p.items||[]).map(i=>`${i.name} ×${i.qty}`).join(", "),num(p.other)?`other charges ${inr(p.other)}`:"",p.addedStock?"stock added to inventory":"",p.notes,p.createdByName?`entered by ${p.createdByName}`:""].filter(Boolean).join(" · "),
+    detail:[(p.items||[]).map(i=>`${i.name} ×${i.qty}`).join(", "),(p.charges||[]).length?(p.charges||[]).map(c=>`${c.label} ${inr(c.amount)}`).join(", "):(num(p.other)?`other charges ${inr(p.other)}`:""),p.addedStock?"stock added to inventory":"",p.notes,p.createdByName?`entered by ${p.createdByName}`:""].filter(Boolean).join(" · "),
     charge:num(p.total),paid:0}));
   vendPays(v).forEach(p=>ev.push({ms:dayMs(p.date)||tms(p.createdAt),kind:"payment",ref:p.ref||"",payid:p.id,
     what:p.kind==="advance"?"Advance paid":"Payment made",
@@ -1155,21 +1168,22 @@ function vendorLedger(v){
 }
 const vendBalTag=b=>b<0?`<span class="tag out">${inr(Math.abs(b))} payable</span>`:b>0?`<span class="tag ok">${inr(b)} advance</span>`:`<span class="tag">settled</span>`;
 
-window.openPurchase=function(vid){
+window.openPurchase=function(vid,keepState){
   if(!can("vendorLedger"))return toast("You don't have permission to record purchases",1);
   const v=S.vendors.find(x=>x.id===vid);if(!v)return;
-  S.pcart=[];S.pq="";
+  S.puVendor=vid;
   const draw=()=>{
     const q=S.pq.toLowerCase();
     const hits=q?S.products.filter(p=>`${p.name} ${p.sku} ${vend(p)} ${dimText(p)}`.toLowerCase().includes(q)).slice(0,8):[];
     const sub=r2(S.pcart.reduce((a,i)=>a+num(i.qty)*num(i.rate),0));
-    const other=num($("#pu-other")?.value);
+    const other=r2(S.pchg.reduce((a,c)=>a+num(c.amount),0));
     $("#pu-body").innerHTML=`
      <div class="f"><div><label>Bill / invoice no.</label><input id="pu-bill" value="${esc(S.puBill||"")}"></div>
       <div><label>Bill date</label><input id="pu-date" type="date" value="${esc(S.puDate||dkey())}"></div></div>
      <label style="margin-top:8px">Add items</label>
      <input id="pu-q" placeholder="Search a product by name, SKU or size…" value="${esc(S.pq)}">
-     ${hits.length?`<div class="items" style="max-height:150px;margin-top:6px">${hits.map(p=>`<button class="item" onclick="puAdd('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,30)}<b>${esc(p.name)}</b></span><b>${inr(p.cost)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · "+esc(dimText(p)):""}</span><span class="small mute">cost price</span></button>`).join("")}</div>`:""}
+     ${q?`<div class="items" style="max-height:170px;margin-top:6px">${hits.map(p=>`<button class="item" onclick="puAdd('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,30)}<b>${esc(p.name)}</b></span><b>${inr(p.cost)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · "+esc(dimText(p)):""}</span><span class="small mute">cost price</span></button>`).join("")}
+      ${can("editProducts")?`<button class="item" style="grid-template-columns:1fr" onclick="puNewProduct('${vid}')"><b>+ Add "${esc(S.pq)}" as a new product</b><span class="small mute">${hits.length?"Not the one you wanted? Create it, then it comes back here.":"No product matches — create it and it comes back here as a line."}</span></button>`:(hits.length?"":`<p class="mute small">No product matches, and you don't have permission to add one.</p>`)}</div>`:""}
      <table style="margin-top:8px"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th><th></th></tr></thead><tbody>
      ${S.pcart.map((i,ix)=>`<tr><td>${esc(i.name)}<br><span class="small mute">${esc(i.sku)}</span></td>
        <td class="n"><input type="number" min="0" step="1" value="${i.qty}" style="width:70px" onchange="puSet(${ix},'qty',this.value)"></td>
@@ -1178,7 +1192,18 @@ window.openPurchase=function(vid){
        <td><button class="btn sm sec" onclick="S.pcart.splice(${ix},1);puDraw()">✕</button></td></tr>`).join("")
       ||`<tr><td colspan="5" class="mute">No items yet — search above, or record a bill with other charges only.</td></tr>`}
      </tbody></table>
-     <div class="f" style="margin-top:8px"><div><label>Other charges (freight, GST…)</label><input id="pu-other" type="number" step="0.01" value="${S.puOther||""}"></div>
+     <label style="margin-top:10px">Other charges</label>
+     <table><thead><tr><th>Head</th><th class="n">Amount (₹)</th><th></th></tr></thead><tbody>
+     ${S.pchg.map((c,ix)=>`<tr>
+       <td><input list="pu-heads" value="${esc(c.label)}" placeholder="Freight, GST, loading…" onchange="puChg(${ix},'label',this.value)"></td>
+       <td class="n"><input type="number" step="0.01" value="${c.amount===""?"":c.amount}" style="width:110px" onchange="puChg(${ix},'amount',this.value)"></td>
+       <td><button class="btn sm sec" onclick="S.pchg.splice(${ix},1);puDraw()">✕</button></td></tr>`).join("")
+      ||`<tr><td colspan="3" class="mute small">No extra charges on this bill.</td></tr>`}
+     </tbody></table>
+     <datalist id="pu-heads">${[...new Set([...CHARGE_HEADS,...S.purchases.flatMap(p=>(p.charges||[]).map(c=>c.label)).filter(Boolean)])].sort(natcmp).map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
+     <div class="row" style="margin-top:6px"><button class="btn sec sm" type="button" onclick="S.pchg.push({label:'',amount:''});puDraw()">+ Add charge</button>
+      <span class="small mute">A discount can go in as a minus amount.</span></div>
+     <div class="f" style="margin-top:8px">
       <div><label>Put received stock into</label><select id="pu-loc">${withCur(allLocations(),S.puLoc).map(x=>`<option ${x===S.puLoc?"selected":""}>${esc(x)}</option>`).join("")}</select></div></div>
      <label style="display:flex;gap:8px;align-items:center;color:var(--ink);font-size:14px;margin-top:8px">
       <input type="checkbox" id="pu-stock" style="width:auto" ${S.puStock===false?"":"checked"} ${can("stockIn")?"":"disabled"}>
@@ -1187,24 +1212,25 @@ window.openPurchase=function(vid){
      <div class="full" style="margin-top:8px"><label>Note</label><input id="pu-note" value="${esc(S.puNote||"")}"></div>
      <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">
       <div class="row" style="justify-content:space-between"><span class="mute">Items</span><span>${inr(sub)}</span></div>
-      <div class="row" style="justify-content:space-between"><span class="mute">Other charges</span><span>${inr(other)}</span></div>
+      ${S.pchg.filter(c=>num(c.amount)).map(c=>`<div class="row" style="justify-content:space-between"><span class="mute">${esc(c.label||"Other charge")}</span><span>${inr(num(c.amount))}</span></div>`).join("")}
+      ${S.pchg.filter(c=>num(c.amount)).length?"":`<div class="row" style="justify-content:space-between"><span class="mute">Other charges</span><span>${inr(0)}</span></div>`}
       <div class="row" style="justify-content:space-between;font-size:19px;font-weight:700"><span>Bill total</span><span>${inr(r2(sub+other))}</span></div></div>`;
-    const keep=()=>{S.puBill=$("#pu-bill").value;S.puDate=$("#pu-date").value;S.puOther=$("#pu-other").value;S.puNote=$("#pu-note").value;S.puLoc=$("#pu-loc").value;S.puStock=$("#pu-stock").checked};
+    const keep=()=>{S.puBill=$("#pu-bill").value;S.puDate=$("#pu-date").value;S.puNote=$("#pu-note").value;S.puLoc=$("#pu-loc").value;S.puStock=$("#pu-stock").checked};
     ["#pu-bill","#pu-date","#pu-note","#pu-stock"].forEach(s=>{const e=$(s);if(e)e.onchange=keep});
     $("#pu-loc").onchange=()=>{S.puLocTouched=true;keep()};
-    $("#pu-other").oninput=()=>{keep();draw()};
     const qi=$("#pu-q");qi.oninput=()=>{S.pq=qi.value;clearTimeout(draw.t);draw.t=setTimeout(()=>{draw();const n=$("#pu-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
   };
   window.puDraw=draw;
-  S.puBill="";S.puDate=dkey();S.puOther="";S.puNote="";S.puLoc=allLocations()[0]||UNLOC;S.puStock=true;S.puLocTouched=false;
+  if(!keepState){S.pcart=[];S.pq="";S.pchg=[];S.puBill="";S.puDate=dkey();S.puNote="";S.puLoc=allLocations()[0]||UNLOC;S.puStock=true;S.puLocTouched=false}
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:720px"><h3>Record a purchase from ${esc(v.name)}</h3>
-   <p class="mute small">${esc(v.billingMethod||"")}${v.creditDays?` · ${v.creditDays} days credit`:""}</p>
+   <p class="mute small">${esc(v.billingMethod||"")}${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?` · ${v.creditDays} days credit`:""}</p>
    <div id="pu-body"></div>
    <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="pu-go">Save purchase</button></div></div></div>`;
   draw();
   $("#pu-go").onclick=async()=>{
     const items=S.pcart.filter(i=>num(i.qty)>0).map(i=>({pid:i.pid,sku:i.sku,name:i.name,qty:Math.floor(num(i.qty)),rate:num(i.rate),amount:r2(Math.floor(num(i.qty))*num(i.rate))}));
-    const other=num($("#pu-other").value),total=r2(items.reduce((a,i)=>a+i.amount,0)+other);
+    const charges=S.pchg.filter(c=>num(c.amount)).map(c=>({label:(c.label||"Other charge").trim(),amount:r2(num(c.amount))}));
+    const other=r2(charges.reduce((a,c)=>a+c.amount,0)),total=r2(items.reduce((a,i)=>a+i.amount,0)+other);
     if(!items.length&&!other)return toast("Add an item or an amount",1);
     if(total<=0)return toast("The bill total has to be more than zero",1);
     const addStock=$("#pu-stock").checked&&can("stockIn"),loc=$("#pu-loc").value;
@@ -1212,7 +1238,7 @@ window.openPurchase=function(vid){
     try{
       const pr=doc(collection(db,"purchases"));
       const rec={vendorId:v.id,vendorName:v.name,billNo:$("#pu-bill").value.trim(),date:$("#pu-date").value||dkey(),
-        items,subtotal:r2(total-other),other:r2(other),total,notes:$("#pu-note").value.trim(),addedStock:!!addStock,
+        items,charges,subtotal:r2(total-other),other:r2(other),total,notes:$("#pu-note").value.trim(),addedStock:!!addStock,
         status:"posted",createdBy:S.user.uid,createdByName:S.profile.name,createdAt:serverTimestamp()};
       if(addStock&&items.length){
         await runTransaction(db,async tx=>{
@@ -1235,6 +1261,14 @@ window.puAdd=id=>{const p=S.products.find(x=>x.id===id);if(!p)return;
   if(e)e.qty=num(e.qty)+1;else S.pcart.push({pid:id,sku:p.sku,name:p.name+(dimText(p)?` (${dimText(p)})`:""),qty:1,rate:num(p.cost)||0});
   S.pq="";puDraw()};
 window.puSet=(ix,k,v)=>{S.pcart[ix][k]=num(v);puDraw()};
+window.puChg=(ix,k,v)=>{S.pchg[ix][k]=k==="amount"?v:v;puDraw()};
+// Add a product without losing the half-written bill: the form opens over it and hands back the new id.
+window.puNewProduct=vid=>{
+  if(!can("editProducts"))return toast("You don't have permission to add products",1);
+  const typed=S.pq.trim();
+  window.__afterProduct=newId=>{openPurchase(vid,true);if(newId)puAdd(newId)};
+  openProduct(null,typed?{name:typed}:undefined);
+};
 
 window.openVendorPayment=function(vid){
   if(!can("vendorLedger"))return toast("You don't have permission to record vendor payments",1);
@@ -1302,7 +1336,7 @@ window.printVendorStatement=id=>{
   <h2>${esc(st.storeName)}</h2><div class="m">${esc(st.address||"")}${st.phone?" · Ph "+esc(st.phone):""}${st.gstin?" · GSTIN "+esc(st.gstin):""}</div>
   <h3 style="margin-top:14px">Vendor statement</h3>
   <div class="m">${esc(v.name)}${v.contact?" · "+esc(v.contact):""}${v.phone?" · "+esc(v.phone):""}${v.gstin?" · GSTIN "+esc(v.gstin):""}<br>
-   ${esc(v.billingMethod||"")}${v.creditDays?` · ${v.creditDays} days credit`:""} · Printed ${fdt(Date.now())}</div>
+   ${esc(v.billingMethod||"")}${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?` · ${v.creditDays} days credit`:""} · Printed ${fdt(Date.now())}</div>
   <table><thead><tr><th>Date</th><th>Particulars</th><th class="n">Billed</th><th class="n">Paid</th><th class="n">Balance</th></tr></thead><tbody>
   ${L.rows.map(e=>`<tr><td>${fdt(e.ms)}</td><td>${esc(e.what)}<br><span class="m">${esc(e.detail)}</span></td>
    <td class="n">${e.charge?inr(e.charge):"—"}</td><td class="n">${e.paid?inr(e.paid):"—"}</td><td class="n">${inr(e.bal)}</td></tr>`).join("")||`<tr><td colspan="5">No entries yet.</td></tr>`}
@@ -1321,10 +1355,13 @@ window.openVendor=function(id,preset){
    <div class="full"><label>Vendor name *</label><input id="v-name" value="${esc(v.name)}"></div>
    <div><label>Contact person</label><input id="v-contact" value="${esc(v.contact)}"></div>
    <div><label>Phone</label><input id="v-phone" inputmode="tel" value="${esc(v.phone)}"></div>
-   <div><label>Email</label><input id="v-email" type="email" value="${esc(v.email)}"></div>
+   <div><label>Second contact person <span class="mute">(optional)</span></label><input id="v-contact2" value="${esc(v.contact2)}"></div>
+   <div><label>Second phone <span class="mute">(optional)</span></label><input id="v-phone2" inputmode="tel" value="${esc(v.phone2)}"></div>
+   <div><label>Category</label><div class="row" style="flex-wrap:nowrap"><select id="v-cat"><option value="">—</option>${withCur(S.lists.vendorCategories||[],v.category).map(c=>`<option ${v.category===c?"selected":""}>${esc(c)}</option>`).join("")}</select><button class="btn sec sm" type="button" id="v-catadd" title="Add a category">＋</button></div></div>
    <div><label>GSTIN</label><input id="v-gstin" value="${esc(v.gstin)}"></div>
    <div class="full"><label>Address</label><input id="v-address" value="${esc(v.address)}"></div>
    <div><label>City</label><input id="v-city" value="${esc(v.city)}"></div>
+   <div><label>Email</label><input id="v-email" type="email" value="${esc(v.email)}"></div>
    <div><label>Billing method</label><select id="v-bm"><option value="">—</option>${withCur(methods,v.billingMethod).map(m=>`<option ${v.billingMethod===m?"selected":""}>${esc(m)}</option>`).join("")}</select></div>
    <div><label>Credit period (days)</label><input id="v-days" type="number" min="0" value="${v.creditDays??""}"></div>
    <div class="full"><label>Bank / payment details</label><input id="v-bank" placeholder="Account, UPI id, cheque in favour of…" value="${esc(v.bank)}"></div>
@@ -1333,12 +1370,22 @@ window.openVendor=function(id,preset){
   </div>
   <div class="row" style="margin-top:14px;justify-content:space-between"><div>${id?`<button class="btn bad sm" id="v-del">Delete</button>`:""}</div>
    <div class="row"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="v-save">Save</button></div></div></div></div>`;
+  $("#v-catadd").onclick=async()=>{
+    const val=(prompt("New vendor category:")||"").trim();if(!val)return;
+    const sel=$("#v-cat"),have=[...sel.options].find(o=>o.value.toLowerCase()===val.toLowerCase());
+    if(!have)sel.add(new Option(val,val));
+    sel.value=have?have.value:val;
+    if(!(S.lists.vendorCategories||[]).some(x=>String(x).toLowerCase()===val.toLowerCase())){
+      try{await saveList("vendorCategories",[...(S.lists.vendorCategories||[]),val].sort(natcmp));toast("Category added")}catch(e){toast(emsg(e),1)}}
+  };
   $("#v-save").onclick=async()=>{
     const name=$("#v-name").value.trim();
     if(!name)return toast("Vendor name is required",1);
     const dup=S.vendors.find(x=>norm(x.name)===norm(name)&&x.id!==id);
     if(dup)return toast("There is already a vendor with that name",1);
-    const d={name,contact:$("#v-contact").value.trim(),phone:$("#v-phone").value.trim(),email:$("#v-email").value.trim(),
+    const d={name,contact:$("#v-contact").value.trim(),phone:$("#v-phone").value.trim(),
+      contact2:$("#v-contact2").value.trim(),phone2:$("#v-phone2").value.trim(),category:$("#v-cat").value,
+      email:$("#v-email").value.trim(),
       gstin:$("#v-gstin").value.trim(),address:$("#v-address").value.trim(),city:$("#v-city").value.trim(),
       billingMethod:$("#v-bm").value,creditDays:num($("#v-days").value),bank:$("#v-bank").value.trim(),
       notes:$("#v-notes").value.trim(),active:$("#v-active").checked,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
@@ -1391,17 +1438,18 @@ window.exportVendors=async()=>{
   try{
     const EJ=await loadExcelJS();
     dlx("vendors-"+dkey()+".xlsx",await buildWorkbook(EJ,[
-      {name:"Vendors",freeze:1,cols:[["name",26],["contact",20],["phone",16,"@"],["email",24],["gstin",18],["address",30],["city",16],
+      {name:"Vendors",freeze:1,cols:[["name",26],["category",20],["contact",20],["phone",16,"@"],["contact_2",20],["phone_2",16,"@"],["email",24],["gstin",18],["address",30],["city",16],
         ["billing_method",26],["credit_days",12],["bank_details",28],["standing_note",36],["products",10],["units_in_stock",14],["stock_value_cost",16,MONEY],["billed",14,MONEY],["paid",14,MONEY],["balance",14,MONEY],["payable",14,MONEY],["status",10]],
        rows:S.vendors.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(v=>{const st=vendorStats(v);
-         return{name:v.name,contact:v.contact||"",phone:String(v.phone||""),email:v.email||"",gstin:v.gstin||"",address:v.address||"",city:v.city||"",
+         return{name:v.name,category:v.category||"",contact:v.contact||"",phone:String(v.phone||""),
+           contact_2:v.contact2||"",phone_2:String(v.phone2||""),email:v.email||"",gstin:v.gstin||"",address:v.address||"",city:v.city||"",
            billing_method:v.billingMethod||"",credit_days:v.creditDays||0,bank_details:v.bank||"",standing_note:v.notes||"",
            products:st.items.length,units_in_stock:st.units,stock_value_cost:st.cost,
            billed:vendorLedger(v).billed,paid:vendorLedger(v).paid,balance:vendorLedger(v).balance,payable:vendorLedger(v).payable,
            status:v.active===false?"inactive":"active"}})},
-      {name:"Purchases",freeze:2,cols:[["date",12],["vendor",26],["bill_no",16],["items",50],["items_value",14,MONEY],["other_charges",14,MONEY],["bill_total",14,MONEY],["stock_added",12],["note",28],["entered_by",18]],
+      {name:"Purchases",freeze:2,cols:[["date",12],["vendor",26],["bill_no",16],["items",50],["items_value",14,MONEY],["other_charges",14,MONEY],["charge_heads",34],["bill_total",14,MONEY],["stock_added",12],["note",28],["entered_by",18]],
        rows:S.purchases.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(p=>({date:p.date||"",vendor:p.vendorName||"",bill_no:p.billNo||"",
-         items:(p.items||[]).map(i=>`${i.name} ×${i.qty} @ ${i.rate}`).join("; "),items_value:num(p.subtotal),other_charges:num(p.other),bill_total:num(p.total),
+         items:(p.items||[]).map(i=>`${i.name} ×${i.qty} @ ${i.rate}`).join("; "),items_value:num(p.subtotal),other_charges:num(p.other),charge_heads:(p.charges||[]).map(c=>`${c.label}: ${c.amount}`).join("; "),bill_total:num(p.total),
          stock_added:p.addedStock?"yes":"no",note:p.notes||"",entered_by:p.createdByName||""}))},
       {name:"Vendor payments",freeze:2,cols:[["date",12],["vendor",26],["amount",14,MONEY],["mode",18],["type",12],["reference",20],["note",28],["entered_by",18]],
        rows:S.vpays.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(p=>({date:p.date||"",vendor:p.vendorName||"",amount:num(p.amount),
@@ -1889,6 +1937,7 @@ function vSettings(el){
    ${listCard("payModes","Payment modes","Choices on the billing screen.")}
    ${listCard("billingMethods","Vendor billing methods","How you settle with a vendor. Picked on each vendor's page.")}
    ${listCard("vendorPayModes","Vendor payment modes","How you pay a vendor: cash, online, cheque…")}
+   ${listCard("vendorCategories","Vendor categories","What a vendor supplies. Picked on each vendor and used to filter the vendor list.")}
    <div class="card" style="grid-column:1/-1"><h3 style="margin-bottom:6px">Staff accounts</h3>
     <p class="mute small">Staff logins are created and managed on their own screen.</p>
     <p><button class="btn" onclick="go('team')">Open the Staff screen</button></p></div>`:""}
