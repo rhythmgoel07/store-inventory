@@ -251,7 +251,8 @@ let app,auth,db;
 const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",invoicePrefix:"INV",address:"",phone:"",gstin:"",footer:"Thank you for shopping with us!",allowNegative:false},
   products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",dim:"",loc:"",stock:"all",sort:"name",limit:100},
   lists:{...DEFAULT_LISTS},vendors:[],purchases:[],vpays:[],pcart:[],pchg:[],pq:"",vf:{q:"",cat:""},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:""},bf:{q:"",status:"booked"},detailCust:null,detailBk:null,
-  bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bdate:"",bnotes:"",bq:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",unsub:[]};
+  bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bdate:"",bnotes:"",bq:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",
+  detailSale:null,detailPur:null,es:null,puEdit:"",unsub:[]};
 
 if(configured){
   app=initializeApp(firebaseConfig);auth=getAuth(app);
@@ -388,18 +389,19 @@ else onAuthStateChanged(auth,async u=>{
 
 /* ---------- Shell ---------- */
 const NAV=[["dashboard","Dashboard","▦"],["products","Products","▤"],["sell","Sell","₹",true],["bookings","Bookings","🔖",true],["customers","Customers","👤",true],["stock","Stock","⇅"],["sales","Sales","☰",true],["categories","Categories","⌗"],["vendors","Vendors","🏭",false,false,"vendorsTab"],["approvals","Approvals","✓"],["team","Staff","👥",false,true],["settings","Settings","⚙"]];
-const SALES_VIEWS=["sell","sales","bookings","customers","newbooking","booking","customer"];
+const SALES_VIEWS=["sell","sales","bookings","customers","newbooking","booking","customer","sale"];
 function navItems(){return NAV.filter(n=>(!n[3]||fullMode())&&(!n[4]||isAdmin())&&(!n[5]||can(n[5])))}
-const DETAIL={product:"products",customer:"customers",booking:"bookings",vendor:"vendors"};
+const DETAIL={product:"products",customer:"customers",booking:"bookings",vendor:"vendors",sale:"sales",purchase:"vendors"};
 function setView(v){S.view=v;if(!DETAIL[v]&&location.hash)history.replaceState(null,"",location.pathname+location.search);window.scrollTo(0,0);render()}
 const navOn=k=>S.view===k||DETAIL[S.view]===k||(S.view==="newbooking"&&k==="bookings");
 function routeFromHash(){
-  const m=location.hash.match(/^#(product|customer|booking|vendor)\/(.+)$/);
+  const m=location.hash.match(/^#(product|customer|booking|vendor|sale|purchase)\/(.+)$/);
   if(m&&S.profile){
     const id=decodeURIComponent(m[2]);
     if(m[1]==="product"&&!can("productPage")){S.view="products";return}
     S.view=m[1];
-    if(m[1]==="product")S.detailId=id;else if(m[1]==="customer")S.detailCust=id;else if(m[1]==="vendor")S.detailVendor=id;else S.detailBk=id;
+    if(m[1]==="product")S.detailId=id;else if(m[1]==="customer")S.detailCust=id;else if(m[1]==="vendor")S.detailVendor=id;
+    else if(m[1]==="sale")S.detailSale=id;else if(m[1]==="purchase")S.detailPur=id;else S.detailBk=id;
   }
   else if(DETAIL[S.view])S.view=DETAIL[S.view];
 }
@@ -409,7 +411,7 @@ function render(soft){
   if(!S.profile||!activeRole(S.profile.role))return;
   if(!fullMode()&&SALES_VIEWS.includes(S.view))S.view="dashboard";
   if(S.view==="team"&&!isAdmin())S.view="dashboard";
-  if((S.view==="vendors"||S.view==="vendor")&&!(can("manageVendors")||can("vendorLedger")))S.view="dashboard";
+  if(["vendors","vendor","purchase"].includes(S.view)&&!(can("manageVendors")||can("vendorLedger")))S.view="dashboard";
   // don't clobber inputs while typing during snapshot updates
   if(soft&&document.activeElement&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)&&$("main")?.contains(document.activeElement))return;
   const items=navItems();
@@ -420,7 +422,8 @@ function render(soft){
    <main id="main"></main></div>
    <div class="bottom">${items.slice(0,4).map(n=>`<button class="${navOn(n[0])?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}${items.length>4?`<button class="${items.slice(4).some(n=>navOn(n[0]))?"on":""}" onclick="openMore()"><span>⋯</span>More</button>`:""}</div>`;
   const v={dashboard:vDash,products:vProducts,product:vProduct,sell:vSell,stock:vStock,sales:vSales,categories:vCats,settings:vSettings,
-    customers:vCustomers,customer:vCustomer,bookings:vBookings,booking:vBooking,newbooking:vNewBooking,team:vTeam,approvals:vApprovals,vendors:vVendors,vendor:vVendor}[S.view]||vDash;
+    customers:vCustomers,customer:vCustomer,bookings:vBookings,booking:vBooking,newbooking:vNewBooking,team:vTeam,approvals:vApprovals,
+    vendors:vVendors,vendor:vVendor,sale:vSale,purchase:vPurchase}[S.view]||vDash;
   v($("#main"));
   hydrateImages();
 }
@@ -745,13 +748,14 @@ function vSell(el){
   el.innerHTML=`<div class="top"><h2>New sale</h2><button class="btn sec" onclick="S.cart=[];S.cartDiscount=0;render()">Clear</button></div>
   <div class="pos"><div><input id="pos-q" placeholder="Scan barcode or search…" value="${esc(S.posQ)}" style="margin-bottom:10px">
    <div class="items">${L.map(p=>`<button class="item" onclick="addCart('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
-  <div class="card"><h3 style="margin-bottom:6px">Cart (${S.cart.length})</h3>
+  <div class="card"><h3 style="margin-bottom:6px">Cart (${S.cart.length} item${S.cart.length===1?"":"s"})</h3>
    ${S.cart.map((i,ix)=>{const p=S.products.find(x=>x.id===i.pid),ent=p?locEntries(p):[],at=ent.find(([k])=>k===i.loc),short=at?Math.max(0,i.qty-at[1]):i.qty;
     return `<div class="cartline"><div><b>${esc(i.name)}</b><br><span class="small mute">${inr(i.price)} each</span></div><div style="text-align:right"><b>${inr(i.price*i.qty)}</b></div>
     <div class="qty"><button onclick="cartQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="cartSet(${ix},this.value)"><button onclick="cartQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.cart.splice(${ix},1);render()">Remove</button></div>
     <div style="grid-column:1/-1"><label style="margin:0">Take from</label>
      <select onchange="cartLoc(${ix},this.value)">${(ent.length?ent:[[i.loc||UNLOC,0]]).map(([k,v])=>`<option value="${esc(k)}" ${i.loc===k?"selected":""}>${esc(k)} — ${v} in stock</option>`).join("")}</select>
      ${short>0&&ent.length?`<span class="small" style="color:var(--warn)">only ${at?at[1]:0} here — the other ${short} will come from the next place with stock</span>`:""}</div></div>`}).join("")||`<p class="mute">Tap a product to add it.</p>`}
+   ${S.cart.length?`<p class="small mute" style="margin-top:6px">Keep searching on the left to put more products on the same bill.</p>`:""}
    <div class="f" style="margin-top:10px"><div><label>Discount</label><div class="row" style="flex-wrap:nowrap"><input id="c-disc" type="number" min="0" value="${S.cartDiscount||""}"><select id="c-dt" style="width:80px"><option value="amt" ${S.cartDiscType==="amt"?"selected":""}>₹</option><option value="pct" ${S.cartDiscType==="pct"?"selected":""}>%</option></select></div></div>
     <div><label>Payment</label><select id="c-pay">${S.lists.payModes.map(x=>`<option>${x}</option>`).join("")}</select></div>
     <div><label>Customer phone</label><input id="c-ph" inputmode="tel" list="c-phl" placeholder="Search saved customers"><datalist id="c-phl">${S.customers.slice(0,400).map(c=>`<option value="${esc(c.phone)}">${esc(c.name)}</option>`).join("")}</datalist></div>
@@ -832,9 +836,9 @@ function vSales(el){
   el.innerHTML=`<div class="top"><h2>Sales</h2><div class="row"><input type="date" id="sd" value="${day}" style="width:auto"><button class="btn sec" onclick="exportSales()">Export Excel</button></div></div>
   <div class="grid stats" style="margin-bottom:12px"><div class="card stat"><div class="k">Bills</div><div class="v">${ok.length}</div></div><div class="card stat"><div class="k">Revenue</div><div class="v">${inr(tot)}</div></div>${isAdmin()?`<div class="card stat"><div class="k">Gross margin</div><div class="v">${inr(prof)}</div><div class="s">vs recorded cost price</div></div>`:""}</div>
   <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Invoice</th><th>Customer</th><th>Items</th><th class="n">Total</th><th></th></tr></thead><tbody>
-  ${L.map(s=>`<tr style="${s.status==="void"?"opacity:.5":""}"><td data-l="Invoice"><b>${esc(s.invoiceNo)}</b> ${s.status==="void"?`<span class="tag out">void</span>`:""}<br><span class="small mute">${fdt(tms(s.createdAt))} · ${esc(s.soldByName||"")}</span></td><td data-l="Customer">${esc(s.customer?.name||"Walk-in")}<br><span class="small mute">${esc(s.payment)}</span></td>
+  ${L.map(s=>`<tr style="${s.status==="void"?"opacity:.5":""}"><td data-l="Invoice"><a href="#sale/${s.id}"><b>${esc(s.invoiceNo)}</b></a> ${s.status==="void"?`<span class="tag out">void</span>`:""}<br><span class="small mute">${fdt(tms(s.createdAt))} · ${esc(s.soldByName||"")}</span></td><td data-l="Customer">${esc(s.customer?.name||"Walk-in")}<br><span class="small mute">${esc(s.payment)}</span></td>
    <td data-l="Items" class="small">${s.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")}</td><td data-l="Total" class="n">${inr(s.total)}</td>
-   <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="reprint('${s.id}')">Print</button>${s.status!=="void"?(can("voidSale")?`<button class="btn sm sec" onclick="voidSale('${s.id}')">Void</button>`:rqBtn("sale.void",s.id,`Invoice ${s.invoiceNo} · ${inr(s.total)}`,{})):""}</div></td></tr>`).join("")||`<tr><td colspan="5" class="mute">No sales on this date.</td></tr>`}
+   <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="location.hash='sale/'+'${s.id}'">Open bill</button><button class="btn sm sec" onclick="reprint('${s.id}')">Print</button>${s.status!=="void"?(can("voidSale")?`<button class="btn sm sec" onclick="voidSale('${s.id}')">Void</button>`:rqBtn("sale.void",s.id,`Invoice ${s.invoiceNo} · ${inr(s.total)}`,{})):""}</div></td></tr>`).join("")||`<tr><td colspan="5" class="mute">No sales on this date.</td></tr>`}
   </tbody></table></div>`;
   $("#sd").onchange=e=>{S.salesDay=e.target.value;setTimeout(render,0)};
 }
@@ -842,7 +846,7 @@ window.reprint=id=>{const s=S.sales.find(x=>x.id===id);if(s)printReceipt(s)};
 window.voidSale=async id=>{
   if(!can("voidSale"))return toast("You don't have permission to void a bill",1);
   const s=S.sales.find(x=>x.id===id);if(!s||!confirm("Void "+s.invoiceNo+"? Stock will be returned."))return;
-  try{await doVoidSale(id);toast("Sale voided")}catch(e){toast(emsg(e),1)}
+  try{await doVoidSale(id);toast("Sale voided");render()}catch(e){toast(emsg(e),1)}
 };
 async function doVoidSale(id){
   const s=S.sales.find(x=>x.id===id);
@@ -857,6 +861,195 @@ async function doVoidSale(id){
   })}
 }
 
+
+/* ---------- One invoice, in full ----------
+   Totals work exactly like the counter does: the discount is spread across the lines in
+   proportion to their value, and GST is taken as already included in the price. */
+function sumItems(items,disc){
+  const gross=r2(items.reduce((a,i)=>a+num(i.price)*num(i.qty),0));
+  const d=Math.min(gross,Math.max(0,r2(disc)));
+  const total=r2(gross-d);
+  let gst=0;items.forEach(i=>{const share=gross?num(i.price)*num(i.qty)/gross:0;const line=num(i.price)*num(i.qty)-d*share;gst+=line-line/(1+num(i.gst)/100)});
+  gst=r2(gst);
+  return{gross,disc:d,total,gst,taxable:r2(total-gst)};
+}
+const histRows=log=>(log||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0)).map(x=>
+  `<div style="padding:7px 0;border-bottom:1px solid var(--line)">${esc(x.what||"Changed")}<br><span class="small mute">${x.t?fdt(x.t):""} · ${esc(x.by||"")}${x.why?" · "+esc(x.why):""}</span></div>`).join("");
+function vSale(el){
+  const s=S.sales.find(x=>x.id===S.detailSale);
+  if(!s){el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('sales')">← Back</button><h2>Invoice not found</h2></div></div>`;return}
+  const dead=s.status==="void",adv=num(s.advance),got=r2(num(s.balancePaid??(num(s.total)-adv))),left=r2(num(s.total)-adv-got);
+  const bg=s.bookingId?S.bookings.find(b=>b.id===s.bookingId):null,log=s.editLog||[];
+  const R=[["Invoice no.",`<b>${esc(s.invoiceNo)}</b>`],["Billed on",fdt(tms(s.createdAt))],
+   ["Customer",`${esc(s.customer?.name||"Walk-in")}${s.customer?.phone?` · <a href="tel:${esc(s.customer.phone)}">${esc(s.customer.phone)}</a>`:""}${s.customerId?` · <a href="#customer/${s.customerId}">open ledger</a>`:""}`],
+   ["Payment",esc(s.payment||"—")],["Billed by",esc(s.soldByName||"—")],
+   ...(bg?[["Against booking",`<a href="#booking/${bg.id}">${esc(bg.bookingNo)}</a> <span class="small mute">· goods were charged when the booking was taken</span>`]]:[]),
+   ["Status",dead?`<span class="tag out">void</span>${s.voidedBy?` <span class="small mute">by ${esc(s.voidedBy)}</span>`:""}`:`<span class="tag ok">completed</span>`],
+   ...(s.editedBy?[["Last corrected",`${esc(s.editedBy)} · ${fdt(tms(s.editedAt))}`]]:[])];
+  const T=[["Subtotal",inr(s.subtotal)],...(num(s.discount)?[["Discount","− "+inr(s.discount)]]:[]),
+   ["GST included",inr(s.gstAmount)],["Bill total",`<b style="font-size:18px">${inr(s.total)}</b>`],
+   ...(adv?[["Already received before this bill",inr(adv)],["Collected on this bill",inr(got)]]:[]),
+   ...(left>0?[["Still pending",`<span style="color:var(--bad)">${inr(left)}</span>`]]:[])];
+  el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('sales')">← Back</button><h2>${esc(s.invoiceNo)}</h2>${dead?`<span class="tag out">void</span>`:""}</div>
+   <div class="row"><button class="btn sec" onclick="printInvoice('${s.id}')">Print bill</button><button class="btn sec" onclick="reprint('${s.id}')">Print receipt</button>
+   ${dead?"":isAdmin()?`<button class="btn" onclick="openSaleEdit('${s.id}')">Edit bill</button><button class="btn sec" onclick="voidSale('${s.id}')">Void</button>`
+     :(can("voidSale")?`<button class="btn sec" onclick="voidSale('${s.id}')">Void</button>`:rqBtn("sale.void",s.id,`Invoice ${s.invoiceNo} · ${inr(s.total)}`,{}))}</div></div>
+  ${dead?`<div class="card" style="margin-bottom:12px"><b>This bill is void.</b> <span class="mute">The stock went back in and it counts for nothing in the customer's ledger.</span></div>`:""}
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+   <div class="card" style="padding:6px 14px"><table>${R.map(r=>`<tr><td class="mute" style="width:40%">${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table></div>
+   <div class="card" style="padding:6px 14px"><table>${T.map(r=>`<tr><td class="mute" style="width:55%">${r[0]}</td><td class="n">${r[1]}</td></tr>`).join("")}</table></div></div>
+  <div class="card" style="margin-top:12px;padding:6px 12px"><h3 style="margin:10px 2px 4px">Items (${s.items.length})</h3>
+   <table class="resp"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">GST</th><th>Taken from</th><th class="n">Amount</th></tr></thead><tbody>
+   ${s.items.map(i=>{const p=S.products.find(x=>x.id===i.pid);
+     return `<tr><td data-l="Item"><span class="row" style="flex-wrap:nowrap">${p?thumb(p,38):""}<span>${p&&can("productPage")?`<a href="#product/${p.id}">${esc(i.name)}</a>`:esc(i.name)}<br><span class="small mute">${esc(i.sku)}${p&&dimText(p)?" · 📐 "+esc(dimText(p)):""}</span></span></span></td>
+    <td data-l="Qty" class="n">${qtyText(i.qty,p?p.unit:"pcs")}</td><td data-l="Rate" class="n">${inr(i.price)}</td>
+    <td data-l="GST" class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td data-l="Taken from" class="small">${esc(i.takenFrom||"—")}</td>
+    <td data-l="Amount" class="n">${inr(i.lineTotal??num(i.price)*num(i.qty))}</td></tr>`}).join("")
+    ||`<tr><td colspan="6" class="mute">No items on this bill.</td></tr>`}
+   </tbody><tfoot><tr><th colspan="5">Bill total</th><th class="n">${inr(s.total)}</th></tr></tfoot></table></div>
+  ${log.length?`<div class="card" style="margin-top:12px"><h3 style="margin-bottom:6px">Corrections (${log.length})</h3>${histRows(log)}</div>`:""}`;
+}
+/* An admin can correct a saved bill. Changing a quantity moves the stock by the difference, so
+   the shelf still matches the bill. A bill raised against a booking keeps its items — those
+   belong to the booking — and only the money collected on delivery can be corrected. */
+window.openSaleEdit=function(id){
+  if(!isAdmin())return toast("Only an admin can correct a saved bill",1);
+  const s=S.sales.find(x=>x.id===id);
+  if(!s)return toast("That bill no longer exists",1);
+  if(s.status==="void")return toast("This bill is void — there is nothing to correct",1);
+  const linked=!!s.bookingId;
+  S.es={id,linked,items:s.items.map(i=>({...i})),disc:num(s.discount),pay:s.payment||"",q:"",
+        collect:r2(num(s.balancePaid??(num(s.total)-num(s.advance))))};
+  const draw=()=>{
+    const E=S.es,t=sumItems(E.items,E.disc);
+    const q=E.q.trim().toLowerCase();
+    const hits=q?S.products.filter(p=>`${p.name} ${p.sku} ${p.barcode||""} ${dimText(p)}`.toLowerCase().includes(q)).slice(0,8):[];
+    $("#es-body").innerHTML=`
+     ${linked?`<div class="card" style="padding:10px 12px;margin-bottom:10px"><b>This bill came from booking ${esc(s.bookingNo||"")}.</b>
+       <span class="mute small">The items and the order value belong to the booking, so they stay as they are. Correct what was collected on delivery here.</span></div>`:""}
+     <table><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate (₹)</th><th class="n">Amount</th>${linked?"":"<th></th>"}</tr></thead><tbody>
+     ${E.items.map((i,ix)=>`<tr><td>${esc(i.name)}<br><span class="small mute">${esc(i.sku)}${i.takenFrom?" · from "+esc(i.takenFrom):""}</span></td>
+       <td class="n">${linked?i.qty:`<input type="number" min="0" step="1" value="${i.qty}" style="width:70px" onchange="esSet(${ix},'qty',this.value)">`}</td>
+       <td class="n">${linked?inr(i.price):`<input type="number" min="0" step="0.01" value="${i.price}" style="width:95px" onchange="esSet(${ix},'price',this.value)">`}</td>
+       <td class="n">${inr(num(i.price)*num(i.qty))}</td>
+       ${linked?"":`<td><button class="btn sm sec" onclick="S.es.items.splice(${ix},1);esDraw()">✕</button></td>`}</tr>`).join("")
+      ||`<tr><td colspan="5" class="mute">Every item removed — a bill needs at least one, or void it instead.</td></tr>`}
+     </tbody></table>
+     ${linked?"":`<label style="margin-top:10px">Add an item to this bill</label>
+     <input id="es-q" placeholder="Search a product by name, SKU or size…" value="${esc(E.q)}">
+     ${q?`<div class="items" style="max-height:160px;margin-top:6px">${hits.map(p=>`<button class="item" onclick="esAdd('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,30)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · "+esc(dimText(p)):""}</span><span class="small mute">${avail(p)} available</span></button>`).join("")||`<p class="mute small">No product matches.</p>`}</div>`:""}`}
+     <div class="f" style="margin-top:10px">
+      ${linked?`<div><label>Collected on this bill (₹)</label><input id="es-collect" type="number" min="0" step="0.01" value="${E.collect||""}"></div>`
+        :`<div><label>Discount (₹)</label><input id="es-disc" type="number" min="0" step="0.01" value="${E.disc||""}"></div>`}
+      <div><label>Payment mode</label><select id="es-pay">${withCur(S.lists.payModes,E.pay).map(m=>`<option ${E.pay===m?"selected":""}>${esc(m)}</option>`).join("")}</select></div>
+      <div class="full"><label>Reason for the correction</label><input id="es-why" placeholder="Wrong quantity billed, rate revised…" value="${esc(E.why||"")}"></div></div>
+     <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">
+      <div class="row" style="justify-content:space-between"><span class="mute">Subtotal</span><span>${inr(t.gross)}</span></div>
+      ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount</span><span>− ${inr(t.disc)}</span></div>`:""}
+      <div class="row" style="justify-content:space-between"><span class="mute">incl. GST</span><span>${inr(t.gst)}</span></div>
+      <div class="row" style="justify-content:space-between;font-size:19px;font-weight:700"><span>Bill total</span><span>${inr(linked?num(s.total):t.total)}</span></div>
+      ${linked?`<div class="row" style="justify-content:space-between"><span class="mute">Already received before this bill</span><span>${inr(num(s.advance))}</span></div>
+       <div class="row" style="justify-content:space-between"><span class="mute">Still pending after this</span><span>${inr(Math.max(0,r2(num(s.total)-num(s.advance)-num(E.collect))))}</span></div>`:""}</div>`;
+    const keep=()=>{const E=S.es;const d=$("#es-disc");if(d)E.disc=num(d.value);const c=$("#es-collect");if(c)E.collect=num(c.value);
+      E.pay=$("#es-pay").value;E.why=$("#es-why").value};
+    ["#es-pay","#es-why"].forEach(sel=>{const e=$(sel);if(e)e.onchange=keep});
+    const d=$("#es-disc");if(d)d.onchange=()=>{keep();draw()};
+    const c=$("#es-collect");if(c)c.onchange=()=>{keep();draw()};
+    const qi=$("#es-q");if(qi)qi.oninput=()=>{S.es.q=qi.value;clearTimeout(draw.t);draw.t=setTimeout(()=>{draw();const n=$("#es-q");if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},180)};
+  };
+  window.esDraw=draw;
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:720px"><h3>Correct ${esc(s.invoiceNo)}</h3>
+   <p class="mute small">${esc(s.customer?.name||"Walk-in")}${s.customer?.phone?" · "+esc(s.customer.phone):""} · billed ${fdt(tms(s.createdAt))} by ${esc(s.soldByName||"")}</p>
+   <div id="es-body"></div>
+   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="es-go">Save changes</button></div></div></div>`;
+  draw();
+  $("#es-go").onclick=()=>saveSaleEdit();
+};
+window.esSet=(ix,k,v)=>{const i=S.es.items[ix];i[k]=k==="qty"?Math.max(0,Math.floor(num(v))):r2(num(v));esDraw()};
+window.esAdd=id=>{const p=S.products.find(x=>x.id===id);if(!p)return;
+  const e=S.es.items.find(i=>i.pid===id);
+  if(e)e.qty=num(e.qty)+1;
+  else S.es.items.push({pid:id,sku:p.sku,name:p.name,price:num(p.price),qty:1,gst:num(p.gst),cost:num(p.cost),takenFrom:(locEntries(p)[0]||[])[0]||p.location||""});
+  S.es.q="";esDraw()};
+async function saveSaleEdit(){
+  const E=S.es,s=S.sales.find(x=>x.id===E.id),btn=$("#es-go");
+  if(!s)return toast("That bill no longer exists",1);
+  const why=($("#es-why")?.value||"").trim();
+  const stamp=w=>[...(s.editLog||[]),{t:Date.now(),by:S.profile.name,what:w,why}];
+  btn.disabled=true;btn.textContent="Saving…";
+  const fail=e=>{toast(emsg(e),1);btn.disabled=false;btn.textContent="Save changes"};
+  try{
+    if(E.linked){
+      const collect=r2(num($("#es-collect").value)),adv=num(s.advance);
+      if(collect<0)throw new Error("That can't be a negative amount");
+      if(r2(adv+collect)>num(s.total))throw new Error(`That is more than the order value — at most ${inr(r2(num(s.total)-adv))} is still due`);
+      const b=writeBatch(db);
+      b.update(doc(db,"sales",E.id),{payment:$("#es-pay").value,balancePaid:collect,
+        editLog:stamp(`Collected on delivery changed from ${inr(num(s.balancePaid??0))} to ${inr(collect)}`),
+        editedAt:serverTimestamp(),editedBy:S.profile.name,editedByUid:S.user.uid});
+      if(s.bookingId)b.update(doc(db,"bookings",s.bookingId),{collectedOnDelivery:collect,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+      await b.commit();
+      closeModal();toast("Invoice corrected");render();return;
+    }
+    const items=E.items.filter(i=>Math.floor(num(i.qty))>0).map(i=>({...i,qty:Math.floor(num(i.qty)),price:r2(num(i.price)),
+      lineTotal:r2(Math.floor(num(i.qty))*r2(num(i.price)))}));
+    if(!items.length)throw new Error("A bill needs at least one item — void it instead of emptying it");
+    const t=sumItems(items,num($("#es-disc").value));
+    if(t.total<=0)throw new Error("The bill total has to be more than zero");
+    const was={},now={},locOf={};
+    s.items.forEach(i=>{was[i.pid]=(was[i.pid]||0)+Math.floor(num(i.qty));locOf[i.pid]=i.takenFrom||locOf[i.pid]||""});
+    items.forEach(i=>{now[i.pid]=(now[i.pid]||0)+i.qty;locOf[i.pid]=i.takenFrom||locOf[i.pid]||""});
+    const delta=[...new Set([...Object.keys(was),...Object.keys(now)])]
+      .map(pid=>({pid,d:(now[pid]||0)-(was[pid]||0),loc:locOf[pid]||""})).filter(x=>x.d!==0);
+    await runTransaction(db,async tx=>{
+      const sr=doc(db,"sales",E.id),sd=await tx.get(sr);
+      if(!sd.exists())throw new Error("That bill no longer exists");
+      if(sd.data().status==="void")throw new Error("This bill has just been voided by someone else");
+      const refs=delta.map(x=>doc(db,"products",x.pid)),snaps=[];for(const r of refs)snaps.push(await tx.get(r));
+      snaps.forEach((p,ix)=>{const x=delta[ix];
+        if(!p.exists())throw new Error("A product on this bill no longer exists");
+        const d=p.data(),cur=+d.qty||0;
+        if(x.d>0&&cur<x.d&&!S.settings.allowNegative)throw new Error(`Only ${cur} of ${d.name} left in stock`);
+        const map=x.d>0?takeAt(locMapOf(d),x.d,x.loc).map:addTo(locMapOf(d),x.loc||primaryLoc(locMapOf(d)),-x.d);
+        tx.update(refs[ix],{qty:cur-x.d,locQty:map,location:primaryLoc(map)||d.location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+        tx.set(doc(collection(db,"movements")),{...mv(x.pid,d.name,d.sku,x.d>0?"sale":"return",-x.d,cur,cur-x.d,
+          `${s.invoiceNo} corrected by ${S.profile.name}${why?" · "+why:""}`),fromLoc:x.d>0?(x.loc||""):"",toLoc:x.d<0?(x.loc||""):""})});
+      tx.update(sr,{items,subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,payment:$("#es-pay").value,
+        editLog:stamp(`Bill changed from ${inr(num(s.total))} to ${inr(t.total)}`),
+        editedAt:serverTimestamp(),editedBy:S.profile.name,editedByUid:S.user.uid});
+    });
+    closeModal();toast("Invoice corrected");render();
+  }catch(e){fail(e)}
+}
+/* A full-page bill, for the ones customers take home. The thermal receipt is still there. */
+window.printInvoice=id=>{
+  const s=S.sales.find(x=>x.id===id);if(!s)return;
+  const st=S.settings,adv=num(s.advance),got=r2(num(s.balancePaid??(num(s.total)-adv))),left=r2(num(s.total)-adv-got);
+  const w=window.open("","_blank","width=820,height=900");if(!w)return toast("Allow pop-ups to print",1);
+  w.document.write(`<html><head><title>${esc(s.invoiceNo)}</title><style>
+  body{font:12px Arial,Helvetica,sans-serif;max-width:760px;margin:16px auto;color:#000}
+  h2,h3{margin:0}table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border-bottom:1px solid #ccc;padding:6px 5px;text-align:left;vertical-align:top}
+  th{background:#1f3a34;color:#fff;font-size:11px;text-transform:uppercase}
+  .n{text-align:right;white-space:nowrap}.c{text-align:center}.m{color:#555;font-size:11px}
+  tfoot th{background:#efebe0;color:#000}</style></head><body>
+  <h2>${esc(st.storeName)}</h2><div class="m">${esc(st.address||"")}${st.phone?" · Ph "+esc(st.phone):""}${st.gstin?" · GSTIN "+esc(st.gstin):""}</div>
+  <h3 style="margin-top:14px">Invoice ${esc(s.invoiceNo)}${s.status==="void"?" (VOID)":""}</h3>
+  <div class="m">${esc(s.customer?.name||"Walk-in")}${s.customer?.phone?" · "+esc(s.customer.phone):""}<br>
+   ${fdt(tms(s.createdAt))} · ${esc(s.payment||"")}${s.bookingNo?" · against booking "+esc(s.bookingNo):""} · billed by ${esc(s.soldByName||"")}</div>
+  <table><thead><tr><th>#</th><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">GST</th><th class="n">Amount</th></tr></thead><tbody>
+  ${s.items.map((i,ix)=>`<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}</span></td><td class="n">${i.qty}</td>
+   <td class="n">${inr(i.price)}</td><td class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td class="n">${inr(i.lineTotal??num(i.price)*num(i.qty))}</td></tr>`).join("")}
+  </tbody><tfoot>
+   <tr><th colspan="5">Subtotal</th><th class="n">${inr(s.subtotal)}</th></tr>
+   ${num(s.discount)?`<tr><th colspan="5">Discount</th><th class="n">− ${inr(s.discount)}</th></tr>`:""}
+   <tr><th colspan="5">GST included</th><th class="n">${inr(s.gstAmount)}</th></tr>
+   <tr><th colspan="5">Total</th><th class="n">${inr(s.total)}</th></tr>
+   ${adv?`<tr><th colspan="5">Already received</th><th class="n">${inr(adv)}</th></tr><tr><th colspan="5">Paid on this bill</th><th class="n">${inr(got)}</th></tr>`:""}
+   ${left>0?`<tr><th colspan="5">Still pending</th><th class="n">${inr(left)}</th></tr>`:""}</tfoot></table>
+  <p class="m">GST shown is included in the prices above.</p>
+  <div class="c m" style="margin-top:20px">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close();
+};
 
 /* ---------- Customers ---------- */
 const custKey=ph=>String(ph||"").replace(/\D/g,"");
@@ -910,7 +1103,7 @@ function custLedger(c){
   st.allSales.forEach(s=>{
     const dead=s.status==="void",linked=!!s.bookingId,adv=num(s.advance);
     const items=s.items.map(i=>`${i.name} ×${i.qty}`).join(", ");
-    ev.push({ms:tms(s.createdAt),kind:dead?"void":"sale",ref:s.invoiceNo,sale:s.id,
+    ev.push({ms:tms(s.createdAt),kind:dead?"void":"sale",ref:s.invoiceNo,sale:s.id,link:`#sale/${s.id}`,
       what:linked?`Invoice ${s.invoiceNo} · ${s.bookingNo} delivered`:`Invoice ${s.invoiceNo}`,
       detail:items+` · ${s.payment}`+(dead?" · voided, no effect on the balance":linked?` · charged on the booking, ${inr(r2(s.balancePaid??(num(s.total)-adv)))} collected on delivery`:isCredit(s.payment)?" · on credit, not yet received":""),
       charge:dead?0:(linked?0:num(s.total)),
@@ -949,7 +1142,7 @@ function vCustomer(el){
     <td data-l="Charges" class="n">${e.charge?inr(e.charge):"—"}</td>
     <td data-l="Paid" class="n">${e.paid?inr(e.paid):"—"}</td>
     <td data-l="Balance" class="n" style="color:${e.bal<0?"var(--bad)":e.bal>0?"var(--ok)":"inherit"}">${inr(e.bal)}</td>
-    <td data-l="">${e.sale?`<button class="btn sm sec" onclick="reprint('${e.sale}')">Print</button>`:""}${e.pay&&isAdmin()?`<button class="btn sm sec" onclick="delPayment('${e.pay}')">Remove</button>`:""}</td></tr>`).join("")
+    <td data-l="">${e.sale?`<button class="btn sm sec" onclick="location.hash='sale/'+'${e.sale}'">Open</button>`:""}${e.pay&&isAdmin()?`<button class="btn sm sec" onclick="delPayment('${e.pay}')">Remove</button>`:""}</td></tr>`).join("")
    ||`<tr><td colspan="6" class="mute">Nothing billed or booked for this customer yet.</td></tr>`}
    </tbody>${L.rows.length?`<tfoot><tr><th></th><th>Total</th><th class="n">${inr(L.billed)}</th><th class="n">${inr(L.paid)}</th><th class="n" style="color:${L.balance<0?"var(--bad)":L.balance>0?"var(--ok)":"inherit"}">${inr(L.balance)}</th><th></th></tr></tfoot>`:""}</table></div>
   ${c.notes?`<p class="small mute" style="margin-top:10px">Note: ${esc(c.notes)}</p>`:""}`;
@@ -1134,11 +1327,11 @@ function vVendor(el){
    <div class="row" style="justify-content:space-between;padding:10px 2px 4px"><h3>Ledger</h3><span class="small mute">Billed is what the vendor charged · Paid is what you gave them · a negative balance is still payable</span></div>
    <table class="resp"><thead><tr><th>Date</th><th>Particulars</th><th class="n">Billed</th><th class="n">Paid</th><th class="n">Balance</th><th></th></tr></thead><tbody>
    ${L.rows.map(e=>`<tr><td data-l="Date" class="small">${fdt(e.ms)}</td>
-    <td data-l="Particulars"><b>${esc(e.what)}</b>${e.kind==="payment"?` <span class="tag ok">paid</span>`:""}<br><span class="small mute">${esc(e.detail)}</span></td>
+    <td data-l="Particulars">${e.link?`<a href="${e.link}"><b>${esc(e.what)}</b></a>`:`<b>${esc(e.what)}</b>`}${e.kind==="payment"?` <span class="tag ok">paid</span>`:""}<br><span class="small mute">${esc(e.detail)}</span></td>
     <td data-l="Billed" class="n">${e.charge?inr(e.charge):"—"}</td>
     <td data-l="Paid" class="n">${e.paid?inr(e.paid):"—"}</td>
     <td data-l="Balance" class="n" style="color:${e.bal<0?"var(--bad)":e.bal>0?"var(--ok)":"inherit"}">${inr(e.bal)}</td>
-    <td data-l="">${isAdmin()?(e.pid?`<button class="btn sm sec" onclick="delPurchase('${e.pid}')">Remove</button>`:e.payid?`<button class="btn sm sec" onclick="delVendorPayment('${e.payid}')">Remove</button>`:""):""}</td></tr>`).join("")
+    <td data-l=""><div class="row" style="justify-content:flex-end">${e.pid?`<button class="btn sm sec" onclick="location.hash='purchase/'+'${e.pid}'">Open bill</button>`:""}${isAdmin()?(e.pid?`<button class="btn sm sec" onclick="delPurchase('${e.pid}')">Remove</button>`:e.payid?`<button class="btn sm sec" onclick="delVendorPayment('${e.payid}')">Remove</button>`:""):""}</div></td></tr>`).join("")
    ||`<tr><td colspan="6" class="mute">No purchases or payments recorded yet.</td></tr>`}
    </tbody>${L.rows.length?`<tfoot><tr><th></th><th>Total</th><th class="n">${inr(L.billed)}</th><th class="n">${inr(L.paid)}</th><th class="n" style="color:${L.balance<0?"var(--bad)":L.balance>0?"var(--ok)":"inherit"}">${inr(L.balance)}</th><th></th></tr></tfoot>`:""}</table></div>
   <div class="card" style="margin-top:12px;padding:6px 12px"><h3 style="margin:10px 2px 4px">Products from this vendor</h3>
@@ -1157,7 +1350,7 @@ const vendPurchases=v=>S.purchases.filter(p=>p.vendorId===v.id&&p.status!=="void
 const vendPays=v=>S.vpays.filter(p=>p.vendorId===v.id);
 function vendorLedger(v){
   const ev=[];
-  vendPurchases(v).forEach(p=>ev.push({ms:dayMs(p.date)||tms(p.createdAt),kind:"purchase",ref:p.billNo||"",pid:p.id,
+  vendPurchases(v).forEach(p=>ev.push({ms:dayMs(p.date)||tms(p.createdAt),kind:"purchase",ref:p.billNo||"",pid:p.id,link:`#purchase/${p.id}`,
     what:`Purchase${p.billNo?" · bill "+p.billNo:""}`,
     detail:[(p.items||[]).map(i=>`${i.name} ×${i.qty}`).join(", "),(p.charges||[]).length?(p.charges||[]).map(c=>`${c.label} ${inr(c.amount)}`).join(", "):(num(p.other)?`other charges ${inr(p.other)}`:""),p.addedStock?"stock added to inventory":"",p.notes,p.createdByName?`entered by ${p.createdByName}`:""].filter(Boolean).join(" · "),
     charge:num(p.total),paid:0}));
@@ -1171,8 +1364,65 @@ function vendorLedger(v){
   return{rows:ev,billed,paid,balance:r2(paid-billed),payable:Math.max(0,r2(billed-paid)),advance:Math.max(0,r2(paid-billed))};
 }
 const vendBalTag=b=>b<0?`<span class="tag out">${inr(Math.abs(b))} payable</span>`:b>0?`<span class="tag ok">${inr(b)} advance</span>`:`<span class="tag">settled</span>`;
+/* One purchase bill, in full: what the vendor sent, what it cost, and where the pieces went. */
+const purCharges=p=>(p.charges||[]).length?p.charges:(num(p.other)?[{label:"Other charges",amount:num(p.other)}]:[]);
+function vPurchase(el){
+  const p=S.purchases.find(x=>x.id===S.detailPur);
+  if(!p){el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('vendors')">← Back</button><h2>Purchase not found</h2></div></div>`;return}
+  const v=S.vendors.find(x=>x.id===p.vendorId),ch=purCharges(p),log=p.editLog||[];
+  const R=[["Bill / invoice no.",`<b>${esc(p.billNo||"—")}</b>`],["Bill date",esc(p.date||"—")],
+   ["Vendor",v?`<a href="#vendor/${v.id}">${esc(v.name)}</a>${v.city?` <span class="small mute">· ${esc(v.city)}</span>`:""}`:esc(p.vendorName||"—")],
+   ["Stock",p.addedStock?`<span class="tag ok">added to inventory</span>${p.loc?` <span class="small mute">into ${esc(p.loc)}</span>`:""}`:`<span class="tag">not added here</span> <span class="small mute">received through Stock in</span>`],
+   ["Note",esc(p.notes||"—")],["Entered by",`${esc(p.createdByName||"—")} · ${fdt(tms(p.createdAt))}`],
+   ...(p.editedBy?[["Last corrected",`${esc(p.editedBy)} · ${fdt(tms(p.editedAt))}`]]:[])];
+  const T=[["Items",inr(p.subtotal)],...ch.map(c=>[esc(c.label||"Other charge"),inr(c.amount)]),
+   ["Bill total",`<b style="font-size:18px">${inr(p.total)}</b>`]];
+  el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="${v?`location.hash='vendor/'+'${v.id}'`:"go('vendors')"}">← Back</button><h2>${esc(p.billNo?"Bill "+p.billNo:"Purchase")}</h2></div>
+   <div class="row"><button class="btn sec" onclick="printPurchase('${p.id}')">Print bill</button>
+   ${isAdmin()?`<button class="btn" onclick="openPurchase('${p.vendorId}',false,'${p.id}')">Edit bill</button><button class="btn sec" onclick="delPurchase('${p.id}')">Remove</button>`
+     :`<span class="small mute">Only an admin can change a saved bill.</span>`}</div></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+   <div class="card" style="padding:6px 14px"><table>${R.map(r=>`<tr><td class="mute" style="width:40%">${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table></div>
+   <div class="card" style="padding:6px 14px"><table>${T.map(r=>`<tr><td class="mute" style="width:55%">${r[0]}</td><td class="n">${r[1]}</td></tr>`).join("")}</table></div></div>
+  <div class="card" style="margin-top:12px;padding:6px 12px"><h3 style="margin:10px 2px 4px">Items (${(p.items||[]).length})</h3>
+   <table class="resp"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th><th class="n">Stock now</th></tr></thead><tbody>
+   ${(p.items||[]).map(i=>{const pr=S.products.find(x=>x.id===i.pid);
+     return `<tr><td data-l="Item"><span class="row" style="flex-wrap:nowrap">${pr?thumb(pr,38):""}<span>${pr&&can("productPage")?`<a href="#product/${pr.id}">${esc(i.name)}</a>`:esc(i.name)}<br><span class="small mute">${esc(i.sku)}</span></span></span></td>
+    <td data-l="Qty" class="n">${qtyText(i.qty,pr?pr.unit:"pcs")}</td><td data-l="Rate" class="n">${inr(i.rate)}</td>
+    <td data-l="Amount" class="n">${inr(i.amount??num(i.rate)*num(i.qty))}</td>
+    <td data-l="Stock now" class="n">${pr?qtyText(pr.qty,pr.unit):`<span class="mute">removed</span>`}</td></tr>`}).join("")
+    ||`<tr><td colspan="5" class="mute">No items on this bill — only charges.</td></tr>`}
+   </tbody><tfoot><tr><th colspan="3">Items value</th><th class="n">${inr(p.subtotal)}</th><th></th></tr>
+   ${ch.map(c=>`<tr><th colspan="3">${esc(c.label||"Other charge")}</th><th class="n">${inr(c.amount)}</th><th></th></tr>`).join("")}
+   <tr><th colspan="3">Bill total</th><th class="n">${inr(p.total)}</th><th></th></tr></tfoot></table></div>
+  ${log.length?`<div class="card" style="margin-top:12px"><h3 style="margin-bottom:6px">Corrections (${log.length})</h3>${histRows(log)}</div>`:""}`;
+}
+window.printPurchase=id=>{
+  const p=S.purchases.find(x=>x.id===id);if(!p)return;
+  const st=S.settings,ch=purCharges(p);
+  const w=window.open("","_blank","width=820,height=900");if(!w)return toast("Allow pop-ups to print",1);
+  w.document.write(`<html><head><title>${esc(p.billNo||"Purchase")}</title><style>
+  body{font:12px Arial,Helvetica,sans-serif;max-width:760px;margin:16px auto;color:#000}
+  h2,h3{margin:0}table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border-bottom:1px solid #ccc;padding:6px 5px;text-align:left;vertical-align:top}
+  th{background:#1f3a34;color:#fff;font-size:11px;text-transform:uppercase}
+  .n{text-align:right;white-space:nowrap}.c{text-align:center}.m{color:#555;font-size:11px}
+  tfoot th{background:#efebe0;color:#000}</style></head><body>
+  <h2>${esc(st.storeName)}</h2><div class="m">${esc(st.address||"")}${st.phone?" · Ph "+esc(st.phone):""}${st.gstin?" · GSTIN "+esc(st.gstin):""}</div>
+  <h3 style="margin-top:14px">Purchase ${p.billNo?"· bill "+esc(p.billNo):""}</h3>
+  <div class="m">${esc(p.vendorName||"")} · bill dated ${esc(p.date||"")}<br>Entered by ${esc(p.createdByName||"")} · printed ${fdt(Date.now())}</div>
+  <table><thead><tr><th>#</th><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>
+  ${(p.items||[]).map((i,ix)=>`<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}</span></td><td class="n">${i.qty}</td>
+   <td class="n">${inr(i.rate)}</td><td class="n">${inr(i.amount??num(i.rate)*num(i.qty))}</td></tr>`).join("")||`<tr><td colspan="5">No items — charges only.</td></tr>`}
+  </tbody><tfoot><tr><th colspan="4">Items value</th><th class="n">${inr(p.subtotal)}</th></tr>
+  ${ch.map(c=>`<tr><th colspan="4">${esc(c.label||"Other charge")}</th><th class="n">${inr(c.amount)}</th></tr>`).join("")}
+  <tr><th colspan="4">Bill total</th><th class="n">${inr(p.total)}</th></tr></tfoot></table>
+  ${p.notes?`<p class="m">Note: ${esc(p.notes)}</p>`:""}
+  <p class="m">${p.addedStock?`These pieces were added to stock${p.loc?" at "+esc(p.loc):""}.`:"Stock for this bill was received separately."}</p>
+  <div class="c m" style="margin-top:20px">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close();
+};
 
-window.openPurchase=function(vid,keepState){
+window.openPurchase=function(vid,keepState,editId){
   if(!can("vendorLedger"))return toast("You don't have permission to record purchases",1);
   const v=S.vendors.find(x=>x.id===vid);if(!v)return;
   S.puVendor=vid;
@@ -1225,11 +1475,24 @@ window.openPurchase=function(vid,keepState){
     const qi=$("#pu-q");qi.oninput=()=>{S.pq=qi.value;clearTimeout(draw.t);draw.t=setTimeout(()=>{draw();const n=$("#pu-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
   };
   window.puDraw=draw;
-  if(!keepState){S.pcart=[];S.pq="";S.pchg=[];S.puBill="";S.puDate=dkey();S.puNote="";S.puLoc=allLocations()[0]||UNLOC;S.puStock=true;S.puLocTouched=false}
-  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:720px"><h3>Record a purchase from ${esc(v.name)}</h3>
+  if(!keepState){
+    S.puEdit=editId||"";
+    const ex=editId?S.purchases.find(x=>x.id===editId):null;
+    if(ex){
+      S.pcart=(ex.items||[]).map(i=>({pid:i.pid,sku:i.sku,name:i.name,qty:num(i.qty),rate:num(i.rate)}));
+      S.pchg=purCharges(ex).map(c=>({label:c.label||"",amount:num(c.amount)}));
+      S.pq="";S.puBill=ex.billNo||"";S.puDate=ex.date||dkey();S.puNote=ex.notes||"";
+      S.puLoc=ex.loc||allLocations()[0]||UNLOC;S.puStock=!!ex.addedStock;S.puLocTouched=true;
+    }
+    else{S.pcart=[];S.pq="";S.pchg=[];S.puBill="";S.puDate=dkey();S.puNote="";S.puLoc=allLocations()[0]||UNLOC;S.puStock=true;S.puLocTouched=false}
+  }
+  const editing=()=>S.puEdit?S.purchases.find(x=>x.id===S.puEdit):null;
+  const ed=editing();
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:720px"><h3>${ed?`Correct this bill from ${esc(v.name)}`:`Record a purchase from ${esc(v.name)}`}</h3>
+   ${ed?`<p class="mute small">Bill ${esc(ed.billNo||"(no number)")} dated ${esc(ed.date||"")} · entered by ${esc(ed.createdByName||"")}${ed.addedStock?" · its pieces are in stock, so a quantity change moves the stock by the difference":""}</p>`:""}
    ${SHOW_BILLING?`<p class="mute small">${esc(v.billingMethod||"")}${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?` · ${v.creditDays} days credit`:""}</p>`:""}
    <div id="pu-body"></div>
-   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="pu-go">Save purchase</button></div></div></div>`;
+   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="pu-go">${ed?"Save changes":"Save purchase"}</button></div></div></div>`;
   draw();
   $("#pu-go").onclick=async()=>{
     const items=S.pcart.filter(i=>num(i.qty)>0).map(i=>({pid:i.pid,sku:i.sku,name:i.name,qty:Math.floor(num(i.qty)),rate:num(i.rate),amount:r2(Math.floor(num(i.qty))*num(i.rate))}));
@@ -1238,11 +1501,17 @@ window.openPurchase=function(vid,keepState){
     if(!items.length&&!other)return toast("Add an item or an amount",1);
     if(total<=0)return toast("The bill total has to be more than zero",1);
     const addStock=$("#pu-stock").checked&&can("stockIn"),loc=$("#pu-loc").value;
+    const ex=editing();
+    if(S.puEdit&&!ex)return toast("That purchase no longer exists",1);
     const btn=$("#pu-go");btn.disabled=true;btn.textContent="Saving…";
+    const label=ex?"Save changes":"Save purchase";
     try{
+      if(ex){await savePurchaseEdit(ex,{items,charges,other,total,addStock,loc,
+        billNo:$("#pu-bill").value.trim(),date:$("#pu-date").value||ex.date||dkey(),notes:$("#pu-note").value.trim()});return}
       const pr=doc(collection(db,"purchases"));
       const rec={vendorId:v.id,vendorName:v.name,billNo:$("#pu-bill").value.trim(),date:$("#pu-date").value||dkey(),
         items,charges,subtotal:r2(total-other),other:r2(other),total,notes:$("#pu-note").value.trim(),addedStock:!!addStock,
+        loc:addStock&&items.length?loc:"",
         status:"posted",createdBy:S.user.uid,createdByName:S.profile.name,createdAt:serverTimestamp()};
       if(addStock&&items.length){
         await runTransaction(db,async tx=>{
@@ -1256,9 +1525,47 @@ window.openPurchase=function(vid,keepState){
         });
       }else await setDoc(pr,rec);
       closeModal();toast(`Purchase of ${inr(total)} recorded${addStock&&items.length?" and stock added":""}`);
-    }catch(e){toast(emsg(e),1);btn.disabled=false;btn.textContent="Save purchase"}
+    }catch(e){toast(emsg(e),1);btn.disabled=false;btn.textContent=label}
   };
 };
+/* Correcting a saved purchase. Whatever the bill says now is compared with what it said
+   before; if the pieces had been put into stock, the difference is added or taken back out so
+   the shelf and the bill stay in step. Removing the bill altogether is still a separate action. */
+async function savePurchaseEdit(ex,d){
+  const was={},now={};
+  if(ex.addedStock)(ex.items||[]).forEach(i=>{was[i.pid]=(was[i.pid]||0)+Math.floor(num(i.qty))});
+  if(d.addStock)d.items.forEach(i=>{now[i.pid]=(now[i.pid]||0)+Math.floor(num(i.qty))});
+  const delta=[...new Set([...Object.keys(was),...Object.keys(now)])]
+    .map(pid=>({pid,q:(now[pid]||0)-(was[pid]||0)})).filter(x=>x.q!==0);
+  const oldLoc=ex.loc||"";
+  const rec={billNo:d.billNo,date:d.date,items:d.items,charges:d.charges,subtotal:r2(d.total-d.other),other:r2(d.other),
+    total:d.total,notes:d.notes,addedStock:!!d.addStock,loc:d.addStock&&d.items.length?d.loc:"",
+    editLog:[...(ex.editLog||[]),{t:Date.now(),by:S.profile.name,
+      what:num(ex.total)===d.total?"Bill details changed":`Bill total changed from ${inr(ex.total)} to ${inr(d.total)}`}],
+    editedAt:serverTimestamp(),editedBy:S.profile.name,editedByUid:S.user.uid};
+  const btn=$("#pu-go");
+  try{
+    if(delta.length){
+      await runTransaction(db,async tx=>{
+        const pr=doc(db,"purchases",ex.id),ps=await tx.get(pr);
+        if(!ps.exists())throw new Error("That purchase no longer exists");
+        const refs=delta.map(x=>doc(db,"products",x.pid)),snaps=[];for(const r of refs)snaps.push(await tx.get(r));
+        snaps.forEach((s,ix)=>{const x=delta[ix];
+          if(!s.exists())throw new Error("A product on this bill no longer exists");
+          const p=s.data(),cur=+p.qty||0;
+          if(x.q<0&&cur< -x.q&&!S.settings.allowNegative)
+            throw new Error(`Only ${cur} of ${p.name} is in stock — ${-x.q} would have to come back out of this bill`);
+          const map=x.q>0?addTo(locMapOf(p),d.loc,x.q):takeAt(locMapOf(p),-x.q,oldLoc||primaryLoc(locMapOf(p))).map;
+          tx.update(refs[ix],{qty:cur+x.q,locQty:map,location:primaryLoc(map)||p.location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+          tx.set(doc(collection(db,"movements")),{...mv(x.pid,p.name,p.sku,x.q>0?"in":"out",x.q,cur,cur+x.q,
+            `Purchase${ex.billNo?" bill "+ex.billNo:""} corrected by ${S.profile.name}`),toLoc:x.q>0?d.loc:"",fromLoc:x.q<0?(oldLoc||""):""})});
+        tx.update(pr,rec);
+      });
+    }
+    else await updateDoc(doc(db,"purchases",ex.id),rec);
+    closeModal();toast(`Bill updated to ${inr(d.total)}`);render();
+  }catch(e){toast(emsg(e),1);if(btn){btn.disabled=false;btn.textContent="Save changes"}}
+}
 window.puAdd=id=>{const p=S.products.find(x=>x.id===id);if(!p)return;
   if(!S.pcart.length&&!S.puLocTouched){const l=primaryLoc(locMapOf(p))||p.location;if(l)S.puLoc=l}
   const e=S.pcart.find(i=>i.pid===id);
@@ -1271,7 +1578,7 @@ window.puNewProduct=vid=>{
   if(!can("editProducts"))return toast("You don't have permission to add products",1);
   const typed=S.pq.trim();
   window.__afterProduct=newId=>{openPurchase(vid,true);if(newId)puAdd(newId)};
-  openProduct(null,typed?{name:typed}:undefined);
+  openProduct(null,{qty:0,...(typed?{name:typed}:{})});
 };
 
 window.openVendorPayment=function(vid){
@@ -1305,7 +1612,8 @@ window.delPurchase=async id=>{
   if(!isAdmin())return toast("Only an admin can remove a purchase",1);
   const p=S.purchases.find(x=>x.id===id);if(!p)return;
   if(!confirm(`Remove the purchase of ${inr(p.total)} dated ${p.date}?${p.addedStock?"\n\nThe stock it added is NOT taken back out — adjust that separately if needed.":""}`))return;
-  try{await deleteDoc(doc(db,"purchases",id));toast("Purchase removed")}catch(e){toast(emsg(e),1)}
+  try{await deleteDoc(doc(db,"purchases",id));toast("Purchase removed");
+    if(S.view==="purchase"&&S.detailPur===id)location.hash=p.vendorId?"vendor/"+p.vendorId:"";}catch(e){toast(emsg(e),1)}
 };
 window.delVendorPayment=async id=>{
   if(!isAdmin())return toast("Only an admin can remove a vendor payment",1);
@@ -1585,6 +1893,7 @@ function vNewBooking(el){
   <div class="card"><h3 style="margin-bottom:6px">Booking (${S.bcart.length} item${S.bcart.length===1?"":"s"})</h3>
    ${S.bcart.map((i,ix)=>`<div class="cartline"><div><b>${esc(i.name)}</b><br><span class="small mute">${inr(i.price)} each</span></div><div style="text-align:right"><b>${inr(i.price*i.qty)}</b></div>
     <div class="qty"><button onclick="bkQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="bkSet(${ix},this.value)"><button onclick="bkQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.bcart.splice(${ix},1);render()">Remove</button></div></div>`).join("")||`<p class="mute">Tap a product to add it.</p>`}
+   ${S.bcart.length?`<p class="small mute" style="margin-top:6px">Keep searching on the left to put more products in the same booking.</p>`:""}
    <div class="f" style="margin-top:10px">
     <div><label>Customer phone *</label><input id="bk-ph" inputmode="tel" list="bk-phl" value="${esc(S.bphone)}"><datalist id="bk-phl">${S.customers.slice(0,400).map(c=>`<option value="${esc(c.phone)}">${esc(c.name)}</option>`).join("")}</datalist></div>
     <div><label>Customer name *</label><input id="bk-name" value="${esc(S.bname)}"></div>
@@ -1686,7 +1995,7 @@ function vBooking(el){
    ...(b.status==="delivered"&&num(b.collectedOnDelivery)?[["Collected on delivery",inr(b.collectedOnDelivery)]]:[]),
    ["Balance due",`${inr(bal)}${bal>0?` <span class="tag out">pending</span>`:bal<0?` <span class="tag ok">overpaid</span>`:` <span class="tag ok">settled</span>`}`],
    ["Tentative delivery",esc(b.deliveryDate||"—")],["Notes",esc(b.notes||"—")],["Taken by",esc(b.createdByName||"")+" · "+fdt(tms(b.createdAt))],
-   ["Invoice",sale?`<a href="#" onclick="reprint('${sale.id}');return false">${esc(sale.invoiceNo)}</a>`:(b.status==="delivered"?"—":"not billed yet")]];
+   ["Invoice",sale?`<a href="#sale/${sale.id}">${esc(sale.invoiceNo)}</a>`:(b.status==="delivered"?"—":"not billed yet")]];
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('bookings')">← Back</button><h2>${esc(b.bookingNo)}</h2></div>
    <div class="row">${b.status==="booked"?`<button class="btn" onclick="deliverBooking('${b.id}')">Deliver &amp; bill</button>${can("editBooking")?`<button class="btn sec" onclick="editBooking('${b.id}')">Edit</button>`:rqBtn("booking.edit",b.id,`Booking ${b.bookingNo} · ${b.customerName}`,{advance:num(b.advance),deliveryDate:b.deliveryDate||"",notes:b.notes||""})}${can("cancelBooking")?`<button class="btn sec" onclick="cancelBooking('${b.id}')">Cancel booking</button>`:rqBtn("booking.cancel",b.id,`Booking ${b.bookingNo} · ${b.customerName}`,{})}`:""}
    <button class="btn sec" onclick="printBooking('${b.id}')">Print slip</button></div></div>
