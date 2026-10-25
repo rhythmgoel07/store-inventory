@@ -272,10 +272,21 @@ const vend = p=>p.vendor??p.brand??"";
 // so "16x16" + "inch" stay separate for filtering, exports and labels.
 const dimOf = p=>String(p?.dimension||"").trim();
 const dimUnitOf = p=>String(p?.dimUnit||"").trim();
+// "1 pc", "2 pcs", "1 set" — a unit the app doesn't know is printed as typed.
+const UNIT_FORMS={pcs:["pc","pcs"],pc:["pc","pcs"],piece:["piece","pieces"],pieces:["pc","pcs"],
+  set:["set","sets"],sets:["set","sets"],pair:["pair","pairs"],pairs:["pair","pairs"],box:["box","boxes"],boxes:["box","boxes"]};
+const qtyText=(n,unit)=>{
+  const u=String(unit||"pcs").trim(),f=UNIT_FORMS[u.toLowerCase()];
+  const label=f?(Math.abs(+n||0)===1?f[0]:f[1]):u;
+  return `${+n||0}${label?" "+label:""}`;
+};
 const dimText = p=>{const d=dimOf(p);return d?(d+(dimUnitOf(p)?" "+dimUnitOf(p):"")):""};
 /* Stock can sit in more than one place. locQty is a {location: quantity} map and qty stays the
    total. Products saved before this existed have no map, so their whole stock is read as sitting
    at their single location. */
+// Reorder levels are switched off for now. Flip this to true to bring the field back in the
+// product form; the data behind it is untouched, so nothing is lost while it is off.
+const SHOW_REORDER=false;
 const UNLOC="Unassigned";
 const locMapOf=d=>{
   if(d&&d.locQty&&typeof d.locQty==="object")return{...d.locQty};
@@ -475,7 +486,7 @@ function pcard(p){
      return e.length?e.map(([k,v])=>`${esc(k)} ×<b>${v}</b>`).join(" · "):esc(p.location||"—")})()}</div>
    ${dimText(p)?`<div class="small dim">📐 ${esc(dimText(p))}</div>`:""}
    ${bk(p)?`<div class="small" style="color:var(--warn)">🔖 ${bk(p)} booked · ${avail(p)} free</div>`:""}
-   <div class="meta"><span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">Stock ${p.qty}</span>${isManager()?`<button class="btn sm sec" onclick="event.stopPropagation();openStock('${p.id}')">Stock</button>`:`<span class="small mute">${esc(p.unit||"pcs")}</span>`}</div></div></div>`;
+   <div class="meta"><span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">Stock ${esc(qtyText(p.qty,p.unit))}</span>${isManager()?`<button class="btn sm sec" onclick="event.stopPropagation();openStock('${p.id}')">Stock</button>`:""}</div></div></div>`;
 }
 function vProducts(el){
   const L=filteredProducts(),f=S.pf,locs=allLocations();
@@ -507,7 +518,7 @@ function vProduct(el){
   const R=[["Name",esc(p.name)],["SKU",esc(p.sku)],["Barcode",esc(p.barcode||"—")],["Vendor",(()=>{const v=vendorOf(p);return v?`<a href="#vendor/${v.id}">${esc(v.name)}</a>${v.billingMethod?` <span class="small mute">· ${esc(v.billingMethod)}${v.creditDays?` (${v.creditDays} days)`:""}</span>`:""}`:esc(vend(p)||"—")})()],
     ["Category",esc([p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" › ")||"—")],["Category slug",esc(p.fullSlug||"—")],
     ["MRP",inr(p.mrp)],["Selling price",inr(p.price)],["Cost price",inr(p.cost)],["Margin",margin],["GST",(p.gst??0)+"% (included in price)"],
-    ["Stock",`<span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${p.qty} ${esc(p.unit||"pcs")}</span>`],["Dimension",dimText(p)?`${esc(dimOf(p))} <span class="mute">${esc(dimUnitOf(p))}</span>`:"—"],["Booked",bk(p)?`${bk(p)} ${esc(p.unit||"pcs")} reserved for bookings · ${avail(p)} free`:"—"],["Reorder level",p.reorder??"—"],["Location",esc(locText(p)||p.location||"—")],
+    ["Stock",`<span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${esc(qtyText(p.qty,p.unit))}</span>`],["Dimension",dimText(p)?`${esc(dimOf(p))} <span class="mute">${esc(dimUnitOf(p))}</span>`:"—"],["Booked",bk(p)?`${esc(qtyText(bk(p),p.unit))} reserved for bookings · ${avail(p)} free`:"—"],...(SHOW_REORDER?[["Reorder level",p.reorder??"—"]]:[]),["Location",esc(locText(p)||p.location||"—")],
     ["Image link",p.imageUrl?`<a href="${esc(p.imageUrl)}" target="_blank" rel="noopener">${esc(p.imageUrl)}</a>`:(p.hasImage?"Uploaded photo":"—")],
     ["Notes",esc(p.description||"—")],["Added",p.createdAt?fdt(tms(p.createdAt)):"—"],["Last updated",(p.updatedAt?fdt(tms(p.updatedAt)):"—")+(by(p.updatedBy)?" by "+esc(by(p.updatedBy)):"")]];
   const mv=S.moves.filter(m=>m.productId===p.id).slice(0,15);
@@ -523,7 +534,7 @@ window.S=S;window.render=render;
 /* Product form */
 window.openProduct=function(id){
   if(!can("editProducts"))return toast("You don't have permission to add or edit products",1);
-  const p=S.products.find(x=>x.id===id)||{qty:0,reorder:2,gst:18,unit:"pcs",active:true};
+  const p=S.products.find(x=>x.id===id)||{qty:1,reorder:0,gst:0,unit:"pcs",active:true};
   const o=(arr,sel)=>arr.map(n=>`<option value="${n.id}" ${sel===n.id?"selected":""}>${esc(n.name)}</option>`).join("");
   const cat=TAXONOMY.find(c=>c.id===p.categoryId),sub=cat?.subcategories.find(s=>s.id===p.subcategoryId);
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal"><h3>${id?"Edit product":"Add product"}</h3>
@@ -543,7 +554,7 @@ window.openProduct=function(id){
    <div><label>Cost price (₹)</label><input id="p-cost" type="number" step="0.01" value="${p.cost??""}"></div>
    <div><label>GST % (included in price)</label><select id="p-gst">${withCur(S.lists.gstRates.map(Number),p.gst==null?p.gst:+p.gst).map(g=>`<option ${+p.gst===+g?"selected":""}>${g}</option>`).join("")}</select></div>
    <div><label>${id?"Stock (use Stock button to change)":"Opening stock"}</label><input id="p-qty" type="number" value="${p.qty}" ${id?"disabled":""}></div>
-   <div><label>Reorder level</label><input id="p-re" type="number" value="${p.reorder??2}"></div>
+   ${SHOW_REORDER?`<div><label>Reorder level</label><input id="p-re" type="number" value="${p.reorder??0}"></div>`:""}
    <div><label>Dimension / size</label><input id="p-dim" value="${esc(p.dimension)}" placeholder="16x16"></div>
    <div><label>Dimension unit</label><select id="p-dimunit"><option value="">—</option>${withCur(S.lists.dimUnits||[],p.dimUnit).map(u=>`<option ${p.dimUnit===u?"selected":""}>${esc(u)}</option>`).join("")}</select></div>
    <div><label>Unit</label><select id="p-unit">${withCur(S.lists.units,p.unit).map(u=>`<option ${p.unit===u?"selected":""}>${esc(u)}</option>`).join("")}</select></div>
@@ -600,7 +611,7 @@ async function saveProduct(id){
     fullSlug:(type||sub||cat).slug,imageUrl,hasImage,
     mrp:num(v("#p-mrp"))||num(v("#p-price")),price:num(v("#p-price")),cost:num(v("#p-cost")),gst:num(v("#p-gst")),
     dimension:v("#p-dim"),dimUnit:v("#p-dim")?v("#p-dimunit"):"",
-    reorder:num(v("#p-re")),unit:v("#p-unit"),location:v("#p-loc"),description:v("#p-desc"),active:true,
+    reorder:$("#p-re")?num(v("#p-re")):num(old.reorder),unit:v("#p-unit"),location:v("#p-loc"),description:v("#p-desc"),active:true,
     updatedAt:serverTimestamp(),updatedBy:S.user.uid};
   try{
     const b=writeBatch(db);
@@ -628,7 +639,7 @@ window.openStock=function(id,only){
   if(!TABS.length)return toast("You don't have permission to change stock",1);
   const opts=(sel,list)=>list.map(x=>`<option ${sel===x?"selected":""}>${esc(x)}</option>`).join("");
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:480px"><h3>${esc(p.name)}</h3>
-  <p class="mute">${esc(p.sku)} · Total stock: <b>${p.qty} ${esc(p.unit||"pcs")}</b>${bk(p)?` · <span style="color:var(--warn)">${bk(p)} booked, ${avail(p)} free</span>`:""}</p>
+  <p class="mute">${esc(p.sku)} · Total stock: <b>${esc(qtyText(p.qty,p.unit))}</b>${bk(p)?` · <span style="color:var(--warn)">${bk(p)} booked, ${avail(p)} free</span>`:""}</p>
   ${ent.length?`<p class="small">Where it is: ${ent.map(([k,v])=>`<span class="tag">${esc(k)}: ${v}</span>`).join(" ")}</p>`:""}
   <div class="tabs" id="s-tabs">${TABS.map((t,i)=>`<button class="btn sm ${i?"sec":""}" data-t="${t[0]}">${t[1]}</button>`).join("")}</div>
   <div class="grid">
@@ -700,7 +711,7 @@ function vStock(el){
   ${locRows.length?`<div class="card" style="margin-bottom:12px"><h3 style="margin-bottom:8px">Stock by location</h3>
    <div class="pill-row">${locRows.map(([k,v])=>`<span class="tag">${esc(k)} — <b>${v.units}</b> units · ${v.items} item(s)</span>`).join("")}</div></div>`:""}
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
-   <div class="card"><h3 style="margin-bottom:8px">Low &amp; out of stock (${low.length})</h3>${low.slice(0,40).map(p=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)}<br><span class="small mute">${esc(p.sku)} · reorder at ${p.reorder}${locEntries(p).length>1?" · "+esc(locText(p)):""}</span></span><span class="row"><span class="tag ${outStock(p)?"out":"low"}">${p.qty}</span>${adm?`<button class="btn sm sec" onclick="openStock('${p.id}','in')">+</button>`:""}${!can("setCount")?rqBtn("stock.set",p.id,`${p.name} (${p.sku})`,{qty:p.qty}):""}</span></div>`).join("")||`<p class="mute">Nothing low right now.</p>`}</div>
+   <div class="card"><h3 style="margin-bottom:8px">Low &amp; out of stock (${low.length})</h3>${low.slice(0,40).map(p=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)}<br><span class="small mute">${esc(p.sku)}${SHOW_REORDER?` · reorder at ${p.reorder}`:""}${locEntries(p).length>1?" · "+esc(locText(p)):""}</span></span><span class="row"><span class="tag ${outStock(p)?"out":"low"}">${p.qty}</span>${adm?`<button class="btn sm sec" onclick="openStock('${p.id}','in')">+</button>`:""}${!can("setCount")?rqBtn("stock.set",p.id,`${p.name} (${p.sku})`,{qty:p.qty}):""}</span></div>`).join("")||`<p class="mute">Nothing low right now.</p>`}</div>
    <div class="card"><h3 style="margin-bottom:8px">Movement log</h3>${S.moves.slice(0,60).map(m=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(m.productName)}<br><span class="small mute">${esc(m.type)} · ${esc(m.note||"")} · ${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><span style="text-align:right"><b style="color:${m.type==="transfer"?"var(--mute)":m.delta>=0?"var(--ok)":"var(--bad)"}">${m.type==="transfer"?"moved":(m.delta>0?"+":"")+m.delta}</b><br><span class="small mute">→ ${m.after}</span></span></div>`).join("")||`<p class="mute">No movements yet.</p>`}</div></div>`;
   const q=$("#st-q");if(!q)return;q.oninput=()=>{const t=q.value.toLowerCase().trim();$("#st-res").innerHTML=t?S.products.filter(p=>`${p.name} ${p.sku} ${p.barcode||""}`.toLowerCase().includes(t)).slice(0,8).map(p=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)} <span class="small mute">${esc(p.sku)}</span></span><span class="row"><span class="tag">${p.qty}</span>${adm?`<button class="btn sm" onclick="openStock('${p.id}')">Update</button>`:""}</span></div>`).join(""):""};
   q.onkeydown=e=>{if(e.key==="Enter"){const t=q.value.trim().toLowerCase();const p=S.products.find(x=>x.barcode&&x.barcode.toLowerCase()===t||x.sku.toLowerCase()===t);if(p){q.value="";openStock(p.id)}}};
@@ -2215,7 +2226,7 @@ window.openImport=(kind="products")=>{
           const d={sku:r.sku,name:r.name,vendor:r.vendor||"",vendorId:vr?.id||"",barcode:r.barcode||"",categoryId:c.id,categoryName:c.name,categorySlug:c.slug,
             subcategoryId:s?.id||"",subcategoryName:s?.name||"",subcategorySlug:s?.slug||"",typeId:t?.id||"",typeName:t?.name||"",typeSlug:t?.slug||"",fullSlug:(t||s||c).slug,
             dimension:String(r.dimension||"").trim(),dimUnit:String(r.dimUnit||"").trim(),
-            mrp:num(r.mrp)||num(r.price),price:num(r.price),cost:num(r.cost),gst:r.gst===undefined||r.gst===""?18:num(r.gst),reorder:r.reorder===undefined||r.reorder===""?2:num(r.reorder),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+            mrp:num(r.mrp)||num(r.price),price:num(r.price),cost:num(r.cost),gst:r.gst===undefined||r.gst===""?0:num(r.gst),reorder:r.reorder===undefined||r.reorder===""?0:num(r.reorder),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
           if(r.imageUrl)d.imageUrl=r.imageUrl;
           const ex=bySku[key]||seen[key];
           if(ex){if(!r.barcode)delete d.barcode;b.update(doc(db,"products",ex.id),d);u++}
