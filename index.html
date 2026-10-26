@@ -562,7 +562,10 @@ window.openProduct=function(id,preset){
    <div><label>Selling price (₹) *</label><input id="p-price" type="number" step="0.01" value="${p.price??""}"></div>
    <div><label>Cost price (₹)</label><input id="p-cost" type="number" step="0.01" value="${p.cost??""}"></div>
    <div><label>GST % (included in price)</label><select id="p-gst">${withCur(S.lists.gstRates.map(Number),p.gst==null?p.gst:+p.gst).map(g=>`<option ${+p.gst===+g?"selected":""}>${g}</option>`).join("")}</select></div>
-   <div><label>${id?"Stock (use Stock button to change)":"Opening stock"}</label><input id="p-qty" type="number" value="${p.qty}" ${id?"disabled":""}></div>
+   ${id?`<div><label>Stock (use Stock button to change)</label><input id="p-qty" type="number" value="${p.qty}" disabled></div>`
+    :p.noStock?`<div><label>Opening stock</label><input id="p-qty" type="number" value="0" disabled>
+      <span class="small mute" style="color:var(--warn)">The purchase bill adds these pieces — kept at 0 so the stock isn't counted twice.</span></div>`
+    :`<div><label>Opening stock</label><input id="p-qty" type="number" value="${p.qty}"></div>`}
    ${SHOW_REORDER?`<div><label>Reorder level</label><input id="p-re" type="number" value="${p.reorder??0}"></div>`:""}
    <div><label>Dimension / size</label><input id="p-dim" value="${esc(p.dimension)}" placeholder="16x16"></div>
    <div><label>Dimension unit</label><select id="p-dimunit"><option value="">—</option>${withCur(S.lists.dimUnits||[],p.dimUnit).map(u=>`<option ${p.dimUnit===u?"selected":""}>${esc(u)}</option>`).join("")}</select></div>
@@ -1437,7 +1440,7 @@ window.openPurchase=function(vid,keepState,editId){
      <label style="margin-top:8px">Add items</label>
      <input id="pu-q" placeholder="Search a product by name, SKU or size…" value="${esc(S.pq)}">
      ${q?`<div class="items" style="max-height:170px;margin-top:6px">${hits.map(p=>`<button class="item" onclick="puAdd('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,30)}<b>${esc(p.name)}</b></span><b>${inr(p.cost)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · "+esc(dimText(p)):""}</span><span class="small mute">cost price</span></button>`).join("")}
-      ${can("editProducts")?`<button class="item" style="grid-template-columns:1fr" onclick="puNewProduct('${vid}')"><b>+ Add "${esc(S.pq)}" as a new product</b><span class="small mute">${hits.length?"Not the one you wanted? Create it, then it comes back here.":"No product matches — create it and it comes back here as a line."}</span></button>`:(hits.length?"":`<p class="mute small">No product matches, and you don't have permission to add one.</p>`)}</div>`:""}
+      ${can("editProducts")?`<button class="item" style="grid-template-columns:1fr" onclick="puNewProduct('${vid}')"><b>+ Add "${esc(S.pq)}" as a new product</b><span class="small mute">${hits.length?"Not the one you wanted? Create it, then it comes back here.":"No product matches — create it and it comes back here as a line."}${S.puStock!==false&&can("stockIn")?" It starts at zero stock; this bill puts the pieces in.":""}</span></button>`:(hits.length?"":`<p class="mute small">No product matches, and you don't have permission to add one.</p>`)}</div>`:""}
      <table style="margin-top:8px"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th><th></th></tr></thead><tbody>
      ${S.pcart.map((i,ix)=>`<tr><td>${esc(i.name)}<br><span class="small mute">${esc(i.sku)}</span></td>
        <td class="n"><input type="number" min="0" step="1" value="${i.qty}" style="width:70px" onchange="puSet(${ix},'qty',this.value)"></td>
@@ -1578,7 +1581,8 @@ window.puNewProduct=vid=>{
   if(!can("editProducts"))return toast("You don't have permission to add products",1);
   const typed=S.pq.trim();
   window.__afterProduct=newId=>{openPurchase(vid,true);if(newId)puAdd(newId)};
-  openProduct(null,{qty:0,...(typed?{name:typed}:{})});
+  const adding=S.puStock!==false&&can("stockIn");   // is this bill going to receive the stock?
+  openProduct(null,{qty:adding?0:1,noStock:adding,...(typed?{name:typed}:{})});
 };
 
 window.openVendorPayment=function(vid){
