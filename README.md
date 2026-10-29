@@ -178,7 +178,8 @@ Each vendor page carries a dated statement, the mirror of the customer one.
 - Every product has a **Dimension / size** field and a separate **Dimension unit** field, so `16x16` and `inch` stay in their own columns — in the form, in the Excel export and in the import template.
 - The unit comes from an editable list (Settings → Dropdown lists → *Dimension units*): inch, cm, ft, mm, m, sq ft out of the box.
 - The size shows on the **product card** (`📐 16x16 inch`) wherever a product has one, so cushion covers and bedsheets are told apart at a glance, and on the Sell and New booking pickers next to the SKU.
-- **Searching**: the search box matches the size, and an **All sizes** dropdown lists the sizes present in whatever category you are browsing — pick Furnishings and you get furnishing sizes. Changing category clears a size that no longer applies.
+- **One spelling, whatever you type.** `16X16`, `16 x 16`, `16 X 16`, `16×16` and `16*16` are all stored and shown as `16x16`. The box tidies itself as soon as you leave it, the Excel import does the same, and sizes saved before this read back tidy as well — so the **All sizes** dropdown lists each size once instead of four near-identical entries. The rule only applies between two numbers, so a name like "Box X Large" is left alone, and `16.5 X 20` and `72 X 36 X 30` work as you would expect.
+- **Searching**: a search is tidied the same way, so typing `16 X 16` finds a product saved as `16x16` and the other way round. An **All sizes** dropdown lists the sizes present in whatever category you are browsing — pick Furnishings and you get furnishing sizes. Changing category clears a size that no longer applies.
 - Barcode labels print the size under the SKU, and it appears in the products, barcode-list and sale-items exports.
 
 ## Product form defaults and the reorder field

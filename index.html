@@ -277,7 +277,8 @@ const fullMode = ()=>S.settings.mode==="full";
 const vend = p=>p.vendor??p.brand??"";
 // A product's size is kept as the measurement in one field and its unit in another,
 // so "16x16" + "inch" stay separate for filtering, exports and labels.
-const dimOf = p=>String(p?.dimension||"").trim();
+const dimNorm = s=>String(s??"").trim().replace(/(\d)\s*[x×X*]\s*(?=\d)/g,"$1x").replace(/\s+/g," ");
+const dimOf = p=>dimNorm(p?.dimension);
 const dimUnitOf = p=>String(p?.dimUnit||"").trim();
 // "1 pc", "2 pcs", "1 set" — a unit the app doesn't know is printed as typed.
 const UNIT_FORMS={pcs:["pc","pcs"],pc:["pc","pcs"],piece:["piece","pieces"],pieces:["pc","pcs"],
@@ -469,12 +470,12 @@ function vDash(el){
 
 /* ---------- Products ---------- */
 function filteredProducts(){
-  const f=S.pf,q=f.q.toLowerCase();
+  const f=S.pf,q=dimNorm(f.q).toLowerCase();
   let L=S.products.filter(p=>{
-    if(q&&!(`${p.name} ${p.sku} ${p.barcode||""} ${vendQ(p)} ${locKeys(p).join(" ")} ${dimText(p)}`.toLowerCase().includes(q)))return false;
+    if(q&&!(dimNorm(`${p.name} ${p.sku} ${p.barcode||""} ${vendQ(p)} ${locKeys(p).join(" ")} ${dimText(p)}`).toLowerCase().includes(q)))return false;
     if(f.loc&&!locKeys(p).some(k=>k.toLowerCase()===f.loc.toLowerCase()))return false;
     if(f.vendor&&norm(vend(p))!==norm(f.vendor))return false;
-    if(f.dim&&dimText(p).toLowerCase()!==f.dim.toLowerCase())return false;
+    if(f.dim&&dimText(p).toLowerCase()!==dimNorm(f.dim).toLowerCase())return false;
     if(f.cat&&p.categoryId!==f.cat)return false;if(f.sub&&p.subcategoryId!==f.sub)return false;
     if(f.stock==="low"&&!lowStock(p))return false;if(f.stock==="out"&&!outStock(p))return false;if(f.stock==="in"&&outStock(p))return false;
     return true});
@@ -587,7 +588,7 @@ window.openProduct=function(id,preset){
       <span class="small mute" style="color:var(--warn)">The purchase bill adds these pieces — kept at 0 so the stock isn't counted twice.</span></div>`
     :`<div><label>Opening stock</label><input id="p-qty" type="number" value="${p.qty}"></div>`}
    ${SHOW_REORDER?`<div><label>Reorder level</label><input id="p-re" type="number" value="${p.reorder??0}"></div>`:""}
-   <div><label>Dimension / size</label><input id="p-dim" value="${esc(p.dimension)}" placeholder="16x16"></div>
+   <div><label>Dimension / size</label><input id="p-dim" value="${esc(dimNorm(p.dimension))}" placeholder="16x16"></div>
    <div><label>Dimension unit</label><select id="p-dimunit"><option value="">—</option>${withCur(S.lists.dimUnits||[],p.dimUnit).map(u=>`<option ${p.dimUnit===u?"selected":""}>${esc(u)}</option>`).join("")}</select></div>
    <div><label>Unit</label><select id="p-unit">${withCur(S.lists.units,p.unit).map(u=>`<option ${p.unit===u?"selected":""}>${esc(u)}</option>`).join("")}</select></div>
    <div><label>Location / rack</label><div class="row" style="flex-wrap:nowrap"><select id="p-loc"><option value="">—</option>${withCur(allLocations(),p.location).map(x=>`<option ${p.location===x?"selected":""}>${esc(x)}</option>`).join("")}</select><button class="btn sec sm" type="button" id="p-locadd" title="Add a new location">＋</button></div></div>
@@ -606,6 +607,7 @@ window.openProduct=function(id,preset){
   const cs=$("#p-cat"),ss=$("#p-sub"),ts=$("#p-type");
   cs.onchange=()=>{const c=TAXONOMY.find(x=>x.id===cs.value);ss.innerHTML=`<option value="">—</option>`+(c?o(c.subcategories):"");ts.innerHTML=`<option value="">—</option>`};
   ss.onchange=()=>{const c=TAXONOMY.find(x=>x.id===cs.value),s=c?.subcategories.find(x=>x.id===ss.value);ts.innerHTML=`<option value="">—</option>`+(s?o(s.subcategories):"")};
+  $("#p-dim").onchange=e=>{e.target.value=dimNorm(e.target.value)};
   $("#p-auto").onclick=()=>{const c=TAXONOMY.find(x=>x.id===cs.value);const pre=(c?c.slug:"gen").slice(0,3).toUpperCase();let k;do{k=pre+"-"+String(Math.floor(Math.random()*90000)+10000)}while(S.products.some(x=>x.sku===k));$("#p-sku").value=k};
   $("#p-genbar").onclick=async()=>{if($("#p-bar").value.trim())return;const b=$("#p-genbar");b.disabled=true;
     try{const [c]=await nextBarcodes(1);$("#p-bar").value=c;
@@ -642,7 +644,7 @@ async function saveProduct(id){
     typeId:type?.id||"",typeName:type?.name||"",typeSlug:type?.slug||"",
     fullSlug:(type||sub||cat).slug,imageUrl,hasImage,
     mrp:num(v("#p-mrp"))||num(v("#p-price")),price:num(v("#p-price")),cost:num(v("#p-cost")),gst:num(v("#p-gst")),
-    dimension:v("#p-dim"),dimUnit:v("#p-dim")?v("#p-dimunit"):"",
+    dimension:dimNorm(v("#p-dim")),dimUnit:dimNorm(v("#p-dim"))?v("#p-dimunit"):"",
     reorder:$("#p-re")?num(v("#p-re")):num(old.reorder),unit:v("#p-unit"),location:v("#p-loc"),description:v("#p-desc"),active:true,
     updatedAt:serverTimestamp(),updatedBy:S.user.uid};
   let r;
@@ -1025,8 +1027,8 @@ window.openSaleEdit=function(id){
         collect:r2(num(s.balancePaid??(num(s.total)-num(s.advance))))};
   const draw=()=>{
     const E=S.es,t=sumItems(E.items,E.disc);
-    const q=E.q.trim().toLowerCase();
-    const hits=q?S.products.filter(p=>`${p.name} ${p.sku} ${p.barcode||""} ${dimText(p)}`.toLowerCase().includes(q)).slice(0,8):[];
+    const q=dimNorm(E.q).toLowerCase();
+    const hits=q?S.products.filter(p=>dimNorm(`${p.name} ${p.sku} ${p.barcode||""} ${dimText(p)}`).toLowerCase().includes(q)).slice(0,8):[];
     $("#es-body").innerHTML=`
      ${linked?`<div class="card" style="padding:10px 12px;margin-bottom:10px"><b>This bill came from booking ${esc(s.bookingNo||"")}.</b>
        <span class="mute small">The items and the order value belong to the booking, so they stay as they are. Correct what was collected on delivery here.</span></div>`:""}
@@ -1531,8 +1533,8 @@ window.openPurchase=function(vid,keepState,editId){
   const v=S.vendors.find(x=>x.id===vid);if(!v)return;
   S.puVendor=vid;
   const draw=()=>{
-    const q=S.pq.toLowerCase();
-    const hits=q?S.products.filter(p=>`${p.name} ${p.sku} ${vendQ(p)} ${dimText(p)}`.toLowerCase().includes(q)).slice(0,8):[];
+    const q=dimNorm(S.pq).toLowerCase();
+    const hits=q?S.products.filter(p=>dimNorm(`${p.name} ${p.sku} ${vendQ(p)} ${dimText(p)}`).toLowerCase().includes(q)).slice(0,8):[];
     const sub=r2(S.pcart.reduce((a,i)=>a+num(i.qty)*num(i.rate),0));
     const other=r2(S.pchg.reduce((a,c)=>a+num(c.amount),0));
     $("#pu-body").innerHTML=`
@@ -2701,7 +2703,7 @@ window.openImport=(kind="products")=>{
           const vr=r.vendor?S.vendors.find(x=>norm(x.name)===norm(r.vendor)):null;
           const d={sku:r.sku,name:r.name,vendor:r.vendor||"",vendorId:vr?.id||"",barcode:r.barcode||"",categoryId:c.id,categoryName:c.name,categorySlug:c.slug,
             subcategoryId:s?.id||"",subcategoryName:s?.name||"",subcategorySlug:s?.slug||"",typeId:t?.id||"",typeName:t?.name||"",typeSlug:t?.slug||"",fullSlug:(t||s||c).slug,
-            dimension:String(r.dimension||"").trim(),dimUnit:String(r.dimUnit||"").trim(),
+            dimension:dimNorm(r.dimension),dimUnit:String(r.dimUnit||"").trim(),
             mrp:num(r.mrp)||num(r.price),price:num(r.price),cost:num(r.cost),gst:r.gst===undefined||r.gst===""?0:num(r.gst),reorder:r.reorder===undefined||r.reorder===""?0:num(r.reorder),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
           if(r.imageUrl)d.imageUrl=r.imageUrl;
           const ex=bySku[key]||seen[key];
