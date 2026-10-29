@@ -110,6 +110,9 @@ table td.c,table th.c{text-align:center}
 .pcard .dim{color:var(--accent);font-weight:600}
 .pcard .locs{line-height:1.35}.pcard .locs b{color:var(--ink);font-weight:600}
 .pcard .sku{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+.pcard .pr{font-size:13.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard .mrp{font-size:11.5px;color:var(--mute)}
+.pcard .cost{font-size:12px;color:var(--mute);font-weight:600}
 .pcard .meta{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:6px}
 .tb{margin-left:10px;display:inline-flex;gap:4px;vertical-align:middle}
 .detail{display:grid;grid-template-columns:minmax(200px,320px) 1fr;gap:16px}
@@ -142,7 +145,9 @@ function reindex(){
 }
 reindex();
 const PERM_KEYS=[
-  ["productPage","Open the full product page (cost price, margin, history)"],
+  ["seeCost","See cost price and margin (product page, product cards, export)"],
+  ["seeVendor","See which vendor supplies a product"],
+  ["seeMoves","See a product's stock movement history"],
   ["stockIn","Receive stock (stock in)"],
   ["transfer","Transfer stock between locations"],
   ["stockOut","Take stock out (damage, loss, supplier return)"],
@@ -156,8 +161,8 @@ const PERM_KEYS=[
   ["manageVendors","Add, edit and delete vendors"],
   ["vendorLedger","Record vendor purchases and payments"]];
 const DEFAULT_PERMS={
-  manager:{productPage:false,stockIn:true,transfer:true,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false,manageVendors:false,vendorLedger:false},
-  sales:{productPage:false,stockIn:false,transfer:false,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false,manageVendors:false,vendorLedger:false}};
+  manager:{seeCost:false,seeVendor:true,seeMoves:true,stockIn:true,transfer:true,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false,manageVendors:false,vendorLedger:false},
+  sales:{seeCost:false,seeVendor:false,seeMoves:false,stockIn:false,transfer:false,stockOut:false,setCount:false,editProducts:false,editBooking:false,cancelBooking:false,voidSale:false,editCustomer:false,removePayment:false,manageVendors:false,vendorLedger:false}};
 const DEFAULT_LISTS={locations:[],units:["pcs","set","pair","mtr","kg","box"],gstRates:[0,5,12,18,28],payModes:["Cash","UPI","Card","Bank transfer","Credit"],
   dimUnits:["inch","cm","ft","mm","m","sq ft"],vendorPayModes:["Cash","UPI","Bank transfer","Cheque","Adjustment / credit note"],
   vendorCategories:["Furniture","Furnishing","Tableware","Decor","Plants and Planters","Lighting","Kitchen","Bath and Laundry"],billingMethods:["Payment against delivery","Advance payment","15 days credit","30 days credit","45 days credit","Monthly settlement","Consignment (sale or return)"]};
@@ -398,7 +403,6 @@ function routeFromHash(){
   const m=location.hash.match(/^#(product|customer|booking|vendor|sale|purchase)\/(.+)$/);
   if(m&&S.profile){
     const id=decodeURIComponent(m[2]);
-    if(m[1]==="product"&&!can("productPage")){S.view="products";return}
     S.view=m[1];
     if(m[1]==="product")S.detailId=id;else if(m[1]==="customer")S.detailCust=id;else if(m[1]==="vendor")S.detailVendor=id;
     else if(m[1]==="sale")S.detailSale=id;else if(m[1]==="purchase")S.detailPur=id;else S.detailBk=id;
@@ -441,25 +445,25 @@ function vDash(el){
   const low=P.filter(lowStock),out=P.filter(outStock);
   const today=S.sales.filter(s=>s.dateKey===tk&&s.status!=="void");
   const openBk=S.bookings.filter(b=>b.status==="booked"),due=openBk.filter(b=>b.deliveryDate&&b.deliveryDate<=tk);
-  const byCat={};P.forEach(p=>{const k=p.categoryName||"Uncategorised";byCat[k]=(byCat[k]||0)+(+p.qty||0)*(isAdmin()?num(p.cost||p.price):1)});
+  const byCat={};P.forEach(p=>{const k=p.categoryName||"Uncategorised";byCat[k]=(byCat[k]||0)+(+p.qty||0)*(can("seeCost")?num(p.cost||p.price):1)});
   const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);const mx=cats[0]?.[1]||1;
   el.innerHTML=`<div class="top"><h2>Dashboard</h2><div class="row"><button class="btn" onclick="openProduct()">+ Add product</button>${fullMode()?`<button class="btn sec" onclick="go('sell')">New sale</button>`:""}</div></div>
   <div class="grid stats">
    <div class="card stat"><div class="k">Products</div><div class="v">${P.length}</div><div class="s">${units} units in stock</div></div>
-   ${isAdmin()?`<div class="card stat"><div class="k">Stock value (cost)</div><div class="v">${inr(cost)}</div><div class="s">Retail value ${inr(retail)}</div></div>`:""}
+   ${can("seeCost")?`<div class="card stat"><div class="k">Stock value (cost)</div><div class="v">${inr(cost)}</div><div class="s">Retail value ${inr(retail)}</div></div>`:""}
    <div class="card stat"><div class="k">Low stock</div><div class="v" style="color:var(--warn)">${low.length}</div><div class="s">${out.length} out of stock</div></div>
    ${fullMode()?`<div class="card stat"><div class="k">Open bookings</div><div class="v">${openBk.length}</div><div class="s">${inr(openBk.reduce((a,b)=>a+num(b.advance),0))} advance held${due.length?` · ${due.length} due`:""}</div></div>`:""}
   ${fullMode()?`<div class="card stat"><div class="k">Today's sales</div><div class="v">${inr(today.reduce((a,s)=>a+s.total,0))}</div><div class="s">${today.length} bills</div></div>`:""}
   </div>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:12px">
    <div class="card"><h3 style="margin-bottom:10px">Needs restocking</h3>
-    ${[...out,...low].slice(0,10).map(p=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)}<br><span class="small mute">${esc(p.sku)} · ${esc(p.subcategoryName||p.categoryName||"")}</span></span><span class="tag ${outStock(p)?"out":"low"}">${p.qty} left</span></div>`).join("")||`<p class="mute">Everything is well stocked.</p>`}</div>
-   <div class="card"><h3 style="margin-bottom:10px">${isAdmin()?"Stock value by category":"Units in stock by category"}</h3>
-    ${cats.map(([k,v])=>`<div style="margin-bottom:9px"><div class="row" style="justify-content:space-between"><span>${esc(k)}</span><span class="mute small">${isAdmin()?inr(v):v+" units"}</span></div><div class="bar"><i style="width:${(v/mx*100).toFixed(1)}%"></i></div></div>`).join("")||`<p class="mute">Add products to see this.</p>`}</div>
+    ${[...out,...low].slice(0,10).map(p=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${plink(p.id,p.name)}<br><span class="small mute">${esc(p.sku)} · ${esc(p.subcategoryName||p.categoryName||"")}</span></span><span class="tag ${outStock(p)?"out":"low"}">${p.qty} left</span></div>`).join("")||`<p class="mute">Everything is well stocked.</p>`}</div>
+   <div class="card"><h3 style="margin-bottom:10px">${can("seeCost")?"Stock value by category":"Units in stock by category"}</h3>
+    ${cats.map(([k,v])=>`<div style="margin-bottom:9px"><div class="row" style="justify-content:space-between"><span>${esc(k)}</span><span class="mute small">${can("seeCost")?inr(v):v+" units"}</span></div><div class="bar"><i style="width:${(v/mx*100).toFixed(1)}%"></i></div></div>`).join("")||`<p class="mute">Add products to see this.</p>`}</div>
    ${fullMode()&&openBk.length?`<div class="card"><h3 style="margin-bottom:10px">Upcoming deliveries</h3>
     ${openBk.slice().sort((a,b)=>String(a.deliveryDate||"9999").localeCompare(String(b.deliveryDate||"9999"))).slice(0,8).map(b=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span><a href="#booking/${b.id}">${esc(b.bookingNo)}</a> ${esc(b.customerName||"")}<br><span class="small mute">${b.items.length} item(s) · balance ${inr(num(b.total)-num(b.advance))}</span></span><span class="tag ${b.deliveryDate&&b.deliveryDate<=tk?"out":"ok"}">${esc(b.deliveryDate||"no date")}</span></div>`).join("")}</div>`:""}
    <div class="card"><h3 style="margin-bottom:10px">Recent stock activity</h3>
-    ${S.moves.slice(0,8).map(m=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(m.productName)}<br><span class="small mute">${esc(m.type)} · ${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><b style="color:${m.delta>=0?"var(--ok)":"var(--bad)"}">${m.delta>0?"+":""}${m.delta}</b></div>`).join("")||`<p class="mute">No activity yet.</p>`}</div>
+    ${S.moves.slice(0,8).map(m=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${plink(m.productId,m.productName)}<br><span class="small mute">${esc(m.type)} · ${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><b style="color:${m.delta>=0?"var(--ok)":"var(--bad)"}">${m.delta>0?"+":""}${m.delta}</b></div>`).join("")||`<p class="mute">No activity yet.</p>`}</div>
   </div>`;
 }
 
@@ -480,6 +484,10 @@ function catOptions(sel){return `<option value="">All categories</option>`+TAXON
 function subOptions(cid,sel){const c=TAXONOMY.find(x=>x.id===cid);return `<option value="">All subcategories</option>`+(c?c.subcategories.map(s=>`<option value="${s.id}" ${sel===s.id?"selected":""}>${esc(s.name)}</option>`).join(""):"")}
 
 const natcmp=(a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true,sensitivity:"base"});
+/* Wherever a product is named — a bill, a booking, the dashboard, the stock log — the name is a
+   link to its page. Products deleted since are left as plain text. */
+const plink=(pid,text)=>pid&&S.products.some(x=>x.id===pid)
+  ?`<a href="#product/${encodeURIComponent(pid)}">${esc(text)}</a>`:esc(text);
 const allLocations=()=>{const m=new Map();[...S.lists.locations,...S.products.map(p=>p.location)].forEach(x=>{x=String(x||"").trim();if(x&&!m.has(x.toLowerCase()))m.set(x.toLowerCase(),x)});return[...m.values()].sort(natcmp)};
 const withCur=(arr,cur)=>cur===undefined||cur===null||cur===""||arr.some(x=>String(x)===String(cur))?arr:[...arr,cur];
 function cardImg(p){
@@ -488,10 +496,15 @@ function cardImg(p){
   return `<div class="pim">▣</div>`;
 }
 function pcard(p){
-  const adm=can("productPage"),href="#product/"+encodeURIComponent(p.id);
-  return `<div class="pcard ${adm?"adm":""}" ${adm?`onclick="location.hash='${href.slice(1)}'"`:""}>${cardImg(p)}<div class="pb">
-   ${adm?`<a class="pn" href="${href}" onclick="event.stopPropagation()">${esc(p.name)}</a>`:`<div class="pn">${esc(p.name)}</div>`}
-   <div class="sku">${esc(p.sku)}</div><div><b>MRP ${inr(p.mrp??p.price)}</b></div><div class="small mute locs">📍 ${(()=>{const e=locEntries(p);
+  const href="#product/"+encodeURIComponent(p.id);
+  const mg=num(p.price)>0&&num(p.cost)>0?((num(p.price)-num(p.cost))/num(p.price)*100).toFixed(0)+"%":"";
+  return `<div class="pcard adm" onclick="location.hash='${href.slice(1)}'">${cardImg(p)}<div class="pb">
+   <a class="pn" href="${href}" onclick="event.stopPropagation()">${esc(p.name)}</a>
+   <div class="sku">${esc(p.sku)}</div>
+   <div class="pr"><b>Sale ${inr(p.price)}</b></div>
+   <div class="pr mrp">MRP ${inr(p.mrp??p.price)}</div>
+   ${can("seeCost")?`<div class="pr cost">Cost ${inr(p.cost)}${mg?` (${mg})`:""}</div>`:""}
+   <div class="small mute locs">📍 ${(()=>{const e=locEntries(p);
      return e.length?e.map(([k,v])=>`${esc(k)} ×<b>${v}</b>`).join(" · "):esc(p.location||"—")})()}</div>
    ${dimText(p)?`<div class="small dim">📐 ${esc(dimText(p))}</div>`:""}
    ${bk(p)?`<div class="small" style="color:var(--warn)">🔖 ${bk(p)} booked · ${avail(p)} free</div>`:""}
@@ -503,7 +516,7 @@ function vProducts(el){
   const inScope=S.products.filter(p=>(!f.cat||p.categoryId===f.cat)&&(!f.sub||p.subcategoryId===f.sub));
   const dims=[...new Set(inScope.map(dimText).filter(Boolean))].sort(natcmp);
   el.innerHTML=`<div class="top"><h2>Products <span class="mute small">(${L.length})</span></h2>
-   <div class="row">${can("editProducts")?`<button class="btn" onclick="openProduct()">+ Add product</button><button class="btn sec" onclick="openImport()">Import Excel</button>`:""}${can("productPage")?`<button class="btn sec" onclick="exportProducts()">Export</button>`:""}<button class="btn sec" onclick="openLabels()">Barcode labels</button></div></div>
+   <div class="row">${can("editProducts")?`<button class="btn" onclick="openProduct()">+ Add product</button><button class="btn sec" onclick="openImport()">Import Excel</button>`:""}${can("seeCost")?`<button class="btn sec" onclick="exportProducts()">Export</button>`:""}<button class="btn sec" onclick="openLabels()">Barcode labels</button></div></div>
   <div class="card" style="margin-bottom:12px"><div class="f">
    <div class="full"><input id="pf-q" placeholder="Search name, SKU, barcode, vendor, size, location…" value="${esc(f.q)}"></div>
    <select id="pf-cat">${catOptions(f.cat)}</select><select id="pf-sub">${subOptions(f.cat,f.sub)}</select>
@@ -519,14 +532,15 @@ function vProducts(el){
   bind("#pf-cat","cat",1);bind("#pf-sub","sub");bind("#pf-loc","loc");if($("#pf-dim"))bind("#pf-dim","dim");bind("#pf-stock","stock");bind("#pf-sort","sort");
 }
 function vProduct(el){
-  if(!can("productPage")){el.innerHTML="";return}
   const p=S.products.find(x=>x.id===S.detailId);
   if(!p){el.innerHTML=`<div class="top"><h2>Product not found</h2><button class="btn sec" onclick="go('products')">← Back</button></div><div class="card"><p class="mute">It may have been deleted, or products are still loading.</p></div>`;return}
   const by=id=>S.users.find(u=>u.id===id)?.name||"";
   const margin=p.price>0&&p.cost>0?`${inr(p.price-p.cost)} (${((p.price-p.cost)/p.price*100).toFixed(1)}% of selling price)`:"—";
-  const R=[["Name",esc(p.name)],["SKU",esc(p.sku)],["Barcode",esc(p.barcode||"—")],["Vendor",(()=>{const v=vendorOf(p);return v?`<a href="#vendor/${v.id}">${esc(v.name)}</a>${v.billingMethod?` <span class="small mute">· ${esc(v.billingMethod)}${v.creditDays?` (${v.creditDays} days)`:""}</span>`:""}`:esc(vend(p)||"—")})()],
+  const R=[["Name",esc(p.name)],["SKU",esc(p.sku)],["Barcode",esc(p.barcode||"—")],
+    ...(can("seeVendor")?[["Vendor",(()=>{const v=vendorOf(p);return v?`<a href="#vendor/${v.id}">${esc(v.name)}</a>${v.billingMethod?` <span class="small mute">· ${esc(v.billingMethod)}${v.creditDays?` (${v.creditDays} days)`:""}</span>`:""}`:esc(vend(p)||"—")})()]]:[]),
     ["Category",esc([p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" › ")||"—")],["Category slug",esc(p.fullSlug||"—")],
-    ["MRP",inr(p.mrp)],["Selling price",inr(p.price)],["Cost price",inr(p.cost)],["Margin",margin],["GST",(p.gst??0)+"% (included in price)"],
+    ["MRP",inr(p.mrp)],["Selling price",inr(p.price)],
+    ...(can("seeCost")?[["Cost price",inr(p.cost)],["Margin",margin]]:[]),["GST",(p.gst??0)+"% (included in price)"],
     ["Stock",`<span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${esc(qtyText(p.qty,p.unit))}</span>`],["Dimension",dimText(p)?`${esc(dimOf(p))} <span class="mute">${esc(dimUnitOf(p))}</span>`:"—"],["Booked",bk(p)?`${esc(qtyText(bk(p),p.unit))} reserved for bookings · ${avail(p)} free`:"—"],...(SHOW_REORDER?[["Reorder level",p.reorder??"—"]]:[]),["Location",esc(locText(p)||p.location||"—")],
     ["Image link",p.imageUrl?`<a href="${esc(p.imageUrl)}" target="_blank" rel="noopener">${esc(p.imageUrl)}</a>`:(p.hasImage?"Uploaded photo":"—")],
     ["Notes",esc(p.description||"—")],["Added",p.createdAt?fdt(tms(p.createdAt)):"—"],["Last updated",(p.updatedAt?fdt(tms(p.updatedAt)):"—")+(by(p.updatedBy)?" by "+esc(by(p.updatedBy)):"")]];
@@ -535,8 +549,8 @@ function vProduct(el){
    <div class="row">${isManager()?`<button class="btn sec" onclick="openStock('${p.id}')">Update stock</button>`:""}${can("editProducts")?`<button class="btn" onclick="openProduct('${p.id}')">Edit product</button>`:""}</div></div>
   <div class="detail"><div>${cardImg(p).replace('class="pim"','class="pim" style="border-radius:14px"')}</div>
    <div class="card" style="padding:6px 14px"><table>${R.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table></div></div>
-  <div class="card" style="margin-top:14px"><h3 style="margin-bottom:8px">Recent stock activity</h3>
-   ${mv.map(m=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(m.type)} · ${esc(m.note||"")}<br><span class="small mute">${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><span style="text-align:right"><b style="color:${m.delta>=0?"var(--ok)":"var(--bad)"}">${m.delta>0?"+":""}${m.delta}</b><br><span class="small mute">→ ${m.after}</span></span></div>`).join("")||`<p class="mute">No recent movements (the log shows the latest 200 across all products).</p>`}</div>`;
+  ${can("seeMoves")?`<div class="card" style="margin-top:14px"><h3 style="margin-bottom:8px">Recent stock activity</h3>
+   ${mv.map(m=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(m.type)} · ${esc(m.note||"")}<br><span class="small mute">${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><span style="text-align:right"><b style="color:${m.delta>=0?"var(--ok)":"var(--bad)"}">${m.delta>0?"+":""}${m.delta}</b><br><span class="small mute">→ ${m.after}</span></span></div>`).join("")||`<p class="mute">No recent movements (the log shows the latest 200 across all products).</p>`}</div>`:""}`;
 }
 window.S=S;window.render=render;
 
@@ -647,72 +661,152 @@ window.closeModal=()=>{closeCamera();$("#modal").innerHTML=""};
 window.openStock=function(id,only){
   if(!isManager())return toast("You don't have permission to change stock",1);
   const p=S.products.find(x=>x.id===id);if(!p)return;
-  const locs=allLocations(),ent=locEntries(p);
   const TABS=[["in","Stock in","stockIn"],["transfer","Transfer","transfer"],["out","Stock out","stockOut"],["set","Set count","setCount"]]
     .filter(t=>can(t[2])).filter(t=>!only||t[0]===only);
   if(!TABS.length)return toast("You don't have permission to change stock",1);
-  const opts=(sel,list)=>list.map(x=>`<option ${sel===x?"selected":""}>${esc(x)}</option>`).join("");
-  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:480px"><h3>${esc(p.name)}</h3>
-  <p class="mute">${esc(p.sku)} · Total stock: <b>${esc(qtyText(p.qty,p.unit))}</b>${bk(p)?` · <span style="color:var(--warn)">${bk(p)} booked, ${avail(p)} free</span>`:""}</p>
-  ${ent.length?`<p class="small">Where it is: ${ent.map(([k,v])=>`<span class="tag">${esc(k)}: ${v}</span>`).join(" ")}</p>`:""}
-  <div class="tabs" id="s-tabs">${TABS.map((t,i)=>`<button class="btn sm ${i?"sec":""}" data-t="${t[0]}">${t[1]}</button>`).join("")}</div>
-  <div class="grid">
-   <div id="s-fromwrap" class="hide"><label>Move from</label><select id="s-from">${ent.map(([k,v])=>`<option value="${esc(k)}">${esc(k)} (${v} in stock)</option>`).join("")}</select></div>
-   <div><label id="s-lab">Quantity received</label><input id="s-qty" type="number" min="0" step="1" autofocus></div>
-   <div id="s-towrap"><label id="s-tolab">Put into</label><select id="s-to">${opts(p.location||locs[0],[...new Set([...locs,...Object.keys(locMapOf(p))])])}</select></div>
-   <div id="s-reasonwrap"><label>Reason</label><select id="s-reason"></select></div>
-   <div><label>Note (optional)</label><input id="s-note" placeholder="Supplier / bill no. / remark"></div></div>
-  <p class="small mute" id="s-hint" style="margin-top:8px"></p>
-  <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="s-save">Save</button></div></div></div>`;
+  const R={in:["Purchase / received","Customer return","Found / correction"],out:["Damaged","Lost / missing","Supplier return","Sold (offline)"],
+    set:["Stock count / audit"],transfer:["Moved to another rack","Sent to godown","Brought to floor","Sent for delivery"]};
+  const locList=()=>[...new Set([...allLocations(),...Object.keys(locMapOf(p))])].filter(Boolean).sort(natcmp);
+  const opts=(sel,list)=>list.map(x=>`<option ${String(sel)===String(x)?"selected":""}>${esc(x)}</option>`).join("");
+  const here=k=>+locMapOf(p)[k]||0;
   let mode=TABS[0][0];
-  const R={in:["Purchase / received","Customer return","Found / correction"],out:["Damaged","Lost / missing","Supplier return","Sold (offline)"],set:["Stock count / audit"],transfer:["Moved to another rack","Sent to godown","Brought to floor","Sent for delivery"]};
-  const upd=()=>{
-    $("#s-reason").innerHTML=R[mode].map(r=>`<option>${r}</option>`).join("");
-    $("#s-lab").textContent={in:"Quantity received",out:"Quantity removed",set:"Counted quantity",transfer:"Quantity to move"}[mode];
-    $("#s-tolab").textContent=mode==="transfer"?"Move to":mode==="out"?"Take out of":"Put into";
-    $("#s-fromwrap").classList.toggle("hide",mode!=="transfer");
-    $("#s-towrap").classList.toggle("hide",mode==="set");
-    $("#s-hint").textContent={in:"Adds to the total and to the place you choose.",
-      transfer:"Moves stock between places. The total does not change.",
-      out:"Removes from the total.",set:"Replaces the counted total for this product."}[mode];
-    document.querySelectorAll("#s-tabs button").forEach(b=>b.classList.toggle("sec",b.dataset.t!==mode));
+  const first=primaryLoc(locMapOf(p))||p.location||locList()[0]||UNLOC;
+  // Stock in can land in several places at once — one row per place.
+  let rows=[{loc:first,qty:""}];
+  let K={qty:"",to:first,from:(locEntries(p)[0]||[])[0]||first,reason:"",note:""};
+  const readRows=()=>document.querySelectorAll("#s-rows tr[data-ix]").forEach(tr=>{
+    rows[+tr.dataset.ix]={loc:tr.querySelector("select").value,qty:tr.querySelector("input").value}});
+  const read=()=>{
+    if(mode==="in"&&$("#s-rows"))readRows();
+    if($("#s-qty"))K.qty=$("#s-qty").value;
+    if($("#s-to"))K.to=$("#s-to").value;
+    if($("#s-from"))K.from=$("#s-from").value;
+    if($("#s-reason"))K.reason=$("#s-reason").value;
+    if($("#s-note"))K.note=$("#s-note").value;
   };
-  document.querySelectorAll("#s-tabs button").forEach(b=>b.onclick=()=>{mode=b.dataset.t;upd()});upd();
+  const addedTotal=()=>rows.reduce((a,r)=>a+Math.max(0,Math.floor(num(r.qty))),0);
+  const body=()=>{
+    const L=locList(),ent=locEntries(p);
+    if(mode==="in")return `<label>Receive into</label>
+     <table id="s-rows"><thead><tr><th>Location / rack</th><th class="n">Quantity</th><th></th></tr></thead><tbody>
+     ${rows.map((r,ix)=>`<tr data-ix="${ix}">
+      <td><select>${opts(r.loc,withCur(L,r.loc))}</select></td>
+      <td class="n"><input type="number" min="0" step="1" value="${esc(r.qty)}" style="width:92px" placeholder="0"></td>
+      <td>${rows.length>1?`<button class="btn sm sec" type="button" onclick="stRow('del',${ix})">✕</button>`:""}</td></tr>`).join("")}
+     </tbody></table>
+     <div class="row" style="margin-top:6px"><button class="btn sec sm" type="button" onclick="stRow('add')">+ Another location</button>
+      <span class="small mute">One bill can go into several racks — add a row for each.</span></div>`;
+    if(mode==="set")return `<div class="f">
+      <div><label>Counted at</label><select id="s-to">${opts(K.to,withCur(L,K.to))}</select></div>
+      <div><label>Counted quantity there</label><input id="s-qty" type="number" min="0" step="1" value="${esc(K.qty)}" autofocus></div></div>`;
+    if(mode==="transfer"){
+      if(K.to===K.from)K.to=L.find(x=>x!==K.from)||K.to;
+      return `<div class="f">
+      <div><label>Move from</label><select id="s-from">${ent.length?ent.map(([k,v])=>`<option value="${esc(k)}" ${K.from===k?"selected":""}>${esc(k)} (${v} in stock)</option>`).join(""):opts(K.from,withCur(L,K.from))}</select></div>
+      <div><label>Move to</label><select id="s-to">${opts(K.to,withCur(L,K.to))}</select></div>
+      <div><label>Quantity to move</label><input id="s-qty" type="number" min="0" step="1" value="${esc(K.qty)}" autofocus></div></div>`}
+    return `<div class="f">
+      <div><label>Take out of</label><select id="s-to">${opts(K.to,withCur(L,K.to))}</select></div>
+      <div><label>Quantity removed</label><input id="s-qty" type="number" min="0" step="1" value="${esc(K.qty)}" autofocus></div></div>`;
+  };
+  const hintText=()=>{
+    const q=Math.floor(num($("#s-qty")?.value)),to=$("#s-to")?$("#s-to").value:"",from=$("#s-from")?$("#s-from").value:"";
+    if(mode==="in"){const t=addedTotal();
+      return t?`Adds ${esc(qtyText(t,p.unit))} — the total becomes <b>${esc(qtyText((+p.qty||0)+t,p.unit))}</b>.`
+        :"Adds to the total and to the places you choose.";}
+    if(mode==="set"){const have=here(to),d=q-have;
+      return `The app shows <b>${have}</b> at ${esc(to)}. ${$("#s-qty")?.value===""?"Enter what you counted there."
+        :d===0?"That matches — nothing to change."
+        :`Counted ${q}, so ${d>0?`<b style="color:var(--ok)">${d} more</b> will be added`:`<b style="color:var(--bad)">${-d} fewer</b> will be written off`} at this place. Stock in other places is left alone.`}`;}
+    if(mode==="transfer")return from===to?`<span style="color:var(--warn)">Pick two different places to move between.</span>`
+      :`Moves ${q>0?esc(qtyText(q,p.unit)):"pieces"} from ${esc(from)} to ${esc(to)}. The total does not change.`;
+    return `Removes ${q>0?esc(qtyText(q,p.unit)):"stock"} from ${esc(to)} and from the total.`;
+  };
+  const draw=()=>{
+    $("#s-body").innerHTML=`${body()}
+     <div class="f" style="margin-top:8px"><div><label>Reason</label><select id="s-reason">${opts(K.reason,R[mode])}</select></div>
+      <div><label>Note (optional)</label><input id="s-note" value="${esc(K.note)}" placeholder="Supplier / bill no. / remark"></div></div>
+     <p class="small mute" id="s-hint" style="margin-top:8px"></p>`;
+    document.querySelectorAll("#s-tabs button").forEach(b=>b.classList.toggle("sec",b.dataset.t!==mode));
+    const hint=()=>{const e=$("#s-hint");if(e)e.innerHTML=hintText()};
+    if($("#s-qty"))$("#s-qty").oninput=hint;
+    if($("#s-to"))$("#s-to").onchange=()=>{read();hint()};
+    if($("#s-from"))$("#s-from").onchange=()=>{read();hint()};
+    if($("#s-rows"))document.querySelectorAll("#s-rows tr[data-ix] input").forEach(i=>i.oninput=()=>{readRows();hint()});
+    hint();
+  };
+  window.stRow=(op,ix)=>{
+    readRows();
+    if(op==="add"){const used=rows.map(r=>r.loc);const next=locList().find(x=>!used.includes(x))||locList()[0]||UNLOC;rows.push({loc:next,qty:""})}
+    else rows.splice(ix,1);
+    if(!rows.length)rows=[{loc:first,qty:""}];
+    draw();
+  };
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:520px"><h3>${esc(p.name)}</h3>
+  <p class="mute">${esc(p.sku)} · Total stock: <b>${esc(qtyText(p.qty,p.unit))}</b>${bk(p)?` · <span style="color:var(--warn)">${bk(p)} booked, ${avail(p)} free</span>`:""}</p>
+  ${locEntries(p).length?`<p class="small">Where it is: ${locEntries(p).map(([k,v])=>`<span class="tag">${esc(k)}: ${v}</span>`).join(" ")}</p>`:""}
+  <div class="tabs" id="s-tabs">${TABS.map((t,i)=>`<button class="btn sm ${i?"sec":""}" data-t="${t[0]}">${t[1]}</button>`).join("")}</div>
+  <div id="s-body"></div>
+  <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="s-save">Save</button></div></div></div>`;
+  document.querySelectorAll("#s-tabs button").forEach(b=>b.onclick=()=>{read();mode=b.dataset.t;K.reason="";draw()});
+  draw();
   $("#s-save").onclick=async()=>{
-    const q=Math.floor(num($("#s-qty").value));
-    if($("#s-qty").value===""||q<0)return toast("Enter a valid quantity",1);
-    if(mode==="transfer"&&q<=0)return toast("Enter how many pieces to move",1);
-    const reason=$("#s-reason").value,note=$("#s-note").value.trim();
-    const to=$("#s-to")?$("#s-to").value:"",from=$("#s-from")?$("#s-from").value:"";
+    read();
+    const reason=K.reason,note=K.note.trim(),tail=reason+(note?" — "+note:"");
+    const q=Math.floor(num(K.qty)),to=K.to,from=K.from;
+    let put=[];
+    if(mode==="in"){
+      put=rows.map(r=>({loc:r.loc,qty:Math.floor(num(r.qty))})).filter(r=>r.qty>0);
+      if(!put.length)return toast("Enter how many pieces came in",1);
+      const seen={};put=put.filter(r=>{if(seen[r.loc]){seen[r.loc].qty+=r.qty;return false}seen[r.loc]=r;return true});
+    }
+    else if(K.qty===""||q<0)return toast("Enter a valid quantity",1);
+    else if(mode!=="set"&&q<=0)return toast("Enter how many pieces",1);
     if(mode==="transfer"&&from===to)return toast("Pick two different places",1);
-    const btn=$("#s-save");btn.disabled=true;
+    const btn=$("#s-save");btn.disabled=true;btn.textContent="Saving…";
     try{
       await runTransaction(db,async tx=>{
         const r=doc(db,"products",id),s=await tx.get(r);
         if(!s.exists())throw new Error("That product no longer exists");
-        const d=s.data(),cur=+d.qty||0;let map=locMapOf(d),after=cur,note2=reason+(note?" — "+note:"");
-        if(mode==="in"){after=cur+q;map=addTo(map,to,q)}
+        const d=s.data(),cur=+d.qty||0;let map=locMapOf(d),after=cur;
+        const logs=[];
+        if(mode==="in"){
+          let run=cur;
+          put.forEach(x=>{map=addTo(map,x.loc,x.qty);logs.push({type:"in",delta:x.qty,before:run,after:run+x.qty,note:tail,toLoc:x.loc,fromLoc:""});run+=x.qty});
+          after=run;
+        }
         else if(mode==="out"){
           after=cur-q;
           if(after<0&&!S.settings.allowNegative)throw new Error("Not enough stock (only "+cur+")");
           const have=+map[to]||0;
           if(q>have&&!S.settings.allowNegative)throw new Error(`Only ${have} at ${to}`);
           map={...map,[to]:have-q};
+          logs.push({type:"out",delta:-q,before:cur,after,note:tail,toLoc:to,fromLoc:""});
         }
-        else if(mode==="set"){after=q;map={[primaryLoc(map)||d.location||UNLOC]:q}}
-        else{ // transfer: the total stays the same, the pieces just move
+        else if(mode==="set"){
+          // one place is counted; everywhere else is left exactly as it was
+          const have=+map[to]||0;
+          map={...map,[to]:q};
+          after=Object.values(map).reduce((a,v)=>a+(+v||0),0);
+          logs.push({type:"adjust",delta:q-have,before:cur,after,note:`Counted ${q} at ${to} (app had ${have})`+(tail?" · "+tail:""),toLoc:to,fromLoc:""});
+        }
+        else{
           const have=+map[from]||0;
           if(q>have&&!S.settings.allowNegative)throw new Error(`Only ${have} at ${from}`);
           map=addTo({...map,[from]:have-q},to,q);
-          note2=`${from} → ${to}`+(reason?" · "+reason:"")+(note?" — "+note:"");
+          after=cur;
+          logs.push({type:"transfer",delta:0,before:cur,after,note:`${from} → ${to}`+(reason?" · "+reason:"")+(note?" — "+note:""),toLoc:to,fromLoc:from});
         }
         Object.keys(map).forEach(k=>{if(!map[k])delete map[k]});
         tx.update(r,{qty:after,locQty:map,location:primaryLoc(map)||d.location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
-        tx.set(doc(collection(db,"movements")),{...mv(id,p.name,p.sku,mode==="in"?"in":mode==="out"?"out":mode==="set"?"adjust":"transfer",after-cur,cur,after,note2),
-          fromLoc:mode==="transfer"?from:"",toLoc:mode==="transfer"?to:(mode==="set"?"":to)});
+        logs.forEach(l=>tx.set(doc(collection(db,"movements")),
+          {...mv(id,p.name,p.sku,l.type,l.delta,l.before,l.after,l.note),fromLoc:l.fromLoc,toLoc:l.toLoc}));
       });
-      closeModal();toast(mode==="transfer"?`Moved ${q} to ${to}`:"Stock updated");
-    }catch(e){toast(emsg(e),1);btn.disabled=false}
+      closeModal();
+      toast(mode==="transfer"?`Moved ${q} to ${to}`
+        :mode==="in"?`Added ${qtyText(put.reduce((a,x)=>a+x.qty,0),p.unit)}${put.length>1?` across ${put.length} places`:` to ${put[0].loc}`}`
+        :mode==="set"?`Count set at ${to}`:"Stock updated");
+    }catch(e){toast(emsg(e),1);btn.disabled=false;btn.textContent="Save"}
   };
 };
 function vStock(el){
@@ -725,9 +819,9 @@ function vStock(el){
   ${locRows.length?`<div class="card" style="margin-bottom:12px"><h3 style="margin-bottom:8px">Stock by location</h3>
    <div class="pill-row">${locRows.map(([k,v])=>`<span class="tag">${esc(k)} — <b>${v.units}</b> units · ${v.items} item(s)</span>`).join("")}</div></div>`:""}
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
-   <div class="card"><h3 style="margin-bottom:8px">Low &amp; out of stock (${low.length})</h3>${low.slice(0,40).map(p=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)}<br><span class="small mute">${esc(p.sku)}${SHOW_REORDER?` · reorder at ${p.reorder}`:""}${locEntries(p).length>1?" · "+esc(locText(p)):""}</span></span><span class="row"><span class="tag ${outStock(p)?"out":"low"}">${p.qty}</span>${adm?`<button class="btn sm sec" onclick="openStock('${p.id}','in')">+</button>`:""}${!can("setCount")?rqBtn("stock.set",p.id,`${p.name} (${p.sku})`,{qty:p.qty}):""}</span></div>`).join("")||`<p class="mute">Nothing low right now.</p>`}</div>
-   <div class="card"><h3 style="margin-bottom:8px">Movement log</h3>${S.moves.slice(0,60).map(m=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(m.productName)}<br><span class="small mute">${esc(m.type)} · ${esc(m.note||"")} · ${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><span style="text-align:right"><b style="color:${m.type==="transfer"?"var(--mute)":m.delta>=0?"var(--ok)":"var(--bad)"}">${m.type==="transfer"?"moved":(m.delta>0?"+":"")+m.delta}</b><br><span class="small mute">→ ${m.after}</span></span></div>`).join("")||`<p class="mute">No movements yet.</p>`}</div></div>`;
-  const q=$("#st-q");if(!q)return;q.oninput=()=>{const t=q.value.toLowerCase().trim();$("#st-res").innerHTML=t?S.products.filter(p=>`${p.name} ${p.sku} ${p.barcode||""}`.toLowerCase().includes(t)).slice(0,8).map(p=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(p.name)} <span class="small mute">${esc(p.sku)}</span></span><span class="row"><span class="tag">${p.qty}</span>${adm?`<button class="btn sm" onclick="openStock('${p.id}')">Update</button>`:""}</span></div>`).join(""):""};
+   <div class="card"><h3 style="margin-bottom:8px">Low &amp; out of stock (${low.length})</h3>${low.slice(0,40).map(p=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${plink(p.id,p.name)}<br><span class="small mute">${esc(p.sku)}${SHOW_REORDER?` · reorder at ${p.reorder}`:""}${locEntries(p).length>1?" · "+esc(locText(p)):""}</span></span><span class="row"><span class="tag ${outStock(p)?"out":"low"}">${p.qty}</span>${adm?`<button class="btn sm sec" onclick="openStock('${p.id}','in')">+</button>`:""}${!can("setCount")?rqBtn("stock.set",p.id,`${p.name} (${p.sku})`,{qty:p.qty}):""}</span></div>`).join("")||`<p class="mute">Nothing low right now.</p>`}</div>
+   <div class="card"><h3 style="margin-bottom:8px">Movement log</h3>${S.moves.slice(0,60).map(m=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${plink(m.productId,m.productName)}<br><span class="small mute">${esc(m.type)} · ${esc(m.note||"")} · ${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><span style="text-align:right"><b style="color:${m.type==="transfer"?"var(--mute)":m.delta>=0?"var(--ok)":"var(--bad)"}">${m.type==="transfer"?"moved":(m.delta>0?"+":"")+m.delta}</b><br><span class="small mute">→ ${m.after}</span></span></div>`).join("")||`<p class="mute">No movements yet.</p>`}</div></div>`;
+  const q=$("#st-q");if(!q)return;q.oninput=()=>{const t=q.value.toLowerCase().trim();$("#st-res").innerHTML=t?S.products.filter(p=>`${p.name} ${p.sku} ${p.barcode||""}`.toLowerCase().includes(t)).slice(0,8).map(p=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${plink(p.id,p.name)} <span class="small mute">${esc(p.sku)}</span></span><span class="row"><span class="tag">${p.qty}</span>${adm?`<button class="btn sm" onclick="openStock('${p.id}')">Update</button>`:""}</span></div>`).join(""):""};
   q.onkeydown=e=>{if(e.key==="Enter"){const t=q.value.trim().toLowerCase();const p=S.products.find(x=>x.barcode&&x.barcode.toLowerCase()===t||x.sku.toLowerCase()===t);if(p){q.value="";openStock(p.id)}}};
 }
 
@@ -840,7 +934,7 @@ function vSales(el){
   <div class="grid stats" style="margin-bottom:12px"><div class="card stat"><div class="k">Bills</div><div class="v">${ok.length}</div></div><div class="card stat"><div class="k">Revenue</div><div class="v">${inr(tot)}</div></div>${isAdmin()?`<div class="card stat"><div class="k">Gross margin</div><div class="v">${inr(prof)}</div><div class="s">vs recorded cost price</div></div>`:""}</div>
   <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Invoice</th><th>Customer</th><th>Items</th><th class="n">Total</th><th></th></tr></thead><tbody>
   ${L.map(s=>`<tr style="${s.status==="void"?"opacity:.5":""}"><td data-l="Invoice"><a href="#sale/${s.id}"><b>${esc(s.invoiceNo)}</b></a> ${s.status==="void"?`<span class="tag out">void</span>`:""}<br><span class="small mute">${fdt(tms(s.createdAt))} · ${esc(s.soldByName||"")}</span></td><td data-l="Customer">${esc(s.customer?.name||"Walk-in")}<br><span class="small mute">${esc(s.payment)}</span></td>
-   <td data-l="Items" class="small">${s.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")}</td><td data-l="Total" class="n">${inr(s.total)}</td>
+   <td data-l="Items" class="small">${s.items.map(i=>plink(i.pid,i.name)+" ×"+i.qty).join(", ")}</td><td data-l="Total" class="n">${inr(s.total)}</td>
    <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="location.hash='sale/'+'${s.id}'">Open bill</button><button class="btn sm sec" onclick="reprint('${s.id}')">Print</button>${s.status!=="void"?(can("voidSale")?`<button class="btn sm sec" onclick="voidSale('${s.id}')">Void</button>`:rqBtn("sale.void",s.id,`Invoice ${s.invoiceNo} · ${inr(s.total)}`,{})):""}</div></td></tr>`).join("")||`<tr><td colspan="5" class="mute">No sales on this date.</td></tr>`}
   </tbody></table></div>`;
   $("#sd").onchange=e=>{S.salesDay=e.target.value;setTimeout(render,0)};
@@ -904,7 +998,7 @@ function vSale(el){
   <div class="card" style="margin-top:12px;padding:6px 12px"><h3 style="margin:10px 2px 4px">Items (${s.items.length})</h3>
    <table class="resp"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">GST</th><th>Taken from</th><th class="n">Amount</th></tr></thead><tbody>
    ${s.items.map(i=>{const p=S.products.find(x=>x.id===i.pid);
-     return `<tr><td data-l="Item"><span class="row" style="flex-wrap:nowrap">${p?thumb(p,38):""}<span>${p&&can("productPage")?`<a href="#product/${p.id}">${esc(i.name)}</a>`:esc(i.name)}<br><span class="small mute">${esc(i.sku)}${p&&dimText(p)?" · 📐 "+esc(dimText(p)):""}</span></span></span></td>
+     return `<tr><td data-l="Item"><span class="row" style="flex-wrap:nowrap">${p?thumb(p,38):""}<span>${plink(i.pid,i.name)}<br><span class="small mute">${esc(i.sku)}${p&&dimText(p)?" · 📐 "+esc(dimText(p)):""}</span></span></span></td>
     <td data-l="Qty" class="n">${qtyText(i.qty,p?p.unit:"pcs")}</td><td data-l="Rate" class="n">${inr(i.price)}</td>
     <td data-l="GST" class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td data-l="Taken from" class="small">${esc(i.takenFrom||"—")}</td>
     <td data-l="Amount" class="n">${inr(i.lineTotal??num(i.price)*num(i.qty))}</td></tr>`}).join("")
@@ -1339,7 +1433,7 @@ function vVendor(el){
    </tbody>${L.rows.length?`<tfoot><tr><th></th><th>Total</th><th class="n">${inr(L.billed)}</th><th class="n">${inr(L.paid)}</th><th class="n" style="color:${L.balance<0?"var(--bad)":L.balance>0?"var(--ok)":"inherit"}">${inr(L.balance)}</th><th></th></tr></tfoot>`:""}</table></div>
   <div class="card" style="margin-top:12px;padding:6px 12px"><h3 style="margin:10px 2px 4px">Products from this vendor</h3>
    <table class="resp"><thead><tr><th>Product</th><th>Category</th><th class="n">Cost</th><th class="n">Price</th><th class="n">Stock</th></tr></thead><tbody>
-   ${st.items.slice(0,200).map(p=>`<tr><td data-l="Product">${can("productPage")?`<a href="#product/${p.id}">${esc(p.name)}</a>`:esc(p.name)}<br><span class="small mute">${esc(p.sku)}</span></td>
+   ${st.items.slice(0,200).map(p=>`<tr><td data-l="Product">${plink(p.id,p.name)}<br><span class="small mute">${esc(p.sku)}</span></td>
     <td data-l="Category" class="small">${esc([p.categoryName,p.subcategoryName].filter(Boolean).join(" › "))}</td>
     <td data-l="Cost" class="n">${inr(p.cost)}</td><td data-l="Price" class="n">${inr(p.price)}</td>
     <td data-l="Stock" class="n"><span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${p.qty}</span></td></tr>`).join("")
@@ -1390,7 +1484,7 @@ function vPurchase(el){
   <div class="card" style="margin-top:12px;padding:6px 12px"><h3 style="margin:10px 2px 4px">Items (${(p.items||[]).length})</h3>
    <table class="resp"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th><th class="n">Stock now</th></tr></thead><tbody>
    ${(p.items||[]).map(i=>{const pr=S.products.find(x=>x.id===i.pid);
-     return `<tr><td data-l="Item"><span class="row" style="flex-wrap:nowrap">${pr?thumb(pr,38):""}<span>${pr&&can("productPage")?`<a href="#product/${pr.id}">${esc(i.name)}</a>`:esc(i.name)}<br><span class="small mute">${esc(i.sku)}</span></span></span></td>
+     return `<tr><td data-l="Item"><span class="row" style="flex-wrap:nowrap">${pr?thumb(pr,38):""}<span>${plink(i.pid,i.name)}<br><span class="small mute">${esc(i.sku)}</span></span></span></td>
     <td data-l="Qty" class="n">${qtyText(i.qty,pr?pr.unit:"pcs")}</td><td data-l="Rate" class="n">${inr(i.rate)}</td>
     <td data-l="Amount" class="n">${inr(i.amount??num(i.rate)*num(i.qty))}</td>
     <td data-l="Stock now" class="n">${pr?qtyText(pr.qty,pr.unit):`<span class="mute">removed</span>`}</td></tr>`}).join("")
@@ -1849,9 +1943,13 @@ async function applyRequest(r){
     await runTransaction(db,async tx=>{
       const ref=doc(db,"products",r.targetId),s=await tx.get(ref);
       if(!s.exists())throw new Error("That product no longer exists");
-      const d=s.data(),cur=+d.qty||0,map={[primaryLoc(locMapOf(d))||d.location||UNLOC]:q};
-      tx.update(ref,{qty:q,locQty:map,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
-      tx.set(doc(collection(db,"movements")),mv(r.targetId,d.name,d.sku,"adjust",q-cur,cur,q,`Stock count approved — asked by ${r.requestedByName}: ${r.reason}`));
+      const d=s.data(),cur=+d.qty||0,m=locMapOf(d),k=primaryLoc(m)||d.location||UNLOC;
+      const others=Object.entries(m).filter(([kk])=>kk!==k).reduce((a,[,v])=>a+(+v||0),0);
+      if(q<others)throw new Error(`The other places already hold ${others} pieces — set the count per place from the Stock window instead`);
+      const map={...m,[k]:q-others};
+      Object.keys(map).forEach(x=>{if(!map[x])delete map[x]});
+      tx.update(ref,{qty:q,locQty:map,location:primaryLoc(map)||d.location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+      tx.set(doc(collection(db,"movements")),{...mv(r.targetId,d.name,d.sku,"adjust",q-cur,cur,q,`Stock count approved — asked by ${r.requestedByName}: ${r.reason}`),toLoc:k,fromLoc:""});
     });
   }
   else throw new Error("Unknown request type");
@@ -1980,7 +2078,7 @@ function vBookings(el){
   <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Booking</th><th>Customer</th><th>Items</th><th class="n">Total / received</th><th>Delivery</th><th></th></tr></thead><tbody>
   ${L.slice(0,200).map(b=>`<tr><td data-l="Booking"><a href="#booking/${b.id}"><b>${esc(b.bookingNo)}</b></a> <span class="tag ${b.status==="booked"?"low":b.status==="delivered"?"ok":"out"}">${esc(b.status)}</span><br><span class="small mute">${fdt(tms(b.createdAt))} · ${esc(b.createdByName||"")}</span></td>
    <td data-l="Customer">${esc(b.customerName)}<br><a class="small" href="tel:${esc(b.customerPhone)}">${esc(b.customerPhone)}</a></td>
-   <td data-l="Items" class="small">${b.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")}</td>
+   <td data-l="Items" class="small">${b.items.map(i=>plink(i.pid,i.name)+" ×"+i.qty).join(", ")}</td>
    <td data-l="Total / received" class="n">${inr(b.total)}<br><span class="small mute">got ${inr(bkReceived(b))} · due <span style="color:${bkDue(b)>0?"var(--bad)":"var(--ok)"}">${inr(bkDue(b))}</span></span></td>
    <td data-l="Delivery">${b.deliveryDate?`<span class="tag ${b.status==="booked"&&b.deliveryDate<=tk?"out":""}">${esc(b.deliveryDate)}</span>`:`<span class="mute small">—</span>`}</td>
    <td data-l=""><div class="row" style="justify-content:flex-end">${b.status==="booked"?`<button class="btn sm" onclick="deliverBooking('${b.id}')">Deliver</button>`:""}<button class="btn sm sec" onclick="location.hash='booking/${b.id}'">View</button></div></td></tr>`).join("")||`<tr><td colspan="6" class="mute">No bookings here yet.</td></tr>`}
@@ -2012,7 +2110,7 @@ function vBooking(el){
     <div class="row" style="justify-content:space-between;padding:9px 0;font-weight:700"><span>Balance due</span><span style="color:${bal>0?"var(--bad)":"var(--ok)"}">${inr(bal)}</span></div>
     ${b.status!=="cancelled"&&bal>0?`<button class="btn" style="width:100%" onclick="openPayment('${b.customerId}','${b.id}')">+ Record payment</button>`:""}</div>
    <div class="card"><h3 style="margin-bottom:8px">Items</h3>
-    ${b.items.map(i=>{const p=S.products.find(x=>x.id===i.pid);return `<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span class="row" style="flex-wrap:nowrap">${p?thumb(p,38):""}<span>${esc(i.name)}<br><span class="small mute">${esc(i.sku)} · ${i.qty} × ${inr(i.price)}</span></span></span><b>${inr(i.lineTotal??i.price*i.qty)}</b></div>`}).join("")}</div></div>`;
+    ${b.items.map(i=>{const p=S.products.find(x=>x.id===i.pid);return `<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span class="row" style="flex-wrap:nowrap">${p?thumb(p,38):""}<span>${plink(i.pid,i.name)}<br><span class="small mute">${esc(i.sku)} · ${i.qty} × ${inr(i.price)}</span></span></span><b>${inr(i.lineTotal??i.price*i.qty)}</b></div>`}).join("")}</div></div>`;
 }
 window.editBooking=id=>{
   if(!can("editBooking"))return toast("You don't have permission to change a saved booking",1);
@@ -2676,22 +2774,27 @@ function labelsHTML(items,o,svgFn){
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#000}
 .sheet{display:grid;${roll?"":"grid-template-columns:repeat(3,64mm);grid-auto-rows:34mm;"}}
 .lb{padding:${roll?"1.5mm 2.5mm":"2mm 3mm"};overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;break-inside:avoid;page-break-inside:avoid;${roll?"width:50mm;height:25mm;page-break-after:always;":""}${o.border&&!roll?"outline:.2mm dashed #999;outline-offset:-.2mm;":""}}
-.nm{font-size:${roll?"6.5pt":"8pt"};line-height:1.15;max-height:2.3em;overflow:hidden;font-weight:600}
+.nm{font-size:${roll?"6.5pt":"8pt"};line-height:1.15;max-height:${roll&&o.price?"1.2em":"2.3em"};overflow:hidden;font-weight:600}
 .sk{font-size:${roll?"7.5pt":"9.5pt"};font-weight:700;display:flex;justify-content:space-between;gap:4px}
-.bc svg{display:block;width:100%;height:${roll?"8mm":"11mm"}}
+.pz{font-size:${roll?"6.5pt":"8.5pt"};display:flex;justify-content:space-between;gap:4px;align-items:baseline}
+.pz b{font-size:${roll?"8pt":"10.5pt"}}
+.bc svg{display:block;width:100%;height:${roll?(o.price?"7mm":"8mm"):"11mm"}}
 .dm{font-size:${roll?"6.5pt":"8pt"};font-weight:600}
 .no{font-size:${roll?"7pt":"8.5pt"};letter-spacing:.8px;text-align:center}`;
-  const body=items.map(p=>`<div class="lb"><div class="nm">${esc(p.name)}</div><div class="sk"><span>${esc(p.sku)}</span>${o.price?`<span>${inr(p.price)}</span>`:""}</div>${dimText(p)?`<div class="dm">${esc(dimText(p))}</div>`:""}<div class="bc">${svgFn(p.barcode)}</div><div class="no">${esc(p.barcode)}</div></div>`).join("");
+  const body=items.map(p=>`<div class="lb"><div class="nm">${esc(p.name)}</div>
+   <div class="sk"><span>${esc(p.sku)}</span>${dimText(p)?`<span class="dm">${esc(dimText(p))}</span>`:""}</div>
+   ${o.price?`<div class="pz"><span>MRP ${inr(p.mrp??p.price)}</span><b>${inr(p.price)}</b></div>`:""}
+   <div class="bc">${svgFn(p.barcode)}</div><div class="no">${esc(p.barcode)}</div></div>`).join("");
   return `<!doctype html><html><head><meta charset="utf-8"><title>Barcode labels</title><style>${css}</style></head><body><div class="sheet">${body}</div>${o.noprint?"":"<script>onload=()=>setTimeout(()=>print(),500)<\/script>"}</body></html>`;
 }
 window.openLabels=function(){
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:560px"><h3>Barcode labels</h3>
-  <p class="mute small">Print labels with the SKU and a scannable barcode to stick on products in the showroom. A scanner works in Sell, Stock and the product search.</p>
+  <p class="mute small">Print labels with the SKU, the MRP, the selling price and a scannable barcode to stick on products in the showroom. A scanner works in Sell, Stock and the product search.</p>
   <div class="grid">
    <div><label>Which products</label><select id="lb-scope"><option value="shown">Products currently shown in the list</option><option value="all">All products</option></select></div>
    <div class="f"><div><label>Copies</label><select id="lb-copies"><option value="1">1 label per product</option><option value="qty">1 label per unit in stock</option></select></div>
    <div><label>Layout</label><select id="lb-layout"><option value="a4">A4 sheet — 24 labels (3 × 8)</option><option value="roll">Label roll — 50 × 25 mm</option></select></div></div>
-   <div class="row"><label style="display:flex;gap:6px;align-items:center;color:var(--ink);font-size:14px"><input type="checkbox" id="lb-price" style="width:auto"> Show price</label>
+   <div class="row"><label style="display:flex;gap:6px;align-items:center;color:var(--ink);font-size:14px"><input type="checkbox" id="lb-price" checked style="width:auto"> Show MRP and selling price</label>
     <label style="display:flex;gap:6px;align-items:center;color:var(--ink);font-size:14px"><input type="checkbox" id="lb-border" checked style="width:auto"> Cut lines (A4)</label></div>
    <div id="lb-info" class="small"></div></div>
   <div class="row" style="margin-top:14px;justify-content:space-between"><button class="btn sec hide" id="lb-gen">Generate missing barcodes</button>
@@ -2717,9 +2820,9 @@ window.openLabels=function(){
     try{
       const{images,EJ}=await photoMap(L);
       dlx("barcode-list-"+dkey()+".xlsx",await buildWorkbook(EJ,[{name:"Barcodes",freeze:3,images,
-        cols:[["photo",11],["sku",14,"@"],["name",34],["dimension",14],["dim_unit",11],["barcode",18,"@"],["category",30],["location",18],["price",12,MONEY],["qty",7]],
+        cols:[["photo",11],["sku",14,"@"],["name",34],["dimension",14],["dim_unit",11],["barcode",18,"@"],["category",30],["location",18],["mrp",12,MONEY],["price",12,MONEY],["qty",7]],
         rows:L.map(p=>({sku:p.sku,name:p.name,dimension:dimOf(p),dim_unit:dimUnitOf(p),barcode:String(p.barcode),category:[p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" > "),
-          location:p.location||"",price:num(p.price),qty:+p.qty||0}))}]));
+          location:p.location||"",mrp:num(p.mrp??p.price),price:num(p.price),qty:+p.qty||0}))}]));
     }catch(e){toast(emsg(e),1)}
   };
   $("#lb-print").onclick=async()=>{
