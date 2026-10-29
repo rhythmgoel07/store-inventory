@@ -254,7 +254,7 @@ window.openCamera=async function(onShot){
 const configured = firebaseConfig && firebaseConfig.apiKey && !/YOUR_/.test(firebaseConfig.apiKey);
 let app,auth,db;
 const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",invoicePrefix:"INV",address:"",phone:"",gstin:"",footer:"Thank you for shopping with us!",allowNegative:false},
-  products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",dim:"",loc:"",stock:"all",sort:"name",limit:100},
+  products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",dim:"",loc:"",vendor:"",stock:"all",sort:"name",limit:100},
   lists:{...DEFAULT_LISTS},vendors:[],purchases:[],vpays:[],pcart:[],pchg:[],pq:"",vf:{q:"",cat:""},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:""},bf:{q:"",status:"booked"},detailCust:null,detailBk:null,
   bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bdate:"",bnotes:"",bq:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",
   detailSale:null,detailPur:null,es:null,puEdit:"",unsub:[]};
@@ -471,8 +471,9 @@ function vDash(el){
 function filteredProducts(){
   const f=S.pf,q=f.q.toLowerCase();
   let L=S.products.filter(p=>{
-    if(q&&!(`${p.name} ${p.sku} ${p.barcode||""} ${vend(p)} ${p.location||""} ${dimText(p)}`.toLowerCase().includes(q)))return false;
-    if(f.loc&&String(p.location||"").toLowerCase()!==f.loc.toLowerCase())return false;
+    if(q&&!(`${p.name} ${p.sku} ${p.barcode||""} ${vendQ(p)} ${locKeys(p).join(" ")} ${dimText(p)}`.toLowerCase().includes(q)))return false;
+    if(f.loc&&!locKeys(p).some(k=>k.toLowerCase()===f.loc.toLowerCase()))return false;
+    if(f.vendor&&norm(vend(p))!==norm(f.vendor))return false;
     if(f.dim&&dimText(p).toLowerCase()!==f.dim.toLowerCase())return false;
     if(f.cat&&p.categoryId!==f.cat)return false;if(f.sub&&p.subcategoryId!==f.sub)return false;
     if(f.stock==="low"&&!lowStock(p))return false;if(f.stock==="out"&&!outStock(p))return false;if(f.stock==="in"&&outStock(p))return false;
@@ -486,8 +487,13 @@ function subOptions(cid,sel){const c=TAXONOMY.find(x=>x.id===cid);return `<optio
 const natcmp=(a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true,sensitivity:"base"});
 /* Wherever a product is named — a bill, a booking, the dashboard, the stock log — the name is a
    link to its page. Products deleted since are left as plain text. */
+/* The vendor only enters a search where the person is allowed to see vendors at all. */
+const vendQ=p=>can("seeVendor")?vend(p):"";
+/* Every place a product sits, for searching and filtering — not just its main location. */
+const locKeys=p=>[...new Set([...Object.keys(locMapOf(p)),String(p.location||"").trim()].filter(Boolean))];
 const plink=(pid,text)=>pid&&S.products.some(x=>x.id===pid)
   ?`<a href="#product/${encodeURIComponent(pid)}">${esc(text)}</a>`:esc(text);
+const allVendorNames=()=>[...new Set([...S.vendors.filter(v=>v.active!==false).map(v=>v.name),...S.products.map(vend).filter(Boolean)])].sort(natcmp);
 const allLocations=()=>{const m=new Map();[...S.lists.locations,...S.products.map(p=>p.location)].forEach(x=>{x=String(x||"").trim();if(x&&!m.has(x.toLowerCase()))m.set(x.toLowerCase(),x)});return[...m.values()].sort(natcmp)};
 const withCur=(arr,cur)=>cur===undefined||cur===null||cur===""||arr.some(x=>String(x)===String(cur))?arr:[...arr,cur];
 function cardImg(p){
@@ -518,9 +524,10 @@ function vProducts(el){
   el.innerHTML=`<div class="top"><h2>Products <span class="mute small">(${L.length})</span></h2>
    <div class="row">${can("editProducts")?`<button class="btn" onclick="openProduct()">+ Add product</button><button class="btn sec" onclick="openImport()">Import Excel</button>`:""}${can("seeCost")?`<button class="btn sec" onclick="exportProducts()">Export</button>`:""}<button class="btn sec" onclick="openLabels()">Barcode labels</button></div></div>
   <div class="card" style="margin-bottom:12px"><div class="f">
-   <div class="full"><input id="pf-q" placeholder="Search name, SKU, barcode, vendor, size, location…" value="${esc(f.q)}"></div>
+   <div class="full"><input id="pf-q" placeholder="Search name, SKU, barcode, ${can("seeVendor")?"vendor, ":""}size, location…" value="${esc(f.q)}"></div>
    <select id="pf-cat">${catOptions(f.cat)}</select><select id="pf-sub">${subOptions(f.cat,f.sub)}</select>
    <select id="pf-loc"><option value="">All locations</option>${locs.map(x=>`<option ${f.loc.toLowerCase()===x.toLowerCase()?"selected":""}>${esc(x)}</option>`).join("")}</select>
+   ${can("seeVendor")?`<select id="pf-vend"><option value="">All vendors</option>${allVendorNames().map(x=>`<option ${norm(f.vendor)===norm(x)?"selected":""}>${esc(x)}</option>`).join("")}</select>`:""}
    ${dims.length||f.dim?`<select id="pf-dim"><option value="">All sizes</option>${withCur(dims,f.dim).map(d=>`<option ${f.dim===d?"selected":""}>${esc(d)}</option>`).join("")}</select>`:""}
    <select id="pf-stock">${[["all","All stock"],["in","In stock"],["low","Low stock"],["out","Out of stock"]].map(o=>`<option value="${o[0]}" ${f.stock===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select>
    <select id="pf-sort">${[["name","Sort: Name"],["qty","Sort: Stock (low first)"],["price","Sort: Price (high first)"],["new","Sort: Newest"]].map(o=>`<option value="${o[0]}" ${f.sort===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select>
@@ -529,7 +536,7 @@ function vProducts(el){
   ${L.length>f.limit?`<p style="text-align:center;margin-top:12px"><button class="btn sec" onclick="S.pf.limit+=100;render()">Show more</button></p>`:""}`;
   const bind=(id,k,reset)=>{const e=$(id);e.oninput=e.onchange=()=>{S.pf[k]=e.value;S.pf.limit=100;if(reset){S.pf.sub="";S.pf.dim=""}render()}};
   const q=$("#pf-q");q.oninput=()=>{S.pf.q=q.value;S.pf.limit=100;clearTimeout(vProducts.t);vProducts.t=setTimeout(()=>{render();const n=$("#pf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
-  bind("#pf-cat","cat",1);bind("#pf-sub","sub");bind("#pf-loc","loc");if($("#pf-dim"))bind("#pf-dim","dim");bind("#pf-stock","stock");bind("#pf-sort","sort");
+  bind("#pf-cat","cat",1);bind("#pf-sub","sub");bind("#pf-loc","loc");if($("#pf-vend"))bind("#pf-vend","vendor");if($("#pf-dim"))bind("#pf-dim","dim");bind("#pf-stock","stock");bind("#pf-sort","sort");
 }
 function vProduct(el){
   const p=S.products.find(x=>x.id===S.detailId);
@@ -569,8 +576,7 @@ window.openProduct=function(id,preset){
    <div><label>SKU *</label><div class="row" style="flex-wrap:nowrap"><input id="p-sku" value="${esc(p.sku)}"><button class="btn sec sm" id="p-auto" type="button">Auto</button></div></div>
    <div><label>Barcode</label><div class="row" style="flex-wrap:nowrap"><input id="p-bar" value="${esc(p.barcode)}"><button class="btn sec sm" id="p-genbar" type="button" ${p.barcode?'disabled title="Barcode already assigned"':""}>Generate</button></div></div>
    <div><label>Vendor</label><div class="row" style="flex-wrap:nowrap"><select id="p-vendor">${
-     (()=>{const names=[...new Set([...S.vendors.filter(v=>v.active!==false).map(v=>v.name),...S.products.map(vend).filter(Boolean)])].sort(natcmp);
-       return `<option value="">—</option>`+withCur(names,vend(p)).map(n=>`<option ${vend(p)===n?"selected":""}>${esc(n)}</option>`).join("")})()
+     (()=>`<option value="">—</option>`+withCur(allVendorNames(),vend(p)).map(n=>`<option ${vend(p)===n?"selected":""}>${esc(n)}</option>`).join(""))()
    }</select>${can("manageVendors")?`<button class="btn sec sm" type="button" id="p-vendadd" title="Add a vendor">＋</button>`:""}</div></div>
    <div><label>MRP (₹)</label><input id="p-mrp" type="number" step="0.01" value="${p.mrp??""}"></div>
    <div><label>Selling price (₹) *</label><input id="p-price" type="number" step="0.01" value="${p.price??""}"></div>
@@ -840,7 +846,7 @@ const sellSum=t=>`<div class="row" style="justify-content:space-between"><span c
   <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Total</span><span>${inr(t.total)}</span></div>`;
 function vSell(el){
   const q=S.posQ.toLowerCase();
-  const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${vend(p)} ${p.location||""}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
+  const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${vendQ(p)} ${locKeys(p).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
   const t=cartTotals();
   el.innerHTML=`<div class="top"><h2>New sale</h2><button class="btn sec" onclick="S.cart=[];S.cartDiscount=0;render()">Clear</button></div>
   <div class="pos"><div><input id="pos-q" placeholder="Scan barcode or search…" value="${esc(S.posQ)}" style="margin-bottom:10px">
@@ -1372,7 +1378,7 @@ function vVendors(el){
       <div class="s">${adv?`${inr(adv)} lying as advance`:"no advances outstanding"}</div></div>`})()}</div>`:""}
   ${unlisted.length?`<div class="card" style="margin-bottom:12px"><b>${unlisted.length} vendor name${unlisted.length===1?"":"s"} used on products but not in this list</b>
    <p class="mute small">These came from typed-in or imported names. Add them so they appear in the dropdown with their billing method and notes.</p>
-   <div class="pill-row">${unlisted.slice(0,24).map(n=>`<button class="btn sm sec" onclick='openVendor(null,${JSON.stringify(n)})'>+ ${esc(n)}</button>`).join("")}</div></div>`:""}
+   <div class="pill-row">${unlisted.slice(0,24).map(n=>`<button class="btn sm sec" onclick="openVendor(null,${esc(JSON.stringify(n))})">+ ${esc(n)}</button>`).join("")}</div></div>`:""}
   <div class="card" style="margin-bottom:12px"><div class="f">
    <div class="full"><input id="vf-q" placeholder="Search vendor, contact, phone, city, category or billing method…" value="${esc(S.vf.q)}"></div>
    <select id="vf-cat"><option value="">All categories</option>${withCur([...new Set([...(S.lists.vendorCategories||[]),...S.vendors.map(v=>v.category).filter(Boolean)])].sort(natcmp),S.vf.cat).map(c=>`<option ${S.vf.cat===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
@@ -1408,7 +1414,8 @@ function vVendor(el){
     <button class="btn sec" onclick="printVendorStatement('${v.id}')">Print statement</button><button class="btn sec" onclick="exportVendorLedger('${v.id}')">Export ledger</button>
     <button class="btn sec" onclick="addVendorNote('${v.id}')">+ Note</button>${can("manageVendors")?`<button class="btn sec" onclick="openVendor('${v.id}')">Edit</button>`:""}</div></div>
   <div class="grid stats" style="margin-bottom:12px">
-   <div class="card stat"><div class="k">Products</div><div class="v">${st.items.length}</div><div class="s">${st.units} units in stock</div></div>
+   <div class="card stat"><div class="k">Products</div><div class="v">${st.items.length}</div>
+    <div class="s">${st.units} units in stock${st.items.length?` · <a href="#" onclick="filterToVendor(${esc(JSON.stringify(v.name))});return false">see them in Products</a>`:""}</div></div>
    <div class="card stat"><div class="k">Stock value (cost)</div><div class="v">${inr(st.cost)}</div><div class="s">retail ${inr(st.retail)}</div></div>
    <div class="card stat"><div class="k">Needs restocking</div><div class="v" style="color:var(--warn)">${st.low}</div><div class="s">low or out of stock</div></div>
    <div class="card stat"><div class="k">${L.balance<0?"Payable to vendor":L.balance>0?"Advance with vendor":"Account balance"}</div>
@@ -1525,7 +1532,7 @@ window.openPurchase=function(vid,keepState,editId){
   S.puVendor=vid;
   const draw=()=>{
     const q=S.pq.toLowerCase();
-    const hits=q?S.products.filter(p=>`${p.name} ${p.sku} ${vend(p)} ${dimText(p)}`.toLowerCase().includes(q)).slice(0,8):[];
+    const hits=q?S.products.filter(p=>`${p.name} ${p.sku} ${vendQ(p)} ${dimText(p)}`.toLowerCase().includes(q)).slice(0,8):[];
     const sub=r2(S.pcart.reduce((a,i)=>a+num(i.qty)*num(i.rate),0));
     const other=r2(S.pchg.reduce((a,c)=>a+num(c.amount),0));
     $("#pu-body").innerHTML=`
@@ -1986,7 +1993,7 @@ const bkSum=(t,adv)=>`<div class="row" style="justify-content:space-between"><sp
   <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Balance due</span><span>${inr(Math.max(0,t.gross-adv))}</span></div>`;
 function vNewBooking(el){
   const q=S.bq.toLowerCase();
-  const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${vend(p)} ${p.location||""}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
+  const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${vendQ(p)} ${locKeys(p).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
   const t=bkTotals(S.bcart);
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('bookings')">← Back</button><h2>New booking</h2></div>
    <button class="btn sec" onclick="S.bcart=[];S.badv=0;render()">Clear items</button></div>
@@ -2268,6 +2275,10 @@ window.taxAct=async(ev,op,cid,sid,tid)=>{
     }
     toast("Saved");
   }catch(e){toast(emsg(e),1)}
+};
+window.filterToVendor=name=>{
+  S.pf={...S.pf,q:"",cat:"",sub:"",dim:"",loc:"",vendor:name,stock:"all",limit:100};
+  setView("products");
 };
 window.filterTo=(key,id)=>{
   S.pf={q:"",cat:"",sub:"",loc:"",stock:"all",sort:"name",limit:100};
