@@ -6,7 +6,7 @@ Files: `index.html` (the whole app, your category tree is built in), `firebase-c
 1. **Firebase project** – console.firebase.google.com → Add project.
 2. **Authentication** → Get started → enable **Email/Password**.
 3. **Firestore Database** → Create database (production mode, nearest region e.g. Mumbai `asia-south1`).
-4. **Rules** – Firestore → Rules → paste the contents of `firestore.rules` → Publish.
+4. **Rules** – Firestore → Rules → paste the contents of `firestore.rules` → Publish. (After the one-time setup below, a push to GitHub does this for you.)
 5. **Web app config** – Project settings → Your apps → `</>` Web → copy the config into `firebase-config.js`.
 6. **Authorized domains** – Authentication → Settings → add `<yourusername>.github.io`.
 7. **Host** – upload all files to a GitHub repo → Settings → Pages → deploy from `main` / root.
@@ -85,7 +85,23 @@ name, SKU, barcode, vendor, dimension + dimension unit, category / sub-category 
 - **Vendor** replaces the old brand field (old data still reads fine; the import accepts a `brand` or `vendor` column).
 - **Images:** each product takes a photo three ways — **📷 Take photo** opens the device camera with a live preview and a Capture button (phone camera or laptop webcam; "Switch camera" appears when there is more than one), **⇪ Upload image** picks an existing file, or paste a link in `imageUrl`. Photos are resized to 640 px and stored in Firestore, so no paid Storage plan is needed. The camera needs an https:// address (GitHub Pages is https) and permission the first time; if it is blocked or missing, the panel says so and points to Upload image.
 - **Templates:** the Import window can regenerate `Inventory_Import_Template.xlsx` from your current categories and lists at any time.
-- **Updating:** re-upload `index.html`, `sw.js`, `firestore.rules` contents (re-publish the rules in Firebase) and the template to GitHub when you get a new version.
+- **Updating:** push the new files to GitHub. Pages republishes the app by itself, and the workflow below republishes the rules, so there is nothing to paste by hand.
+
+## Publishing automatically from GitHub
+The repository publishes both halves of the app on its own once this is set up.
+
+- **The app** — GitHub Pages rebuilds whenever `index.html` changes on `main`. Nothing to configure.
+- **The database rules** — `.github/workflows/deploy-rules.yml` runs `firebase deploy --only firestore:rules` whenever `firestore.rules` changes on `main`, so the rules can never drift behind the app. It also runs on demand from the repo's **Actions** tab (*Publish Firestore rules* → *Run workflow*).
+
+**One-time setup for the rules workflow:**
+1. In the [Google Cloud console](https://console.cloud.google.com/iam-admin/serviceaccounts) for the project `store-inventory-5d228`, create a service account — call it something like `github-deploy-rules`.
+2. Give it two roles: **Firebase Rules Admin** (to publish rules) and **Firebase Viewer** (so the CLI can see the project). Nothing more — this account must not be able to touch your data.
+3. Create a **JSON key** for it and download the file.
+4. In GitHub: **Settings → Secrets and variables → Actions → New repository secret**, name it exactly `FIREBASE_SERVICE_ACCOUNT`, and paste the entire contents of that JSON file.
+
+Until that secret exists the workflow fails on purpose with a message pointing here, which is how you can tell it never published silently. Repository secrets are not exposed to forks or pull requests from other people, so a public repo is fine — but the key file itself is a password: keep it out of the repo, and delete the downloaded copy once it is pasted in. If the key is ever exposed, delete that key in the console and make a new one; nothing else needs changing.
+
+`firebase.json` and `.firebaserc` in the repo just tell the CLI which file holds the rules and which project to send them to. `firebase.json` deliberately has no `hosting` section — hosting is GitHub Pages, not Firebase.
 
 ## Barcodes & labels
 - Product form → **Generate** next to Barcode, or leave `barcode` blank in the Excel and use **Barcode labels → Generate missing barcodes** (admin) to fill every product at once.

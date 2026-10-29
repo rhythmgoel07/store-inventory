@@ -1,0 +1,58 @@
+# Publishes firestore.rules to Firebase whenever it changes on main, so the database
+# rules can never drift behind the app. GitHub Pages already republishes index.html
+# by itself; this is the other half.
+#
+# One-time setup (see README → Publishing rules automatically):
+#   1. Create a service account in the Firebase project with the roles
+#      "Firebase Rules Admin" and "Firebase Viewer", and download a JSON key.
+#   2. Paste the whole JSON file into the repository secret FIREBASE_SERVICE_ACCOUNT
+#      (Settings → Secrets and variables → Actions → New repository secret).
+name: Publish Firestore rules
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'firestore.rules'
+      - 'firebase.json'
+      - '.firebaserc'
+      - '.github/workflows/deploy-rules.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firestore-rules
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - run: npm install -g firebase-tools@15
+
+      - name: Publish rules
+        env:
+          # The secret is read through the environment, never interpolated into the
+          # shell command, so nothing in it can be read as script.
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FIREBASE_SERVICE_ACCOUNT:-}" ]; then
+            echo "::error::The FIREBASE_SERVICE_ACCOUNT secret is not set — see the comment at the top of this file."
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          firebase deploy --only firestore:rules --non-interactive
+
+      - name: Remove credentials
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"
