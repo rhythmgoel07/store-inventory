@@ -160,8 +160,13 @@ Every invoice and every purchase bill has a page of its own, and an admin can co
 - Correcting a discount afterwards is **admin-only** (Edit on the booking) and recomputes the order value, GST and balance. A manager with *Change a saved booking* still edits only the booking amount, date and notes, and sees the discount as a read-only line.
 - **Deliver & bill** asks how much is being collected now (the balance by default, but you can take less or nothing). Stock comes down, the reservation clears, and anything left stays pending in the customer's ledger.
 - **Payments**: a customer can pay in as many instalments as they like. Use **+ Record payment** on the booking or the customer page — each one keeps its own date, mode and reference, and shows as a separate line in the ledger. Only an admin can remove one.
-- **Cancel booking** (admin) releases the reserved stock. **Print slip** gives the customer a booking slip with the balance and delivery date.
+- **Cancel booking** releases the reserved stock and asks what happens to whatever has already been received, which the ledger then reflects:
+  - **Keep it as credit with the shop** — the amount stays on the customer's account against a future order. This is what the app always did, and it stays the default.
+  - **Refunded to the customer** — a refund line is recorded and the balance settles to zero. Handing over the cash or making the transfer is separate; the app records it, it does not pay it.
+  - **Kept by the shop as a cancellation charge** — a charge for that amount is recorded, so the money counts as the shop's and the balance settles to zero.
+  The choice, the amount and any note show on the booking page and in the ledger line, and nothing is shown as "due" on a cancelled booking any more. A cancellation an admin approves from **Approvals** keeps the money as credit — the safe default — and can be refunded afterwards with a negative payment. **Print slip** gives the customer a booking slip with the balance and delivery date.
 - Edit lets you update the booking amount, delivery date and notes as things change.
+- The **bookings list reads like the slip**: every item with its SKU, sub-category and type, and `2 × ₹52,900.00 = ₹1,05,800.00`, beside a column showing items value, discount, order value, received and due. Bookings with more than four items list the first four and count the rest.
 - Dashboard shows open bookings, advance held and upcoming deliveries; overdue dates turn red.
 
 ## Vendors
