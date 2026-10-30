@@ -95,7 +95,8 @@ name, SKU, barcode, vendor, dimension + dimension unit, category / sub-category 
 ## Phone and dark mode
 - The layout adapts below 820 px (bottom tab bar, stacked panels) and tightens again below 560 px: smaller buttons and headings, narrower gutters, filters two to a row, forms one field per row.
 - **Tables become cards on a phone**, each cell labelled. That includes the tables inside dialogs — recording a purchase, correcting a bill, receiving stock into several places — which used to run off the side of the screen.
-- **Dark mode follows the phone's own setting.** The palette is declared for both schemes, so native date pickers and dropdowns are dark too and the browser does not try to invert the page itself.
+- **Settings → Appearance** switches between **Follow this device**, **Light** and **Dark**. The choice is kept **per device**, not in Firestore, so the showroom tablet can stay light while your phone goes dark at night, and nobody's choice changes anyone else's. A browser that refuses to store anything (a private window) still switches for that session; it just forgets on reload.
+- **Left on "Follow this device", dark mode follows the phone's own setting.** The palette is declared for both schemes, so native date pickers and dropdowns are dark too and the browser does not try to invert the page itself.
 - Links were never given a colour, so every browser used its own blue (and purple once visited), which is close to unreadable on a dark background. They now use a palette colour that reads clearly in both schemes.
 - Every text colour was checked against its background: everything clears 4.5:1 in dark mode and in light, including small grey text and the amber used for warnings, both of which were marginally too light before.
 
