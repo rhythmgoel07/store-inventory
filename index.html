@@ -6,19 +6,21 @@
 <title>Store Inventory</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Inventory">
 <meta name="theme-color" content="#1f3a34">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <style>
 :root{color-scheme:light dark;
  --bg:#f6f4ef;--card:#fff;--ink:#1d2421;--mute:#616b66;--line:#e3dfd6;--brand:#1f3a34;--brand2:#2f5a50;--accent:#c8873a;
- --bad:#b3392f;--ok:#2d7a4f;--warn:#8a5a12;--link:#1f5a4d;--tagbg:rgba(127,127,127,.14);--toast:#262e2b;
+ --bad:#b3392f;--onbad:#fff;--ok:#2d7a4f;--warn:#8a5a12;--link:#1f5a4d;--tagbg:rgba(127,127,127,.14);--toast:#262e2b;
  --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
  --bg:#121816;--card:#1a221f;--ink:#e8ece9;--mute:#9fada7;--line:#2f3b37;--brand:#2a4f46;--brand2:#4a8f7e;--accent:#e0a458;
- --bad:#f08478;--ok:#5ec98e;--warn:#e8bc5c;--link:#7fd0b6;--tagbg:rgba(255,255,255,.10);--toast:#2b3531;--shadow:none}}
+ --bad:#f08478;--onbad:#2a0d09;--ok:#5ec98e;--warn:#e8bc5c;--link:#7fd0b6;--tagbg:rgba(255,255,255,.10);--toast:#2b3531;--shadow:none}}
 :root[data-theme="dark"]{
  --bg:#121816;--card:#1a221f;--ink:#e8ece9;--mute:#9fada7;--line:#2f3b37;--brand:#2a4f46;--brand2:#4a8f7e;--accent:#e0a458;
- --bad:#f08478;--ok:#5ec98e;--warn:#e8bc5c;--link:#7fd0b6;--tagbg:rgba(255,255,255,.10);--toast:#2b3531;--shadow:none}
+ --bad:#f08478;--onbad:#2a0d09;--ok:#5ec98e;--warn:#e8bc5c;--link:#7fd0b6;--tagbg:rgba(255,255,255,.10);--toast:#2b3531;--shadow:none}
 :root[data-theme="dark"]{color-scheme:dark}
 :root[data-theme="light"]{color-scheme:light}
 /* Links were never styled, so every browser used its own blue — unreadable on a dark phone,
@@ -54,7 +56,7 @@ main{padding:22px;max-width:1200px;width:100%}
 .btn:hover{background:var(--brand2)}
 .btn.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
 .btn.sec:hover{background:rgba(127,127,127,.08)}
-.btn.bad{background:var(--bad)}
+.btn.bad{background:var(--bad);color:var(--onbad)}
 .btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 input,select,textarea{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%;min-width:0}
@@ -69,7 +71,7 @@ label{display:block;font-size:12px;color:var(--mute);margin-bottom:4px}
 table{width:100%;border-collapse:collapse}
 th,td{padding:9px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
-td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .mute{color:var(--mute)}.small{font-size:12px}
 table td.c,table th.c{text-align:center}
 .badge{background:var(--accent);color:#1d2421;border-radius:99px;padding:0 7px;font-size:11px;font-weight:700;margin-left:auto}
@@ -81,7 +83,9 @@ table td.c,table th.c{text-align:center}
 .modal{background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:720px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .modal h3{margin-bottom:14px}
 .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--toast);color:#fff;border:1px solid rgba(255,255,255,.16);padding:10px 16px;border-radius:10px;z-index:99;box-shadow:0 6px 20px rgba(0,0,0,.35);max-width:90vw}
-.toast.err{background:var(--bad)}
+.toast.err{background:var(--bad);color:var(--onbad);display:flex;gap:12px;align-items:flex-start}
+.toast{pointer-events:none}.toast-x{pointer-events:auto}
+.toast-x{background:none;border:0;color:inherit;font-size:16px;line-height:1;padding:2px 4px;cursor:pointer;min-width:28px;min-height:28px}
 .pos{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}
 .items{display:grid;gap:8px;max-height:62vh;overflow:auto;padding-right:2px}
 .item{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;text-align:left}
@@ -164,18 +168,25 @@ table td.c,table th.c{text-align:center}
 .detail table td:first-child{color:var(--mute);width:38%}
 @media(max-width:820px){.detail{grid-template-columns:1fr}.pgrid{grid-template-columns:repeat(2,1fr)}}
 @media print{body *{visibility:hidden}}
+.net{position:sticky;top:0;z-index:40;background:var(--warn);color:var(--card);padding:8px 14px;font-size:13px;text-align:center}
+:focus-visible{outline:3px solid var(--link);outline-offset:2px}
+body:has(#modal .modal-bg){overflow:hidden}
+@media(pointer:coarse){.btn,.btn.sm{min-height:44px}.qty button{width:44px;height:44px}.bottom button{min-height:52px}
+ .pill-row .tag a{display:inline-flex;align-items:center;justify-content:center;min-width:36px;min-height:36px}}
+@media(max-width:820px){input,select,textarea{font-size:16px}}
 </style>
 </head>
 <body>
+<div id="net" role="status" aria-live="polite"></div>
 <div id="root"></div>
 <div id="modal"></div>
 <div id="modal2"></div>
-<div id="toast"></div>
+<div id="toast" aria-live="polite"></div>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,updateProfile,sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection,doc,onSnapshot,setDoc,getDoc,getDocs,updateDoc,deleteDoc,query,orderBy,limit,where,runTransaction,serverTimestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection,doc,onSnapshot,setDoc,getDoc,getDocs,updateDoc,deleteDoc,query,orderBy,limit,where,runTransaction,serverTimestamp,writeBatch,terminate,clearIndexedDbPersistence} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {firebaseConfig} from "./firebase-config.js";
 
 /* ---------- Taxonomy (embedded from homecentre_taxonomy.json) ---------- */
@@ -217,13 +228,20 @@ const ref = n=>({id:n.id,name:n.name,slug:n.slug});
 /* ---------- Helpers ---------- */
 const $ = (s,r=document)=>r.querySelector(s);
 const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const inr = n=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(+n||0);
+const INR2=new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",minimumFractionDigits:2,maximumFractionDigits:2}),
+  INR0=new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0});
+// on screen ₹1,06,599 — paise only when there are some; printed bills and statements always show paise
+const inr = n=>{const v=Math.round((+n||0)*100)/100;return Number.isInteger(v)?INR0.format(v):INR2.format(v)};
+const inrP = n=>INR2.format(Math.round((+n||0)*100)/100);
 const num = v=>{const n=parseFloat(v);return isNaN(n)?0:n};
 /* A rupee amount as people type it in a spreadsheet: "₹1,20,000", "Rs. 1200", "1,200.50". NaN if it isn't one. */
 const money = v=>{if(typeof v==="number")return v;const t=String(v??"").replace(/₹|rs\.?|inr|,|\s/gi,"");return t===""||!/^-?\d*\.?\d+$/.test(t)?NaN:parseFloat(t)};
 const dkey = (d=new Date())=>{const z=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`};
 const tms = ts=>ts?.toMillis?ts.toMillis():(ts?.seconds?ts.seconds*1000:Date.now());
-const fdt = ms=>new Date(ms).toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+const fdt = ms=>{const d=new Date(ms);return d.toLocaleString("en-IN",{day:"2-digit",month:"short",...(d.getFullYear()!==new Date().getFullYear()?{year:"numeric"}:{}),hour:"2-digit",minute:"2-digit"})};
+// only secure web links are shown as pictures (no tracking over plain http, no odd schemes)
+const httpsUrl=u=>/^https:\/\/[^\s"'<>]+$/i.test(String(u||"").trim());
+const pl=(n,one,many)=>`${n} ${n===1?one:(many||one+"s")}`;
 /* Firebase errors are terse; say what to actually do about them. */
 function emsg(e){
   const s=((e&&(e.code||""))+" "+((e&&e.message)||"")).toLowerCase();
@@ -234,7 +252,13 @@ function emsg(e){
   if(s.includes("not-found"))return "That record no longer exists — reload and try again.";
   return (e&&e.message)||"Something went wrong";
 }
-function toast(m,err){const t=$("#toast");t.innerHTML=`<div class="toast ${err?"err":""}">${esc(m)}</div>`;clearTimeout(toast.t);toast.t=setTimeout(()=>t.innerHTML="",3200)}
+/* A message at the bottom. Good news fades after a few seconds; a problem stays until it is
+   dismissed or the next message replaces it, so there is time to read it. */
+function toast(m,err){const t=$("#toast");clearTimeout(toast.t);
+  t.innerHTML=`<div class="toast ${err?"err":""}" role="${err?"alert":"status"}"><span>${esc(m)}</span>${err?`<button class="toast-x" type="button" aria-label="Dismiss message" onclick="this.parentNode.remove()">✕</button>`:""}</div>`;
+  if(!err)toast.t=setTimeout(()=>t.innerHTML="",3200);else toast.at=Date.now()}
+// a problem message stays until it is dismissed or the person moves on and taps something else
+document.addEventListener("pointerdown",e=>{const t=$("#toast");if(t&&t.querySelector(".toast.err")&&!t.contains(e.target)&&Date.now()-(toast.at||0)>600)t.innerHTML=""},true);
 function dl(name,text,type="text/csv"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 const csvCell=v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
 function parseCSV(t){const rows=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}else if(ch=='"')q=true;else if(ch==","){r.push(c);c=""}else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t[i+1]=="\n")i++;r.push(c);c="";if(r.some(x=>x!==""))rows.push(r);r=[]}else c+=ch}r.push(c);if(r.some(x=>x!==""))rows.push(r);return rows}
@@ -243,7 +267,7 @@ function parseCSV(t){const rows=[];let r=[],c="",q=false;for(let i=0;i<t.length;
 const IMG={cache:new Map()};
 function thumb(p,size=48){
   const st=`width:${size}px;height:${size}px;border-radius:8px;object-fit:cover;background:var(--line);flex:none`;
-  if(p.imageUrl)return `<img src="${esc(p.imageUrl)}" loading="lazy" style="${st}" onerror="this.style.visibility='hidden'">`;
+  if(httpsUrl(p.imageUrl))return `<img src="${esc(p.imageUrl)}" loading="lazy" style="${st}" onerror="this.style.visibility='hidden'">`;
   if(p.hasImage){const c=IMG.cache.get(p.id);return `<img data-pid="${esc(p.id)}" ${c?`src="${esc(c)}"`:""} style="${st}">`}
   return `<div style="${st};display:grid;place-items:center;color:var(--mute);font-size:${Math.round(size/2.4)}px">▣</div>`;
 }
@@ -468,7 +492,7 @@ function startListeners(){
   on(doc(db,"settings","lists"),s=>{S.lists={...DEFAULT_LISTS,...(s.exists()?s.data():{})};render(true)});
   on(doc(db,"settings","perms"),s=>{const d=s.exists()?s.data():{};
     S.perms={manager:{...DEFAULT_PERMS.manager,...(d.manager||{})},sales:{...DEFAULT_PERMS.sales,...(d.sales||{})}};render(true)});
-  on(collection(db,"products"),s=>{S.products=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  on(collection(db,"products"),s=>{S.products=s.docs.map(d=>({id:d.id,...d.data()}));S.ready=true;render(true)});
   on(query(collection(db,"sales"),orderBy("createdAt","desc"),limit(500)),histLive("sales"));
   on(collection(db,"customers"),s=>{S.customers=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(collection(db,"vendors"),s=>{S.vendors=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
@@ -517,6 +541,26 @@ function routeFromHash(){
 window.addEventListener("hashchange",()=>{routeFromHash();render()});
 ["input","change"].forEach(t=>document.addEventListener(t,e=>{const x=e.target;if(x&&x.id&&x.closest&&x.closest("#main"))x.dataset.typed="1"},true));
 window.go=setView;
+const viewOf=k=>({dashboard:vDash,products:vProducts,product:vProduct,sell:vSell,stock:vStock,sales:vSales,categories:vCats,settings:vSettings,
+    customers:vCustomers,customer:vCustomer,bookings:vBookings,booking:vBooking,newbooking:vNewBooking,team:vTeam,approvals:vApprovals,
+    vendors:vVendors,vendor:vVendor,sale:vSale,purchase:vPurchase}[k]||vDash);
+/* Typing in a search box redraws the results, not the page: the screen is drawn off to the side
+   and everything except the search box is swapped in. The box keeps its focus, cursor and any
+   half-composed word (Hindi and other keyboards compose before a letter is final). */
+function refreshAround(id){
+  const keep=document.getElementById(id),main=$("#main");
+  if(!keep||!main||!main.contains(keep))return render();
+  const tmp=document.createElement("div");tmp.style.display="none";document.body.prepend(tmp);   // first in the page, so the view wires up the new copy
+  let ok=false;try{viewOf(S.view)(tmp);ok=patchAround(main,tmp,keep)}finally{tmp.remove()}
+  if(!ok)return render();
+  a11y(main);hydrateImages();
+}
+function patchAround(live,fresh,keep){
+  const L=[...live.children],F=[...fresh.children];if(L.length!==F.length)return false;
+  for(let i=0;i<L.length;i++){if(L[i]===keep)continue;
+    if(L[i].contains(keep)){if(!patchAround(L[i],F[i],keep))return false}else L[i].replaceWith(F[i])}
+  return true;
+}
 function render(soft){
   if(!S.profile||!activeRole(S.profile.role))return;
   if(!fullMode()&&SALES_VIEWS.includes(S.view))S.view="dashboard";
@@ -534,13 +578,31 @@ function render(soft){
     <div class="sp"></div><div class="me">${esc(S.profile.name)} · ${esc(ROLE_LABEL[ROLE()]||S.profile.role)}<br><a href="#" style="color:#fff" onclick="doSignOut();return false">Sign out</a><br><span class="bld" title="Which version of the app this device is running">build ${esc(BUILD)}</span></div></nav>
    <main id="main"></main></div>
    <div class="bottom">${items.slice(0,4).map(n=>`<button class="${navOn(n[0])?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}${items.length>4?`<button class="${items.slice(4).some(n=>navOn(n[0]))?"on":""}" onclick="openMore()"><span>⋯</span>More</button>`:""}</div>`;
-  const v={dashboard:vDash,products:vProducts,product:vProduct,sell:vSell,stock:vStock,sales:vSales,categories:vCats,settings:vSettings,
-    customers:vCustomers,customer:vCustomer,bookings:vBookings,booking:vBooking,newbooking:vNewBooking,team:vTeam,approvals:vApprovals,
-    vendors:vVendors,vendor:vVendor,sale:vSale,purchase:vPurchase}[S.view]||vDash;
+  const v=S.ready?viewOf(S.view):el=>{el.innerHTML=`<div class="card" style="margin-top:40px;text-align:center"><p class="mute">Loading your store…</p></div>`};
   v($("#main"));
   typed.forEach(([id,val])=>{const e=document.getElementById(id);if(!e)return;if(typeof val==="boolean")e.checked=val;else e.value=val;e.dataset.typed="1"});
+  a11y($("#root"));
   hydrateImages();
 }
+/* Accessibility pass, run after every draw and every dialog:
+   - each <label> is tied to the field that follows it, so it is read out and tapping it focuses the field
+   - buttons that only show a symbol get a spoken name
+   - tiles and rows that open something on click can be reached and opened with the keyboard
+   - images without a description are marked decorative */
+const ICON_NAME={"✕":"Remove","＋":"Add","+":"Increase","−":"Decrease","-":"Decrease","✎":"Rename","×":"Remove","⋯":"More"};
+let lblN=0;
+function a11y(root){if(!root)return;
+  root.querySelectorAll("label:not([for])").forEach(l=>{if(l.querySelector("input,select,textarea"))return;
+    const n=l.nextElementSibling;if(!n)return;
+    const c=n.matches("input,select,textarea")?n:n.querySelector("input:not([type=hidden]),select,textarea");
+    if(c){if(!c.id)c.id="fld-"+(++lblN);l.htmlFor=c.id}});
+  root.querySelectorAll("button,a[onclick]").forEach(b=>{if(b.getAttribute("aria-label"))return;const t=b.textContent.trim();
+    if(ICON_NAME[t])b.setAttribute("aria-label",b.title||ICON_NAME[t])});
+  root.querySelectorAll(".stat.clk,.pcard.adm,div[onclick],span[onclick],tr[onclick]").forEach(e=>{
+    if(e.closest("button,a")||e.classList.contains("modal-bg"))return;if(!e.hasAttribute("tabindex"))e.tabIndex=0;if(!e.getAttribute("role"))e.setAttribute("role","button")});
+  root.querySelectorAll("img:not([alt])").forEach(i=>i.alt="");
+}
+document.addEventListener("keydown",e=>{const t=e.target;if((e.key==="Enter"||e.key===" ")&&t&&t.getAttribute&&t.getAttribute("role")==="button"&&!/^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(t.tagName)){e.preventDefault();t.click()}});
 /* A dashboard tile opens the screen behind its number, set up to show the same thing. */
 window.dashTo=what=>{
   if(what==="products"){S.pf={...S.pf,q:"",cat:"",sub:"",dim:"",loc:"",vendor:"",stock:"all",limit:100};return setView("products")}
@@ -549,7 +611,13 @@ window.dashTo=what=>{
   if(what==="today"){S.salesRange="day";S.salesDay=dkey();return setView("sales")}
   if(what==="month"){S.salesRange="month";S.salesMonth=dkey().slice(0,7);return setView("sales")}
 };
-window.doSignOut=()=>signOut(auth);
+/* Signing out also wipes this device's offline copy of the store (customers, costs, sales),
+   so a shared showroom tablet doesn't keep them for the next person. */
+window.doSignOut=async()=>{
+  try{await signOut(auth)}catch(e){}
+  try{stopListeners();await terminate(db);await clearIndexedDbPersistence(db)}catch(e){}   // another open tab can keep it; harmless
+  location.reload();
+};
 window.openMore=()=>{
   $("#modal").innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-width:380px"><h3>Menu</h3>
   <div class="grid">${navItems().slice(4).map(n=>`<button class="btn sec" style="text-align:left" onclick="closeModal();go('${n[0]}')">${n[2]} &nbsp;${n[1]}</button>`).join("")}</div>
@@ -558,6 +626,10 @@ window.openMore=()=>{
 };
 
 /* ---------- Dashboard ---------- */
+/* A line at the top whenever the device has no connection, saying what still works. */
+function netBanner(){const n=$("#net");if(!n)return;
+  n.innerHTML=navigator.onLine?"":`<div class="net">You're offline. Browsing and stock changes are kept on this device and sync when the connection is back — completing a sale or a booking needs the internet.</div>`}
+window.addEventListener("online",netBanner);window.addEventListener("offline",netBanner);netBanner();
 function vDash(el){
   const P=S.products,tk=dkey();
   const units=P.reduce((a,p)=>a+(+p.qty||0),0),cost=P.reduce((a,p)=>a+(+p.qty||0)*num(p.cost),0),retail=P.reduce((a,p)=>a+(+p.qty||0)*num(p.price),0);
@@ -582,7 +654,7 @@ function vDash(el){
    <div class="card"><h3 style="margin-bottom:10px">${can("seeCost")?"Stock value by category":"Units in stock by category"}</h3>
     ${cats.map(([k,v])=>`<div style="margin-bottom:9px"><div class="row" style="justify-content:space-between"><span>${esc(k)}</span><span class="mute small">${can("seeCost")?inr(v):v+" units"}</span></div><div class="bar"><i style="width:${(v/mx*100).toFixed(1)}%"></i></div></div>`).join("")||`<p class="mute">Add products to see this.</p>`}</div>
    ${fullMode()&&openBk.length?`<div class="card"><h3 style="margin-bottom:10px">Upcoming deliveries</h3>
-    ${openBk.slice().sort((a,b)=>String(a.deliveryDate||"9999").localeCompare(String(b.deliveryDate||"9999"))).slice(0,8).map(b=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span><a href="#booking/${b.id}">${esc(b.bookingNo)}</a> ${esc(b.customerName||"")}<br><span class="small mute">${b.items.length} item(s) · balance ${inr(num(b.total)-num(b.advance))}</span></span><span class="tag ${b.deliveryDate&&b.deliveryDate<=tk?"out":"ok"}">${esc(b.deliveryDate||"no date")}</span></div>`).join("")}</div>`:""}
+    ${openBk.slice().sort((a,b)=>String(a.deliveryDate||"9999").localeCompare(String(b.deliveryDate||"9999"))).slice(0,8).map(b=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span><a href="#booking/${b.id}">${esc(b.bookingNo)}</a> ${esc(b.customerName||"")}<br><span class="small mute">${b.items.length} item(s) · balance ${inr(num(b.total)-num(b.advance))}</span></span><span class="tag ${b.deliveryDate&&b.deliveryDate<tk?"out":b.deliveryDate===tk?"low":"ok"}">${esc(b.deliveryDate||"no date")}</span></div>`).join("")}</div>`:""}
    <div class="card"><h3 style="margin-bottom:10px">Recent stock activity</h3>
     ${S.moves.slice(0,8).map(m=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${plink(m.productId,m.productName)}<br><span class="small mute">${esc(m.type)} · ${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><b style="color:${m.delta>=0?"var(--ok)":"var(--bad)"}">${m.delta>0?"+":""}${m.delta}</b></div>`).join("")||`<p class="mute">No activity yet.</p>`}</div>
   </div>`;
@@ -618,7 +690,7 @@ const allVendorNames=()=>[...new Set([...S.vendors.filter(v=>v.active!==false).m
 const allLocations=()=>{const m=new Map();[...S.lists.locations,...S.products.map(p=>p.location)].forEach(x=>{x=String(x||"").trim();if(x&&!m.has(x.toLowerCase()))m.set(x.toLowerCase(),x)});return[...m.values()].sort(natcmp)};
 const withCur=(arr,cur)=>cur===undefined||cur===null||cur===""||arr.some(x=>String(x)===String(cur))?arr:[...arr,cur];
 function cardImg(p){
-  if(p.imageUrl)return `<img class="pim" alt="" loading="lazy" src="${esc(p.imageUrl)}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'pim',textContent:'▣'}))">`;
+  if(httpsUrl(p.imageUrl))return `<img class="pim" alt="" loading="lazy" src="${esc(p.imageUrl)}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'pim',textContent:'▣'}))">`;
   if(p.hasImage){const c=IMG.cache.get(p.id);return `<img class="pim" alt="" data-pid="${esc(p.id)}" ${c?`src="${esc(c)}"`:""}>`}
   return `<div class="pim">▣</div>`;
 }
@@ -655,7 +727,7 @@ function vProducts(el){
   ${L.length?`<div class="pgrid">${L.slice(0,f.limit).map(pcard).join("")}</div>`:`<div class="card"><p class="mute">No products found.</p></div>`}
   ${L.length>f.limit?`<p style="text-align:center;margin-top:12px"><button class="btn sec" onclick="S.pf.limit+=100;render()">Show more</button></p>`:""}`;
   const bind=(id,k,reset)=>{const e=$(id);e.oninput=e.onchange=()=>{S.pf[k]=e.value;S.pf.limit=100;if(reset){S.pf.sub="";S.pf.dim=""}render()}};
-  const q=$("#pf-q");q.oninput=()=>{S.pf.q=q.value;S.pf.limit=100;clearTimeout(vProducts.t);vProducts.t=setTimeout(()=>{render();const n=$("#pf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
+  const q=$("#pf-q");q.oninput=()=>{S.pf.q=q.value;S.pf.limit=100;clearTimeout(vProducts.t);vProducts.t=setTimeout(()=>refreshAround("pf-q"),180)};
   bind("#pf-cat","cat",1);bind("#pf-sub","sub");bind("#pf-loc","loc");if($("#pf-vend"))bind("#pf-vend","vendor");if($("#pf-dim"))bind("#pf-dim","dim");bind("#pf-stock","stock");bind("#pf-sort","sort");
 }
 function vProduct(el){
@@ -756,6 +828,7 @@ async function saveProduct(id){
   const old=S.products.find(x=>x.id===id)||{};
   const cat=TAXONOMY.find(c=>c.id===cid),sub=cat.subcategories.find(s=>s.id===v("#p-sub")),type=sub?.subcategories.find(t=>t.id===v("#p-type"));
   const imageUrl=v("#p-imgurl");
+  if(imageUrl&&!httpsUrl(imageUrl))return toast("The image link has to start with https://",1);
   const hasImage=IMGSTATE.newImg?true:IMGSTATE.rm?false:!!old.hasImage;
   const barcode=v("#p-bar")||old.barcode||"";
   if(barcode&&S.products.some(x=>x.barcode===barcode&&x.id!==id))return toast("That barcode is already used by another product",1);
@@ -790,7 +863,34 @@ async function saveProduct(id){
   }catch(e){toast(emsg(e),1)}
 }
 function mv(pid,pname,sku,type,delta,before,after,note){return{productId:pid,productName:pname,sku,type,delta,before,after,note:note||"",by:S.user.uid,byName:S.profile.name,createdAt:serverTimestamp()}}
-window.closeModal=()=>{closeCamera();$("#modal").innerHTML=""};
+window.closeModal=()=>{closeCamera();$("#modal").innerHTML="";const f=closeModal.from;closeModal.from=null;if(f&&document.contains(f))try{f.focus()}catch(e){}};
+window.clearCart=()=>{if(S.cart.length&&!confirm("Clear this bill? The items, discount and customer are removed."))return;
+  S.cart=[];S.cartDiscount=0;S.cust=null;S.posQ="";render()};
+/* Every dialog behaves the same way: it is announced as a dialog, focus moves into it and
+   stays there, Escape or a tap outside closes it, and a form with something typed in it
+   asks before throwing that away. Focus goes back where it was when it closes. */
+const FOCUSABLE='button:not([disabled]),[href],input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+function topDialog(){const m2=$("#modal2 .modal, #modal2 .cam"),m=$("#modal .modal");return m2&&$("#modal2").innerHTML.trim()?{el:m2,host:"#modal2"}:m?{el:m,host:"#modal"}:null}
+function askClose(){const d=topDialog();if(!d)return;
+  if(d.host==="#modal2"){closeCamera();return}
+  if(d.el.querySelector("[data-mtyped]")&&!confirm("Close without saving what you typed?"))return;
+  closeModal()}
+["#modal","#modal2"].forEach(sel=>new MutationObserver(()=>{const host=$(sel),m=host&&host.querySelector(".modal, .cam");if(!m||m.dataset.dlg)return;
+  m.dataset.dlg="1";m.setAttribute("role",m.getAttribute("role")||"dialog");m.setAttribute("aria-modal","true");a11y(m);
+  new MutationObserver(()=>a11y(m)).observe(m,{childList:true,subtree:true});
+  const h=m.querySelector("h2,h3");if(h&&!m.getAttribute("aria-labelledby")){h.id=h.id||"dlg-h-"+Date.now();m.setAttribute("aria-labelledby",h.id)}
+  if(sel==="#modal"&&!closeModal.from)closeModal.from=document.activeElement;
+  const bg=host.querySelector(".modal-bg");if(bg&&!bg.getAttribute("onclick"))bg.addEventListener("click",e=>{if(e.target===bg)askClose()});
+  setTimeout(()=>{if(m.contains(document.activeElement))return;const f=m.querySelector("[autofocus]")||m.querySelector("input:not([disabled]):not([type=hidden]):not([type=file]),select,textarea")||m.querySelector(FOCUSABLE);if(f)try{f.focus({preventScroll:true})}catch(e){}},0)
+}).observe(document.getElementById(sel.slice(1)),{childList:true}));
+document.addEventListener("input",e=>{const x=e.target;if(x&&x.closest&&x.closest("#modal .modal"))x.dataset.mtyped="1"},true);
+document.addEventListener("keydown",e=>{const d=topDialog();if(!d)return;
+  if(e.key==="Escape"){e.preventDefault();askClose();return}
+  if(e.key==="Tab"){const f=[...d.el.querySelectorAll(FOCUSABLE)].filter(x=>x.offsetParent!==null);if(!f.length)return;
+    const a=f[0],z=f[f.length-1];
+    if(!d.el.contains(document.activeElement)){e.preventDefault();a.focus()}
+    else if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}
+    else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}});
 // one press at a time: the button stays disabled until the save it started has finished
 function once(fn){return async function(...a){if(this&&this.disabled)return;if(this)this.disabled=true;try{return await fn.apply(this,a)}finally{if(this)this.disabled=false}}}
 
@@ -959,7 +1059,7 @@ function vStock(el){
   el.innerHTML=`<div class="top"><h2>Stock</h2><div class="row">${adm?"":`<span class="mute small">View only — ask a manager or admin to change a count</span>`}<button class="btn sec" onclick="exportMoves()">Export Excel</button></div></div>
   ${adm?`<div class="card" style="margin-bottom:12px"><div class="row"><input id="st-q" placeholder="Find a product to update stock — name, SKU or barcode" style="flex:1"></div><div id="st-res" style="margin-top:8px"></div></div>`:""}
   ${locRows.length?`<div class="card" style="margin-bottom:12px"><h3 style="margin-bottom:8px">Stock by location</h3>
-   <div class="pill-row">${locRows.map(([k,v])=>`<span class="tag">${esc(k)} — <b>${v.units}</b> units · ${v.items} item(s)</span>`).join("")}</div></div>`:""}
+   <div class="pill-row">${locRows.map(([k,v])=>`<span class="tag">${esc(k)} — <b>${v.units}</b> units · ${pl(v.items,"item")}</span>`).join("")}</div></div>`:""}
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
    <div class="card"><h3 style="margin-bottom:8px">Low &amp; out of stock (${low.length})</h3>${low.slice(0,40).map(p=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${plink(p.id,p.name)}<br><span class="small mute">${esc(p.sku)}${SHOW_REORDER?` · reorder at ${p.reorder}`:""}${locEntries(p).length>1?" · "+esc(locText(p)):""}</span></span><span class="row"><span class="tag ${outStock(p)?"out":"low"}">${p.qty}</span>${adm?`<button class="btn sm sec" onclick="openStock('${p.id}','in')">+</button>`:""}${!can("setCount")?rqBtn("stock.set",p.id,`${p.name} (${p.sku})`,{qty:p.qty}):""}</span></div>`).join("")||`<p class="mute">Nothing low right now.</p>`}</div>
    <div class="card"><h3 style="margin-bottom:8px">Movement log</h3>${S.moves.slice(0,60).map(m=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${plink(m.productId,m.productName)}<br><span class="small mute">${esc(m.type)} · ${esc(m.note||"")} · ${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><span style="text-align:right"><b style="color:${m.type==="transfer"?"var(--mute)":m.delta>=0?"var(--ok)":"var(--bad)"}">${m.type==="transfer"?"moved":(m.delta>0?"+":"")+m.delta}</b><br><span class="small mute">→ ${m.after}</span></span></div>`).join("")||`<p class="mute">No movements yet.</p>`}</div></div>`;
@@ -985,7 +1085,7 @@ function vSell(el){
   const q=S.posQ.toLowerCase();
   const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${vendQ(p)} ${locKeys(p).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
   const t=cartTotals();
-  el.innerHTML=`<div class="top"><h2>New sale</h2><button class="btn sec" onclick="S.cart=[];S.cartDiscount=0;render()">Clear</button></div>
+  el.innerHTML=`<div class="top"><h2>New sale</h2><button class="btn sec" onclick="clearCart()">Clear</button></div>
   <div class="pos"><div><input id="pos-q" placeholder="Scan barcode or search…" value="${esc(S.posQ)}" style="margin-bottom:10px">
    <div class="items">${L.map(p=>`<button class="item" onclick="addCart('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""}${catLine(p)?" · "+esc(catLine(p)):""}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Cart (${S.cart.length} item${S.cart.length===1?"":"s"})</h3>
@@ -1002,7 +1102,7 @@ function vSell(el){
     <div><label>Customer name</label><input id="c-name"></div><div class="full small" id="c-cinfo"></div></div>
    <div id="c-sum" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">${sellSum(t)}</div>
    <button class="btn" style="width:100%;margin-top:12px;padding:12px" id="c-done" ${S.cart.length?"":"disabled"}>Complete sale</button></div></div>`;
-  const q2=$("#pos-q");q2.oninput=()=>{S.posQ=q2.value;clearTimeout(vSell.t);vSell.t=setTimeout(()=>{render();const n=$("#pos-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},150)};
+  const q2=$("#pos-q");q2.oninput=()=>{S.posQ=q2.value;clearTimeout(vSell.t);vSell.t=setTimeout(()=>refreshAround("pos-q"),150)};
   q2.onkeydown=e=>{if(e.key==="Enter"){const v=q2.value.trim().toLowerCase();const p=S.products.find(x=>(x.barcode&&x.barcode.toLowerCase()===v)||x.sku.toLowerCase()===v);if(p){addCart(p.id);S.posQ="";render();$("#pos-q").focus()}}};
   const sum=()=>{const el=$("#c-sum");if(el)el.innerHTML=sellSum(cartTotals())};
   $("#c-disc").oninput=$("#c-disc").onchange=e=>{S.cartDiscount=num(e.target.value);keepCust();sum()};
@@ -1013,7 +1113,7 @@ function vSell(el){
     if(!ex){box.innerHTML=!ph?"":okPhone(ph)?`<span class="mute">New customer — saved automatically with this sale</span>`:`<span style="color:var(--warn)">A phone number needs 10 digits</span>`;return}
     if(!$("#c-name").value.trim())$("#c-name").value=ex.name||"";
     const st=custStats(ex),led=custLedger(ex);
-    box.innerHTML=`<span class="tag ok">Saved customer</span> ${esc(ex.name)} · ${st.sales.length} past ${st.sales.length===1?"bill":"bills"} · ${inr(st.spend)} spent${st.open.length?` · ${st.open.length} open booking(s)`:""} ${led.balance?balTag(led.balance):""} <a href="#customer/${ex.id}">ledger</a>`};
+    box.innerHTML=`<span class="tag ok">Saved customer</span> ${esc(ex.name)} · ${st.sales.length} past ${st.sales.length===1?"bill":"bills"} · ${inr(st.spend)} spent${st.open.length?` · ${pl(st.open.length,"open booking")}`:""} ${led.balance?balTag(led.balance):""} <a href="#customer/${ex.id}">ledger</a>`};
   $("#c-ph").oninput=()=>{keepCust();custInfo()};custInfo();
   ["#c-name","#c-ph","#c-pay"].forEach(i=>$(i).onchange=keepCust);
   $("#c-done").onclick=completeSale;
@@ -1059,7 +1159,7 @@ async function completeSale(){
     S.cart=[];S.cartDiscount=0;S.cust=null;S.posQ="";
     toast("Sale "+inv+" saved");render();
     saleDone("Sale "+inv+" saved",{invoiceNo:inv,items:cart,subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,customer:cust,payment:pay,soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
-  }catch(e){toast(e.message||"Couldn't save — are you online?",1);btn.disabled=false;btn.textContent="Complete sale"}
+  }catch(e){toast(emsg(e),1);btn.disabled=false;btn.textContent="Complete sale"}
 }
 /* After a sale or delivery: say clearly that it is saved, and offer the receipt as a real tap
    (a print window opened after the save finishes is blocked by phones and pop-up blockers). */
@@ -1076,9 +1176,9 @@ window.printReceipt=function(s){
   w.document.write(`<html><head><title>${esc(s.invoiceNo)}</title><style>body{font:13px monospace;width:300px;margin:8px auto}h2{text-align:center;margin:0}.c{text-align:center}.r{display:flex;justify-content:space-between}.m{font-size:11px;color:#444}hr{border:0;border-top:1px dashed #000}</style></head><body>
   <h2>${esc(st.storeName)}</h2><div class="c">${esc(st.address||"")}<br>${st.phone?"Ph: "+esc(st.phone):""}${st.gstin?"<br>GSTIN: "+esc(st.gstin):""}</div><hr>
   <div class="r"><span>${esc(s.invoiceNo)}</span><span>${fdt(tms(s.createdAt))}</span></div>${s.customer?.name?`<div>Customer: ${esc(s.customer.name)} ${esc(s.customer.phone||"")}</div>`:""}<hr>
-  ${s.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${num(i.qty)} × ${inr(i.price)}</span><span>${inr(i.price*i.qty)}</span></div>`).join("")}<hr>
-  <div class="r"><span>Subtotal</span><span>${inr(s.subtotal)}</span></div>${s.discount?`<div class="r"><span>Discount</span><span>-${inr(s.discount)}</span></div>`:""}
-  <div class="r"><span>GST included</span><span>${inr(s.gstAmount)}</span></div><div class="r"><b>TOTAL</b><b>${inr(s.total)}</b></div>${s.advance?`<div class="r"><span>Already received${s.bookingNo?" ("+esc(s.bookingNo)+")":""}</span><span>-${inr(s.advance)}</span></div><div class="r"><b>PAID NOW</b><b>${inr(s.balancePaid??(s.total-s.advance))}</b></div>`:""}${s.balanceLeft>0?`<div class="r"><b>STILL PENDING</b><b>${inr(s.balanceLeft)}</b></div>`:""}<div>Paid by: ${esc(s.payment)}</div><hr>
+  ${s.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${num(i.qty)} × ${inrP(i.price)}</span><span>${inrP(i.price*i.qty)}</span></div>`).join("")}<hr>
+  <div class="r"><span>Subtotal</span><span>${inrP(s.subtotal)}</span></div>${s.discount?`<div class="r"><span>Discount</span><span>-${inrP(s.discount)}</span></div>`:""}
+  <div class="r"><span>GST included</span><span>${inrP(s.gstAmount)}</span></div><div class="r"><b>TOTAL</b><b>${inrP(s.total)}</b></div>${s.advance?`<div class="r"><span>Already received${s.bookingNo?" ("+esc(s.bookingNo)+")":""}</span><span>-${inrP(s.advance)}</span></div><div class="r"><b>PAID NOW</b><b>${inrP(s.balancePaid??(s.total-s.advance))}</b></div>`:""}${s.balanceLeft>0?`<div class="r"><b>STILL PENDING</b><b>${inrP(s.balanceLeft)}</b></div>`:""}<div>Paid by: ${esc(s.payment)}</div><hr>
   <div class="c">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),300)<\/script></body></html>`);w.document.close();
 };
 
@@ -1307,14 +1407,14 @@ window.printInvoice=id=>{
    ${fdt(tms(s.createdAt))} · ${esc(s.payment||"")}${s.bookingNo?" · against booking "+esc(s.bookingNo):""} · billed by ${esc(s.soldByName||"")}</div>
   <table><thead><tr><th>#</th><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">GST</th><th class="n">Amount</th></tr></thead><tbody>
   ${s.items.map((i,ix)=>`<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span></td><td class="n">${num(i.qty)}</td>
-   <td class="n">${inr(i.price)}</td><td class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td class="n">${inr(i.lineTotal??num(i.price)*num(i.qty))}</td></tr>`).join("")}
+   <td class="n">${inrP(i.price)}</td><td class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td class="n">${inrP(i.lineTotal??num(i.price)*num(i.qty))}</td></tr>`).join("")}
   </tbody><tfoot>
-   <tr><th colspan="5">Subtotal</th><th class="n">${inr(s.subtotal)}</th></tr>
-   ${num(s.discount)?`<tr><th colspan="5">Discount</th><th class="n">− ${inr(s.discount)}</th></tr>`:""}
-   <tr><th colspan="5">GST included</th><th class="n">${inr(s.gstAmount)}</th></tr>
-   <tr><th colspan="5">Total</th><th class="n">${inr(s.total)}</th></tr>
-   ${adv?`<tr><th colspan="5">Already received</th><th class="n">${inr(adv)}</th></tr><tr><th colspan="5">Paid on this bill</th><th class="n">${inr(got)}</th></tr>`:""}
-   ${left>0?`<tr><th colspan="5">Still pending</th><th class="n">${inr(left)}</th></tr>`:""}</tfoot></table>
+   <tr><th colspan="5">Subtotal</th><th class="n">${inrP(s.subtotal)}</th></tr>
+   ${num(s.discount)?`<tr><th colspan="5">Discount</th><th class="n">− ${inrP(s.discount)}</th></tr>`:""}
+   <tr><th colspan="5">GST included</th><th class="n">${inrP(s.gstAmount)}</th></tr>
+   <tr><th colspan="5">Total</th><th class="n">${inrP(s.total)}</th></tr>
+   ${adv?`<tr><th colspan="5">Already received</th><th class="n">${inrP(adv)}</th></tr><tr><th colspan="5">Paid on this bill</th><th class="n">${inrP(got)}</th></tr>`:""}
+   ${left>0?`<tr><th colspan="5">Still pending</th><th class="n">${inrP(left)}</th></tr>`:""}</tfoot></table>
   <p class="m">GST shown is included in the prices above.</p>
   <div class="c m" style="margin-top:20px">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close();
 };
@@ -1342,7 +1442,7 @@ function vCustomers(el){
    <div class="row"><button class="btn" onclick="openCustomer()">+ Add customer</button><button class="btn sec" onclick="openImport('customers')">Import Excel</button><button class="btn sec" onclick="exportCustomers()">Export</button></div></div>
   ${(()=>{const all=S.customers.map(custLedger),due=all.filter(x=>x.balance<0),cr=all.filter(x=>x.balance>0);
     return all.length?`<div class="grid stats" style="margin-bottom:12px">
-     <div class="card stat"><div class="k">Pending from customers</div><div class="v" style="color:var(--bad)">${inr(due.reduce((a,x)=>a+x.pending,0))}</div><div class="s">${due.length} customer(s) owe money</div></div>
+     <div class="card stat"><div class="k">Pending from customers</div><div class="v" style="color:var(--bad)">${inr(due.reduce((a,x)=>a+x.pending,0))}</div><div class="s">${due.length===1?"1 customer owes":due.length+" customers owe"} money</div></div>
      <div class="card stat"><div class="k">Credit with shop</div><div class="v" style="color:var(--ok)">${inr(cr.reduce((a,x)=>a+x.credit,0))}</div><div class="s">${cr.length} with advance or refund due</div></div>
      <div class="card stat"><div class="k">Billed to date</div><div class="v">${inr(all.reduce((a,x)=>a+x.billed,0))}</div><div class="s">received ${inr(all.reduce((a,x)=>a+x.paid,0))}</div></div></div>`:""})()}
   <div class="card" style="margin-bottom:12px"><input id="cf-q" inputmode="tel" placeholder="Search by phone number, name or email…" value="${esc(S.cf.q)}"></div>
@@ -1352,7 +1452,7 @@ function vCustomers(el){
    <td data-l="Bookings">${st.open.length?`<span class="tag low">${st.open.length} open</span>`:`<span class="mute small">—</span>`}</td>
    <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="bookFor('${c.id}')">Book</button>${can("editCustomer")?`<button class="btn sm sec" onclick="openCustomer('${c.id}')">Edit</button>`:""}</div></td></tr>`).join("")||`<tr><td colspan="7" class="mute">${S.customers.length?"No customer matches that search.":"No customers yet — they are saved automatically when you bill a phone number."}</td></tr>`}
   </tbody></table></div>`;
-  const i=$("#cf-q");i.oninput=()=>{S.cf.q=i.value;clearTimeout(vCustomers.t);vCustomers.t=setTimeout(()=>{render();const n=$("#cf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
+  const i=$("#cf-q");i.oninput=()=>{S.cf.q=i.value;clearTimeout(vCustomers.t);vCustomers.t=setTimeout(()=>refreshAround("cf-q"),180)};
 }
 const r2=n=>Math.round((+n||0)*100)/100;
 const isCredit=p=>/credit/i.test(String(p||""));
@@ -1391,7 +1491,7 @@ function custLedger(c){
   });
   S.payments.filter(p=>p.customerId===c.id||(custKey(c.phone)&&custKey(p.customerPhone)===custKey(c.phone))).forEach(p=>{
     const adj=p.kind==="adjustment",chg=adj&&p.adjust==="charge",amt=num(p.amount);
-    ev.push({ms:dayMs(p.date)||tms(p.createdAt),kind:adj?"adjustment":"payment",ref:p.bookingNo||"",link:p.bookingId?`#booking/${p.bookingId}`:"",pay:p.id,
+    ev.push({ms:p.date&&p.createdAt&&p.date!==dkey(new Date(tms(p.createdAt)))?dayMs(p.date):(tms(p.createdAt)||dayMs(p.date)),kind:adj?"adjustment":"payment",ref:p.bookingNo||"",link:p.bookingId?`#booking/${p.bookingId}`:"",pay:p.id,
       what:adj?`Adjustment · ${chg?"charged to":"credited to"} the customer`:`Payment received${p.bookingNo?` · ${p.bookingNo}`:""}`,
       detail:[adj?"":p.mode,p.note,adj?"":(p.bookingNo?`against ${p.bookingNo}`:"on account"),
         p.createdByName?`${adj?"adjusted":"entered"} by ${p.createdByName}`:"",p.correctedBy?`corrected by ${p.correctedBy}`:""].filter(Boolean).join(" · "),
@@ -1412,10 +1512,10 @@ function vCustomer(el){
    <div class="row"><button class="btn" onclick="openPayment('${c.id}')">+ Record payment</button>${isAdmin()?`<button class="btn sec" onclick="openAdjust('${c.id}')">+ Adjustment</button>`:""}<button class="btn sec" onclick="bookFor('${c.id}')">New booking</button><button class="btn sec" onclick="printStatement('${c.id}')">Print statement</button><button class="btn sec" onclick="exportLedger('${c.id}')">Export ledger</button>${can("editCustomer")?`<button class="btn" onclick="openCustomer('${c.id}')">Edit</button>`:""}</div></div>
   <div class="grid stats" style="margin-bottom:12px">
    <div class="card stat"><div class="k">Phone</div><div class="v" style="font-size:19px"><a href="tel:${esc(c.phone)}">${esc(c.phone)}</a></div><div class="s">${esc(c.email||"")}${c.address?" · "+esc(c.address):""}</div></div>
-   <div class="card stat"><div class="k">Billed</div><div class="v">${inr(L.billed)}</div><div class="s">${st.sales.length} bill(s) · ${st.bookings.length} booking(s)</div></div>
-   <div class="card stat"><div class="k">Received</div><div class="v">${inr(L.paid)}</div><div class="s">${st.open.length} open booking(s)</div></div>
+   <div class="card stat"><div class="k">Billed</div><div class="v">${inr(L.billed)}</div><div class="s">${pl(st.sales.length,"bill")} · ${pl(st.bookings.length,"booking")}</div></div>
+   <div class="card stat"><div class="k">Received</div><div class="v">${inr(L.paid)}</div><div class="s">${pl(st.open.length,"open booking")}</div></div>
    <div class="card stat"><div class="k">${L.balance<0?"Pending from customer":L.balance>0?"Credit with shop":"Balance"}</div>
-    <div class="v" style="color:${L.balance<0?"var(--bad)":L.balance>0?"var(--ok)":"inherit"}">${L.balance?inr(L.balance):"₹0.00"}</div>
+    <div class="v" style="color:${L.balance<0?"var(--bad)":L.balance>0?"var(--ok)":"inherit"}">${L.balance?inr(L.balance):"₹0"}</div>
     <div class="s">${L.balance<0?"booked / unpaid amount":L.balance>0?"advance held or refund due":"nothing outstanding"}</div></div></div>
   <div class="card" style="padding:6px 12px">
    <div class="row" style="justify-content:space-between;padding:10px 2px 4px"><h3>Ledger</h3><span class="small mute">Charges are billed amounts · Paid is money received · a negative balance is pending from the customer</span></div>
@@ -1461,9 +1561,9 @@ window.printStatement=id=>{
   <div class="m">${esc(c.name)} · ${esc(c.phone)}${c.address?" · "+esc(c.address):""}<br>Printed ${fdt(Date.now())}</div>
   <table><thead><tr><th>Date</th><th>Particulars</th><th class="n">Charges</th><th class="n">Paid</th><th class="n">Balance</th></tr></thead><tbody>
   ${L.rows.map(e=>`<tr><td>${fdt(e.ms)}</td><td>${esc(e.what)}${e.kind==="void"?" (void)":""}<br><span class="m">${esc(e.detail)}</span></td>
-   <td class="n">${e.charge?inr(e.charge):"—"}</td><td class="n">${e.paid?inr(e.paid):"—"}</td><td class="n">${inr(e.bal)}</td></tr>`).join("")||`<tr><td colspan="5">No transactions yet.</td></tr>`}
-  </tbody><tfoot><tr><th colspan="2">Total</th><th class="n">${inr(L.billed)}</th><th class="n">${inr(L.paid)}</th><th class="n">${inr(L.balance)}</th></tr></tfoot></table>
-  <p><b>${L.balance<0?`Pending from customer: ${inr(Math.abs(L.balance))}`:L.balance>0?`Credit with shop: ${inr(L.balance)}`:"Account settled."}</b></p>
+   <td class="n">${e.charge?inrP(e.charge):"—"}</td><td class="n">${e.paid?inrP(e.paid):"—"}</td><td class="n">${inrP(e.bal)}</td></tr>`).join("")||`<tr><td colspan="5">No transactions yet.</td></tr>`}
+  </tbody><tfoot><tr><th colspan="2">Total</th><th class="n">${inrP(L.billed)}</th><th class="n">${inrP(L.paid)}</th><th class="n">${inrP(L.balance)}</th></tr></tfoot></table>
+  <p><b>${L.balance<0?`Pending from customer: ${inrP(Math.abs(L.balance))}`:L.balance>0?`Credit with shop: ${inrP(L.balance)}`:"Account settled."}</b></p>
   <p class="m">A negative balance is an amount still to be received, including goods booked but not yet paid for.</p>
   <div class="c m">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close();
 };
@@ -1639,7 +1739,7 @@ function vVendors(el){
    <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="openVendor('${v.id}')">Edit</button></div></td></tr>`).join("")
    ||`<tr><td colspan="${SHOW_BILLING?8:7}" class="mute">${S.vendors.length?"No vendor matches that search.":"No vendors yet — add the people you buy from."}</td></tr>`}
   </tbody></table></div>`;
-  const i=$("#vf-q");i.oninput=()=>{S.vf.q=i.value;clearTimeout(vVendors.t);vVendors.t=setTimeout(()=>{render();const n=$("#vf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
+  const i=$("#vf-q");i.oninput=()=>{S.vf.q=i.value;clearTimeout(vVendors.t);vVendors.t=setTimeout(()=>refreshAround("vf-q"),180)};
   $("#vf-cat").onchange=e=>{S.vf.cat=e.target.value;render()};
 }
 function vVendor(el){
@@ -1665,7 +1765,7 @@ function vVendor(el){
    <div class="card stat"><div class="k">Stock value (cost)</div><div class="v">${inr(st.cost)}</div><div class="s">retail ${inr(st.retail)}</div></div>
    <div class="card stat"><div class="k">Needs restocking</div><div class="v" style="color:var(--warn)">${st.low}</div><div class="s">low or out of stock</div></div>
    <div class="card stat"><div class="k">${L.balance<0?"Payable to vendor":L.balance>0?"Advance with vendor":"Account balance"}</div>
-    <div class="v" style="color:${L.balance<0?"var(--bad)":L.balance>0?"var(--ok)":"inherit"}">${L.balance?inr(L.balance):"₹0.00"}</div>
+    <div class="v" style="color:${L.balance<0?"var(--bad)":L.balance>0?"var(--ok)":"inherit"}">${L.balance?inr(L.balance):"₹0"}</div>
     <div class="s">billed ${inr(L.billed)} · paid ${inr(L.paid)}</div></div>
    ${SHOW_BILLING?`<div class="card stat"><div class="k">Billing</div><div class="v" style="font-size:15px;font-weight:600">${esc(v.billingMethod||"—")}</div><div class="s">${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?v.creditDays+" days credit":esc(v.contact||v.city||"")}</div></div>`:""}</div>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
@@ -1764,10 +1864,10 @@ window.printPurchase=id=>{
   <div class="m">${esc(p.vendorName||"")} · bill dated ${esc(p.date||"")}<br>Entered by ${esc(p.createdByName||"")} · printed ${fdt(Date.now())}</div>
   <table><thead><tr><th>#</th><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>
   ${(p.items||[]).map((i,ix)=>`<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span></td><td class="n">${num(i.qty)}</td>
-   <td class="n">${inr(i.rate)}</td><td class="n">${inr(i.amount??num(i.rate)*num(i.qty))}</td></tr>`).join("")||`<tr><td colspan="5">No items — charges only.</td></tr>`}
-  </tbody><tfoot><tr><th colspan="4">Items value</th><th class="n">${inr(p.subtotal)}</th></tr>
-  ${ch.map(c=>`<tr><th colspan="4">${esc(c.label||"Other charge")}</th><th class="n">${inr(c.amount)}</th></tr>`).join("")}
-  <tr><th colspan="4">Bill total</th><th class="n">${inr(p.total)}</th></tr></tfoot></table>
+   <td class="n">${inrP(i.rate)}</td><td class="n">${inrP(i.amount??num(i.rate)*num(i.qty))}</td></tr>`).join("")||`<tr><td colspan="5">No items — charges only.</td></tr>`}
+  </tbody><tfoot><tr><th colspan="4">Items value</th><th class="n">${inrP(p.subtotal)}</th></tr>
+  ${ch.map(c=>`<tr><th colspan="4">${esc(c.label||"Other charge")}</th><th class="n">${inrP(c.amount)}</th></tr>`).join("")}
+  <tr><th colspan="4">Bill total</th><th class="n">${inrP(p.total)}</th></tr></tfoot></table>
   ${p.notes?`<p class="m">Note: ${esc(p.notes)}</p>`:""}
   <p class="m">${p.addedStock?`These pieces were added to stock${p.loc?" at "+esc(p.loc):""}.`:"Stock for this bill was received separately."}</p>
   <div class="c m" style="margin-top:20px">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close();
@@ -2003,9 +2103,9 @@ window.printVendorStatement=id=>{
    ${SHOW_BILLING?`${esc(v.billingMethod||"")}${v.creditDays&&!/\d/.test(String(v.billingMethod||""))?` · ${v.creditDays} days credit`:""} · `:""}Printed ${fdt(Date.now())}</div>
   <table><thead><tr><th>Date</th><th>Particulars</th><th class="n">Billed</th><th class="n">Paid</th><th class="n">Balance</th></tr></thead><tbody>
   ${L.rows.map(e=>`<tr><td>${fdt(e.ms)}</td><td>${esc(e.what)}<br><span class="m">${esc(e.detail)}</span></td>
-   <td class="n">${e.charge?inr(e.charge):"—"}</td><td class="n">${e.paid?inr(e.paid):"—"}</td><td class="n">${inr(e.bal)}</td></tr>`).join("")||`<tr><td colspan="5">No entries yet.</td></tr>`}
-  </tbody><tfoot><tr><th colspan="2">Total</th><th class="n">${inr(L.billed)}</th><th class="n">${inr(L.paid)}</th><th class="n">${inr(L.balance)}</th></tr></tfoot></table>
-  <p><b>${L.balance<0?`Payable to vendor: ${inr(Math.abs(L.balance))}`:L.balance>0?`Advance lying with vendor: ${inr(L.balance)}`:"Account settled."}</b></p>
+   <td class="n">${e.charge?inrP(e.charge):"—"}</td><td class="n">${e.paid?inrP(e.paid):"—"}</td><td class="n">${inrP(e.bal)}</td></tr>`).join("")||`<tr><td colspan="5">No entries yet.</td></tr>`}
+  </tbody><tfoot><tr><th colspan="2">Total</th><th class="n">${inrP(L.billed)}</th><th class="n">${inrP(L.paid)}</th><th class="n">${inrP(L.balance)}</th></tr></tfoot></table>
+  <p><b>${L.balance<0?`Payable to vendor: ${inrP(Math.abs(L.balance))}`:L.balance>0?`Advance lying with vendor: ${inrP(L.balance)}`:"Account settled."}</b></p>
   <p class="m">A negative balance is money still to be paid to the vendor.</p>
   <script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close();
 };
@@ -2081,7 +2181,7 @@ window.openVendor=function(id,preset){
   $("#v-del")&&($("#v-del").onclick=async()=>{
     const st=vendorStats(v);
     if(!confirm(st.items.length
-      ? `Delete ${v.name}? ${st.items.length} product(s) name this vendor — they keep the name as plain text but lose the link, the billing method and these notes.`
+      ? `Delete ${v.name}? ${pl(st.items.length,"product")} name this vendor — they keep the name as plain text but lose the link, the billing method and these notes.`
       : `Delete ${v.name}? This cannot be undone.`))return;
     try{await deleteDoc(doc(db,"vendors",id));closeModal();if(S.view==="vendor")go("vendors");toast("Vendor deleted")}catch(e){toast(emsg(e),1)}
   });
@@ -2271,7 +2371,7 @@ function vNewBooking(el){
   const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${vendQ(p)} ${locKeys(p).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
   const t=bkTotals(S.bcart,S.bdisc,S.bdiscType);
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('bookings')">← Back</button><h2>New booking</h2></div>
-   <button class="btn sec" onclick="S.bcart=[];S.badv=0;S.bdisc=0;render()">Clear items</button></div>
+   <button class="btn sec" onclick="if(!S.bcart.length||confirm('Remove every item from this booking?')){S.bcart=[];S.badv=0;S.bdisc=0;render()}">Clear items</button></div>
   <div class="pos"><div><input id="bk-q" placeholder="Scan barcode or search products…" value="${esc(S.bq)}" style="margin-bottom:10px">
    <div class="items">${L.map(p=>`<button class="item" onclick="addBk('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""}${catLine(p)?" · "+esc(catLine(p)):""}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Booking (${S.bcart.length} item${S.bcart.length===1?"":"s"})</h3>
@@ -2289,13 +2389,13 @@ function vNewBooking(el){
    <div id="bk-sum" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">${bkSum(t,num(S.badv))}</div>
    <p class="small mute" style="margin-top:8px">Booked items stay in stock but are reserved, so they can't be sold twice.</p>
    <button class="btn" style="width:100%;margin-top:8px;padding:12px" id="bk-done" ${S.bcart.length?"":"disabled"}>Confirm booking</button></div></div>`;
-  const q2=$("#bk-q");q2.oninput=()=>{S.bq=q2.value;clearTimeout(vNewBooking.t);vNewBooking.t=setTimeout(()=>{render();const n=$("#bk-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},150)};
+  const q2=$("#bk-q");q2.oninput=()=>{S.bq=q2.value;clearTimeout(vNewBooking.t);vNewBooking.t=setTimeout(()=>refreshAround("bk-q"),150)};
   q2.onkeydown=e=>{if(e.key==="Enter"){const v=q2.value.trim().toLowerCase();const p=S.products.find(x=>(x.barcode&&x.barcode.toLowerCase()===v)||x.sku.toLowerCase()===v);if(p){addBk(p.id);S.bq="";render();$("#bk-q").focus()}}};
   const keep=()=>{S.bphone=$("#bk-ph").value;S.bname=$("#bk-name").value;S.badv=num($("#bk-adv").value);S.bdate=$("#bk-date").value;S.bnotes=$("#bk-notes").value;
     S.bdisc=num($("#bk-disc").value);S.bdiscType=$("#bk-dt").value};
   const info=()=>{const ex=findCustByPhone($("#bk-ph").value);const box=$("#bk-cinfo");
     if(ex){S.bcustId=ex.id;if(!$("#bk-name").value.trim()){$("#bk-name").value=ex.name;S.bname=ex.name}
-      const st=custStats(ex),led=custLedger(ex);box.innerHTML=`<span class="tag ok">Saved customer</span> ${st.sales.length} bill(s) · ${inr(st.spend)} spent ${led.balance?balTag(led.balance):""}`}
+      const st=custStats(ex),led=custLedger(ex);box.innerHTML=`<span class="tag ok">Saved customer</span> ${pl(st.sales.length,"bill")} · ${inr(st.spend)} spent ${led.balance?balTag(led.balance):""}`}
     else{S.bcustId="";const v=$("#bk-ph").value.trim();box.innerHTML=!v?"":okPhone(v)?`<span class="mute">New customer — saved with this booking</span>`:`<span style="color:var(--warn)">A phone number needs 10 digits</span>`}};
   $("#bk-ph").oninput=()=>{keep();info()};info();
   ["#bk-name","#bk-adv","#bk-date","#bk-notes"].forEach(i=>{$(i).onchange=keep;$(i).oninput=keep});
@@ -2344,7 +2444,7 @@ async function createBooking(){
     });
     S.bcart=[];S.badv=0;S.bdisc=0;S.bdiscType="amt";S.bnotes="";S.bdate="";S.bphone="";S.bname="";S.bcustId="";
     toast("Booking "+bno+" saved");setView("bookings");
-  }catch(e){toast(e.message||"Couldn't save — are you online?",1);btn.disabled=false;btn.textContent="Confirm booking"}
+  }catch(e){toast(emsg(e),1);btn.disabled=false;btn.textContent="Confirm booking"}
 }
 function vBookings(el){
   const f=S.bf,q=f.q.trim().toLowerCase(),qk=custKey(f.q),tk=dkey();
@@ -2374,10 +2474,10 @@ function vBookings(el){
     ${b.status==="cancelled"
       ? `<div class="mute">order reversed</div>${settleAmt(b)?`<div class="small mute">${inr(settleAmt(b))} ${esc(SETTLE_LABEL[b.settleMode||"credit"]||"")}</div>`:""}`
       : `<div>${bkDue(b)>0?`<span style="color:var(--bad)">${inr(bkDue(b))} due</span>`:bkDue(b)<0?`<span style="color:var(--ok)">${inr(-bkDue(b))} extra held</span>`:`<span style="color:var(--ok)">settled</span>`}</div>`}</td>
-   <td data-l="Delivery">${b.deliveryDate?`<span class="tag ${b.status==="booked"&&b.deliveryDate<=tk?"out":""}">${esc(b.deliveryDate)}</span>`:`<span class="mute small">—</span>`}</td>
+   <td data-l="Delivery">${b.deliveryDate?`<span class="tag ${b.status==="booked"&&b.deliveryDate<tk?"out":b.status==="booked"&&b.deliveryDate===tk?"low":""}">${esc(b.deliveryDate)}</span>`:`<span class="mute small">—</span>`}</td>
    <td data-l=""><div class="row" style="justify-content:flex-end">${b.status==="booked"?`<button class="btn sm" onclick="deliverBooking('${b.id}')">Deliver</button>`:""}<button class="btn sm sec" onclick="location.hash='booking/${b.id}'">View</button></div></td></tr>`).join("")||`<tr><td colspan="6" class="mute">No bookings here yet.</td></tr>`}
   </tbody></table></div>`;
-  const i=$("#bf-q");i.oninput=()=>{S.bf.q=i.value;clearTimeout(vBookings.t);vBookings.t=setTimeout(()=>{render();const n=$("#bf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
+  const i=$("#bf-q");i.oninput=()=>{S.bf.q=i.value;clearTimeout(vBookings.t);vBookings.t=setTimeout(()=>refreshAround("bf-q"),180)};
   $("#bf-st").onchange=e=>{S.bf.status=e.target.value;render()};
 }
 function vBooking(el){
@@ -2479,7 +2579,7 @@ window.cancelBooking=id=>{
   const recd=bkReceived(b);
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:520px"><h3>Cancel ${esc(b.bookingNo)}</h3>
   <p class="mute small">${esc(b.customerName)} · ${esc(b.customerPhone)} — ${b.items.map(i=>esc(i.name)+" ×"+num(i.qty)).join(", ")}<br>
-   The ${b.items.reduce((a,i)=>a+num(i.qty),0)} reserved piece(s) go back into free stock.</p>
+   The ${pl(b.items.reduce((a,i)=>a+num(i.qty),0),"reserved piece")} go back into free stock.</p>
   ${recd>0?`<div class="card" style="margin:10px 0;padding:10px 12px">
    <div class="row" style="justify-content:space-between;font-weight:700"><span>Received so far</span><span>${inr(recd)}</span></div></div>
    <label>What happens to that ${inr(recd)}?</label>
@@ -2590,11 +2690,11 @@ window.printBooking=id=>{
   <div class="c"><b>BOOKING SLIP</b></div>
   <div class="r"><span>${esc(b.bookingNo)}</span><span>${fdt(tms(b.createdAt))}</span></div>
   <div>${esc(b.customerName)} · ${esc(b.customerPhone)}</div><hr>
-  ${b.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${num(i.qty)} × ${inr(i.price)}</span><span>${inr(i.lineTotal??i.price*i.qty)}</span></div>`).join("")}<hr>
-  ${num(b.discount)?`<div class="r"><span>Items</span><span>${inr(b.subtotal??b.total)}</span></div><div class="r"><span>Discount</span><span>-${inr(b.discount)}</span></div>`:""}
-  <div class="r"><span>Order value</span><span>${inr(b.total)}</span></div>
-  <div class="r"><span>Received so far</span><span>${inr(recd)}</span></div>
-  <div class="r"><b>BALANCE DUE</b><b>${inr(bal)}</b></div>
+  ${b.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${num(i.qty)} × ${inrP(i.price)}</span><span>${inrP(i.lineTotal??i.price*i.qty)}</span></div>`).join("")}<hr>
+  ${num(b.discount)?`<div class="r"><span>Items</span><span>${inrP(b.subtotal??b.total)}</span></div><div class="r"><span>Discount</span><span>-${inrP(b.discount)}</span></div>`:""}
+  <div class="r"><span>Order value</span><span>${inrP(b.total)}</span></div>
+  <div class="r"><span>Received so far</span><span>${inrP(recd)}</span></div>
+  <div class="r"><b>BALANCE DUE</b><b>${inrP(bal)}</b></div>
   <div>Tentative delivery: ${esc(b.deliveryDate||"to be confirmed")}</div>${b.notes?`<div>Note: ${esc(b.notes)}</div>`:""}<hr>
   <div class="c">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),300)<\/script></body></html>`);w.document.close();
 };
@@ -2737,7 +2837,7 @@ function vSettings(el){
    <div><label>Phone</label><input id="s-ph" value="${esc(st.phone)}" ${isAdmin()?"":"disabled"}></div><div><label>GSTIN</label><input id="s-gs" value="${esc(st.gstin)}" ${isAdmin()?"":"disabled"}></div>
    <div><label>Invoice prefix</label><input id="s-pf" value="${esc(st.invoicePrefix)}" ${isAdmin()?"":"disabled"}></div><div><label>Receipt footer</label><input id="s-ft" value="${esc(st.footer)}" ${isAdmin()?"":"disabled"}></div>
    <label style="display:flex;gap:8px;align-items:center;color:var(--ink);font-size:14px"><input type="checkbox" id="s-neg" style="width:auto" ${st.allowNegative?"checked":""} ${isAdmin()?"":"disabled"}> Allow selling beyond available stock</label>
-   ${isAdmin()?`<button class="btn" id="s-save">Save settings</button>`:`<p class="mute small">Only admin can change settings.</p>`}</div></div>
+   ${isAdmin()?`<button class="btn" id="set-save">Save settings</button>`:`<p class="mute small">Only admin can change settings.</p>`}</div></div>
   ${isAdmin()?`<div class="card" style="grid-column:1/-1"><h3>Dropdown lists</h3><p class="mute small">These feed the dropdowns across the app. Categories, sub-categories and types are edited on the Categories screen.</p></div>
    ${listCard("locations","Locations / racks","Used in the product form and as a search filter. Renaming updates every product in that location.")}
    ${listCard("units","Units","How stock is counted: pieces, sets, metres…")}
@@ -2752,7 +2852,7 @@ function vSettings(el){
     <p><button class="btn" onclick="go('team')">Open the Staff screen</button></p></div>`:""}
   </div>`;
   if(isAdmin()){
-    $("#s-save").onclick=once(async()=>{const mode=document.querySelector("input[name=mode]:checked").value;
+    $("#set-save").onclick=once(async()=>{const mode=document.querySelector("input[name=mode]:checked").value;
       try{await setDoc(doc(db,"settings","store"),{storeName:$("#s-nm").value.trim()||"My Store",address:$("#s-ad").value.trim(),phone:$("#s-ph").value.trim(),gstin:$("#s-gs").value.trim(),invoicePrefix:$("#s-pf").value.trim()||"INV",footer:$("#s-ft").value.trim(),allowNegative:$("#s-neg").checked,mode},{merge:true});toast("Settings saved")}catch(e){toast(emsg(e),1)}});
   }
 }
@@ -2887,21 +2987,27 @@ function toObjs(all,key="sku"){
   all.slice(hi+1).forEach((r,i)=>{const o={_row:hi+i+2};let any=false;keys.forEach((k,j)=>{if(!k)return;const v=r[j]===undefined||r[j]===null?"":String(r[j]).trim();if(v!=="")any=true;o[k]=v});if(any)out.push(o)});
   return out;
 }
-async function loadXLSX(){
-  if(window.XLSX)return window.XLSX;
-  await new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";s.onload=ok;s.onerror=()=>no(new Error("Couldn't load the Excel reader — check your internet"));document.head.appendChild(s)});
-  return window.XLSX;
-}
+/* Spreadsheets are read with ExcelJS, the same library that writes the app's exports (the older
+   SheetJS reader had known security problems with crafted files). A cell comes back as plain text
+   or a number, the way it shows in Excel: a formula gives its result, a date gives YYYY-MM-DD. */
+const cellVal=v=>{if(v===null||v===undefined)return"";if(v instanceof Date)return dkey(v);
+  if(typeof v==="object"){if("result" in v)return cellVal(v.result);if(Array.isArray(v.richText))return v.richText.map(t=>t.text).join("");
+    if("text" in v)return cellVal(v.text);if("error" in v)return"";return""}
+  return v};
 async function readFileRows(file,key="sku",prefer="products"){
   if(/\.csv$/i.test(file.name))return toObjs(parseCSV(await file.text()),key);
-  const X=await loadXLSX();const wb=X.read(await file.arrayBuffer(),{type:"array"});
-  const hasKey=n=>((X.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:""})[0])||[]).some(c=>String(c).trim().toLowerCase()===key);
-  const name=wb.SheetNames.find(n=>n.toLowerCase()===prefer&&hasKey(n))||wb.SheetNames.find(hasKey);
-  if(!name)throw new Error(`No sheet with a "${key}" column found`);
-  return toObjs(X.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:""}),key);
+  if(!/\.xlsx$/i.test(file.name))throw new Error("Please save the file as Excel Workbook (.xlsx) or CSV and choose it again");
+  const EJ=await loadExcelJS(),wb=new EJ.Workbook();
+  try{await wb.xlsx.load(await file.arrayBuffer())}catch(e){throw new Error("That file couldn't be read as an Excel workbook (.xlsx)")}
+  const grid=ws=>{const out=[],cols=ws.columnCount;for(let r=1;r<=ws.rowCount;r++){const row=ws.getRow(r),a=[];for(let c=1;c<=cols;c++)a.push(cellVal(row.getCell(c).value));out.push(a)}return out};
+  const sheets=wb.worksheets.filter(ws=>ws.state!=="veryHidden");
+  const hasKey=ws=>(grid(ws)[0]||[]).some(c=>String(c).trim().toLowerCase()===key);
+  const ws=sheets.find(w=>w.name.toLowerCase()===prefer&&hasKey(w))||sheets.find(hasKey);
+  if(!ws)throw new Error(`No sheet with a "${key}" column found`);
+  return toObjs(grid(ws),key);
 }
 let exljsP;
-const loadExcelJS=()=>window.ExcelJS?Promise.resolve(window.ExcelJS):(exljsP=exljsP||new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js";s.onload=()=>ok(window.ExcelJS);s.onerror=()=>{exljsP=null;no(new Error("Couldn't load the Excel writer — check your internet"))};document.head.appendChild(s)}));
+const loadExcelJS=()=>window.ExcelJS?Promise.resolve(window.ExcelJS):(exljsP=exljsP||new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js";s.integrity="sha384-Pqp51FUN2/qzfxZxBCtF0stpc9ONI6MYZpVqmo8m20SoaQCzf+arZvACkLkirlPz";s.crossOrigin="anonymous";s.onload=()=>ok(window.ExcelJS);s.onerror=()=>{exljsP=null;no(new Error("Couldn't load the Excel writer — check your internet"))};document.head.appendChild(s)}));
 const thumbJpeg=(src,max=220)=>new Promise(res=>{const im=new Image();im.crossOrigin="anonymous";
   im.onload=()=>{try{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));
     const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.8))}catch(e){res(null)}};
@@ -3028,7 +3134,7 @@ window.exportProducts=async()=>{
   try{
     const{images,failed,EJ}=await photoMap(L);
     dlx("products-"+dkey()+".xlsx",await buildWorkbook(EJ,[{name:"Products",cols:PCOLS_X,rows:L.map(prow),images,freeze:3}]));
-    toast(`Exported ${L.length} products${failed?` · ${failed} photo(s) couldn't be embedded (links kept in imageUrl)`:""}`);
+    toast(`Exported ${L.length} products${failed?` · ${pl(failed,"photo")} couldn't be embedded (links kept in imageUrl)`:""}`);
   }catch(e){toast(emsg(e),1)}
 };
 window.exportSales=async()=>{
@@ -3053,7 +3159,7 @@ window.exportSales=async()=>{
         category:p?[p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" > "):"",qty:i.qty,price:num(i.price),
         line_total:num(i.lineTotal??i.price*i.qty),gst:num(i.gst),taken_from:i.takenFrom||"",customer:s.customer?.name||"Walk-in",phone:String(s.customer?.phone||"")}})}
     ]));
-    toast(`Exported ${L.length} bill(s)`);
+    toast(`Exported ${pl(L.length,"bill")}`);
   }catch(e){toast(emsg(e),1)}
 };
 window.exportMoves=async()=>{
@@ -3113,7 +3219,7 @@ window.openImport=(kind="products")=>{
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal"><h3>Import products from Excel</h3>
   <p class="mute small">Upload the filled <b>Inventory Import Template (.xlsx)</b>. Category, sub-category and type are matched by name and the category slug is saved automatically. Existing SKUs are updated (stock is left unchanged); new SKUs are created with the given qty.</p>
   <p><button class="btn sec sm" id="imp-tpl" type="button">Download Excel template</button> <span class="small mute">built from your current categories and lists</span></p>
-  <input type="file" id="imp-f" accept=".xlsx,.xls,.csv"><div id="imp-r" class="small" style="margin-top:10px"></div>
+  <input type="file" id="imp-f" accept=".xlsx,.csv"><div id="imp-r" class="small" style="margin-top:10px"></div>
   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Close</button><button class="btn" id="imp-go" disabled>Import</button></div></div></div>`;
   let good=[];
   $("#imp-tpl").onclick=async()=>{try{const EJ=await loadExcelJS();const buf=await buildTemplate(EJ,TAXONOMY,S.lists);const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download="Inventory_Import_Template.xlsx";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}catch(e){toast(emsg(e),1)}};
@@ -3149,7 +3255,7 @@ window.openImport=(kind="products")=>{
             subcategoryId:s?.id||"",subcategoryName:s?.name||"",subcategorySlug:s?.slug||"",typeId:t?.id||"",typeName:t?.name||"",typeSlug:t?.slug||"",fullSlug:(t||s||c).slug,
             dimension:dimNorm(r.dimension),dimUnit:String(r.dimUnit||"").trim(),
             mrp:amt("mrp")||money(r.price),price:money(r.price),cost:amt("cost"),gst:amt("gst"),reorder:amt("reorder"),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
-          if(r.imageUrl)d.imageUrl=r.imageUrl;
+          if(httpsUrl(r.imageUrl))d.imageUrl=r.imageUrl;
           const ex=bySku[key]||seen[key];
           if(ex){
             // an existing product: only the cells that are filled in change; a blank cell keeps what is saved
@@ -3164,7 +3270,7 @@ window.openImport=(kind="products")=>{
             }
             b.update(doc(db,"products",ex.id),d);u++}
           else{const ref=doc(collection(db,"products")),q=Math.max(0,Math.floor(amt("qty")));seen[key]={id:ref.id};
-            b.set(ref,{...d,imageUrl:r.imageUrl||"",hasImage:false,qty:q,booked:0,locQty:q?{[d.location||UNLOC]:q}:{},createdAt:serverTimestamp()});
+            b.set(ref,{...d,imageUrl:httpsUrl(r.imageUrl)?r.imageUrl:"",hasImage:false,qty:q,booked:0,locQty:q?{[d.location||UNLOC]:q}:{},createdAt:serverTimestamp()});
             if(q>0)b.set(doc(collection(db,"movements")),mv(ref.id,r.name,r.sku,"opening",q,0,q,"Excel import"));n++}});
         await b.commit()}
       const known=new Set(allLocations().map(x=>x.toLowerCase())),addLoc=[...new Set(good.map(({r})=>String(r.location||"").trim()).filter(x=>x&&!known.has(x.toLowerCase())))];
@@ -3177,7 +3283,7 @@ window.openImportCustomers=()=>{
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal"><h3>Import customers from Excel</h3>
   <p class="mute small">Use the <b>Customers</b> sheet of the import template: <code>name</code> and <code>phone</code> are required, <code>email</code>, <code>address</code> and <code>notes</code> are optional. A phone number that already exists updates that customer.</p>
   <p><button class="btn sec sm" id="ic-tpl" type="button">Download Excel template</button></p>
-  <input type="file" id="ic-f" accept=".xlsx,.xls,.csv"><div id="ic-r" class="small" style="margin-top:10px"></div>
+  <input type="file" id="ic-f" accept=".xlsx,.csv"><div id="ic-r" class="small" style="margin-top:10px"></div>
   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Close</button><button class="btn" id="ic-go" disabled>Import</button></div></div></div>`;
   let good=[];
   $("#ic-tpl").onclick=async()=>{try{const EJ=await loadExcelJS();dlx("Inventory_Import_Template.xlsx",await buildTemplate(EJ,TAXONOMY,S.lists))}catch(e){toast(emsg(e),1)}};
@@ -3227,7 +3333,7 @@ async function nextBarcodes(n){
   });
   return out;
 }
-const loadJsBarcode=()=>window.JsBarcode?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js";s.onload=ok;s.onerror=()=>no(new Error("Couldn't load the barcode generator — check your internet"));document.head.appendChild(s)});
+const loadJsBarcode=()=>window.JsBarcode?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js";s.integrity="sha384-Kk5SjBOKprEnGfyBWfD2zROFd1Cu8kwOXxG2GIhYPcoDL2rBJS9P8Ud1ZMy4412a";s.crossOrigin="anonymous";s.onload=ok;s.onerror=()=>no(new Error("Couldn't load the barcode generator — check your internet"));document.head.appendChild(s)});
 const _bcMemo=new Map();
 function barcodeSVG(code){
   if(_bcMemo.has(code))return _bcMemo.get(code);
@@ -3251,7 +3357,7 @@ function labelsHTML(items,o,svgFn){
 .no{font-size:${roll?"7pt":"8.5pt"};letter-spacing:.8px;text-align:center}`;
   const body=items.map(p=>`<div class="lb"><div class="nm">${esc(p.name)}</div>
    <div class="sk"><span>${esc(p.sku)}</span>${dimText(p)?`<span class="dm">${esc(dimText(p))}</span>`:""}</div>
-   ${o.price?`<div class="pz"><span>MRP ${inr(p.mrp??p.price)}</span><b>${inr(p.price)}</b></div>`:""}
+   ${o.price?`<div class="pz"><span>MRP ${inrP(p.mrp??p.price)}</span><b>${inrP(p.price)}</b></div>`:""}
    <div class="bc">${svgFn(p.barcode)}</div><div class="no">${esc(p.barcode)}</div></div>`).join("");
   return `<!doctype html><html><head><meta charset="utf-8"><title>Barcode labels</title><style>${css}</style></head><body><div class="sheet">${body}</div>${o.noprint?"":"<script>onload=()=>setTimeout(()=>print(),500)<\/script>"}</body></html>`;
 }
@@ -3306,7 +3412,7 @@ window.openLabels=function(){
 };
 window.dl=dl;
 
-if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v="+encodeURIComponent(BUILD)).catch(()=>{});
 </script>
 </body>
 </html>

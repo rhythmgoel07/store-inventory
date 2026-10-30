@@ -26,7 +26,7 @@ Logins are created by an admin on the **Staff** screen in the sidebar. There is 
 
 Three roles: **admin**, **manager**, **sales executive** (plus **disabled**, which removes access but keeps the person's history). Older logins saved as `staff` still work and read as sales executive.
 
-**Always true, whatever you set:** every role sees products, photos and stock; **opens any product's page**; records sales, bookings, booking amounts and customer payments; adds a customer while billing; delivers a booking; and can ask an admin to correct an entry. Only an admin reaches categories, lists, settings and staff logins. An admin may always do everything.
+**Always true, whatever you set:** every role sees products, photos and stock; **opens any product's page**; records sales, bookings, booking amounts and customer payments; adds a customer while billing; delivers a booking; and can ask an admin to correct an entry. Only an admin can change categories, lists, settings and staff logins (managers and sales executives can open Categories and Settings to look — Settings is also where each person picks light or dark mode — but every control there is read-only for them, and the database refuses their changes). An admin may always do everything.
 
 **Everything else you decide yourself**, on the Staff screen under *What each role may do* — tick it for manager, for sales executive, for both or for neither:
 - See cost price and margin — on the product page, on the product cards and in the Excel export
@@ -108,6 +108,19 @@ name, SKU, barcode, vendor, dimension + dimension unit, category / sub-category 
 ## Sales screen
 - The range picker at the top switches between **A day** and **A month**. Pick the date or the month beside it; the Bills tile says which period is on screen, and **Export Excel** exports whatever range is showing.
 
+## Using it comfortably
+- **Messages**: good news fades after a few seconds; a problem stays on screen until you dismiss it (✕) or the next message replaces it, so there is time to read it. Screen readers announce both.
+- **Dialogs** close with **Esc** or a tap outside. If you have typed something into one, it asks before throwing it away. Clearing a bill or a booking's items asks first too.
+- **Search boxes** update the results as you type without redrawing the page, so the cursor stays put and Hindi and other keyboards that compose a word work normally.
+- **While the store is loading** the screen says so, instead of showing zeros. **When the connection drops** a line at the top says so and what still works.
+- **Signing out** also clears this device's offline copy of the store's data, so a shared tablet doesn't keep customers and costs for the next person.
+- **Keyboard and screen readers**: every field is tied to its label, symbol-only buttons (✕ ＋ −) have spoken names, dashboard tiles and product cards open with Enter, focus stays inside an open dialog, and buttons are at least 44 px tall on touch screens. Inputs use 16 px text on phones so iPhones don't zoom in.
+- **Amounts** show without paise when there are none (₹1,06,599); printed bills, receipts and statements always show paise. Dates from an earlier year show the year.
+- **Overdue**: a delivery date before today is red; today's is amber.
+- **Product pictures** take https:// links only.
+- **Excel files** are read with the same library that writes the exports (ExcelJS) — the older reader had known problems with crafted files. Use .xlsx or .csv; an old .xls file needs saving as .xlsx first.
+- **Installing on a phone** uses proper home-screen icons on Android and iPhone.
+
 ## Phone and dark mode
 - The layout adapts below 820 px (bottom tab bar, stacked panels) and tightens again below 560 px: smaller buttons and headings, narrower gutters, filters two to a row, forms one field per row.
 - **Tables become cards on a phone**, each cell labelled. That includes the tables inside dialogs — recording a purchase, correcting a bill, receiving stock into several places — which used to run off the side of the screen.
@@ -117,7 +130,7 @@ name, SKU, barcode, vendor, dimension + dimension unit, category / sub-category 
 - Every text colour was checked against its background: everything clears 4.5:1 in dark mode and in light, including small grey text and the amber used for warnings, both of which were marginally too light before.
 
 ## Which build am I running?
-The bottom of the sidebar, under your name, shows `build 30 Oct 12:58` — the date and time that copy of `index.html` was built. If a change you were told about is missing, compare that stamp with the latest one: if it is older, the browser is still running a cached copy. A hard refresh (Ctrl+Shift+R, or Cmd+Shift+R on a Mac) fixes it; on a phone, close the app and reopen it. Nothing is lost either way — all the data lives in Firestore, not in the page.
+The bottom of the sidebar, under your name, shows `build 30 Oct 12:58` — the date and time that copy of `index.html` was built. If a change you were told about is missing, compare that stamp with the latest one: if it is older, the browser is still running a cached copy. A hard refresh (Ctrl+Shift+R, or Cmd+Shift+R on a Mac) fixes it; on a phone, close the app and reopen it. Each build keeps its own offline cache, so a new build replaces the old one on its next visit. Nothing is lost either way — all the data lives in Firestore, not in the page.
 
 ## Notes
 - Works offline for browsing and stock changes (syncs when back online). **Completing a sale needs an internet connection** so two staff can never sell the same last piece.
