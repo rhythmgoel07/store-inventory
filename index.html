@@ -175,12 +175,12 @@ table td.c,table th.c{text-align:center}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,updateProfile,sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection,doc,onSnapshot,setDoc,getDoc,getDocs,updateDoc,deleteDoc,query,orderBy,limit,runTransaction,serverTimestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection,doc,onSnapshot,setDoc,getDoc,getDocs,updateDoc,deleteDoc,query,orderBy,limit,where,runTransaction,serverTimestamp,writeBatch} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {firebaseConfig} from "./firebase-config.js";
 
 /* ---------- Taxonomy (embedded from homecentre_taxonomy.json) ---------- */
 const DEFAULT_TAX = [{"id":"living-room","name":"Living Room","slug":"livingroom","subcategories":[{"id":"sofas","name":"Sofas","slug":"livingroom-sofas","subcategories":[{"id":"3-seater-sofas","name":"3 Seater Sofas","slug":"livingroom-sofas-3seatersofas","subcategories":[]},{"id":"2-seater-sofas","name":"2 Seater Sofas","slug":"livingroom-sofas-2seatersofas","subcategories":[]},{"id":"1-seater-sofas","name":"1 Seater Sofas","slug":"livingroom-sofas-1seatersofas","subcategories":[]},{"id":"sofa-sets","name":"Sofa Sets","slug":"livingroom-sofas-sofasets","subcategories":[]},{"id":"sofa-cum-beds","name":"Sofa Cum Beds","slug":"livingroom-sofas-sofacumbeds","subcategories":[]},{"id":"corner-sofas","name":"Corner Sofas","slug":"livingroom-sofas-cornersofa","subcategories":[]}]},{"id":"customised-furniture","name":"Customised Furniture","slug":"customizedfurniture","subcategories":[]},{"id":"recliners","name":"Recliners","slug":"livingroom-recliners","subcategories":[{"id":"3-seater-recliners","name":"3 Seater Recliners","slug":"livingroom-recliners-3seaterrecliners","subcategories":[]},{"id":"2-seater-recliners","name":"2 Seater Recliners","slug":"livingroom-recliners-2seaterrecliners","subcategories":[]},{"id":"1-seater-recliners","name":"1 Seater Recliners","slug":"livingroom-recliners-1seaterrecliners","subcategories":[]},{"id":"recliner-sets","name":"Recliner Sets","slug":"livingroom-recliners-reclinersets","subcategories":[]}]},{"id":"occasional-chairs","name":"Occasional Chairs","slug":"livingroom-occasionalchairs","subcategories":[{"id":"accent-chairs","name":"Accent Chairs","slug":"livingroom-occasionalchairs-accentchairs","subcategories":[]},{"id":"folding-chairs","name":"Folding Chairs","slug":"livingroom-occasionalchairs-foldingchairs","subcategories":[]},{"id":"cafe-chairs","name":"Cafe Chairs","slug":"livingroom-occasionalchairs-cafechairs","subcategories":[]},{"id":"plastic-chairs","name":"Plastic Chairs","slug":"livingroom-occasionalchairs-plasticchairs","subcategories":[]}]},{"id":"benches-stools","name":"Benches & Stools","slug":"livingroom-benchandstools","subcategories":[{"id":"benches","name":"Benches","slug":"livingroom-benchandstools-benches","subcategories":[]},{"id":"stools","name":"Stools","slug":"livingroom-benchandstools-stools","subcategories":[]}]},{"id":"bean-bags-pouffes","name":"Bean Bags & Pouffes","slug":"livingroom-beanbagsandpouffes","subcategories":[{"id":"pouffes","name":"Pouffes","slug":"livingroom-beanbagsandpouffes-pouffes","subcategories":[]},{"id":"bean-bags","name":"Bean Bags","slug":"livingroom-beanbagsandpouffes-beanbags","subcategories":[]}]},{"id":"tables","name":"Tables","slug":"livingroom-tables","subcategories":[{"id":"centre-tables","name":"Centre Tables","slug":"livingroom-tables-centertables","subcategories":[]},{"id":"end-tables","name":"End Tables","slug":"livingroom-tables-endtables","subcategories":[]},{"id":"console-tables","name":"Console Tables","slug":"livingroom-tables-consoletables","subcategories":[]},{"id":"nesting-tables","name":"Nesting Tables","slug":"livingroom-tables-nestingtables","subcategories":[]}]},{"id":"tv-media-units","name":"TV & Media Units","slug":"livingroom-tvandmediaunits","subcategories":[{"id":"tv-consoles","name":"TV Consoles","slug":"livingroom-tvandmediaunits-tvconsoles","subcategories":[]},{"id":"tv-units","name":"TV Units","slug":"livingroom-tvandmediaunits-tvunits","subcategories":[]}]},{"id":"shelves","name":"Shelves","slug":"livingroom-shelves","subcategories":[{"id":"wall-shelves","name":"Wall Shelves","slug":"livingroom-shelves-wallshelves","subcategories":[]},{"id":"corner-shelves","name":"Corner Shelves","slug":"livingroom-shelves-cornershelves","subcategories":[]},{"id":"home-mandir","name":"Home Mandir","slug":"livingroom-shelves-homemandir","subcategories":[]}]},{"id":"shoe-racks","name":"Shoe Racks","slug":"livingroom-shoeracks","subcategories":[{"id":"shoe-cabinets","name":"Shoe Cabinets","slug":"livingroom-shoeracks-shoecabinets","subcategories":[]},{"id":"open-shoe-racks","name":"Open Shoe Racks","slug":"livingroom-shoeracks-shoeopenshelves","subcategories":[]}]},{"id":"study-work","name":"Study & Work","slug":"livingroom-studyandwork","subcategories":[{"id":"study-office-tables","name":"Study & Office Tables","slug":"livingroom-studyandwork-studyandofficetables","subcategories":[]},{"id":"study-office-chairs","name":"Study & Office Chairs","slug":"livingroom-studyandwork-studyandofficechairs","subcategories":[]}]},{"id":"book-cases-cabinets","name":"Book Cases & Cabinets","slug":"livingroom-bookcaseandcabinets","subcategories":[{"id":"book-cabinets","name":"Book Cabinets","slug":"livingroom-bookcaseandcabinets-bookcabinets","subcategories":[]},{"id":"open-book-shelves","name":"Open Book Shelves","slug":"livingroom-bookcaseandcabinets-openbookshelves","subcategories":[]}]},{"id":"outdoor-furniture","name":"Outdoor Furniture","slug":"outdoor","subcategories":[{"id":"outdoor-seating-tables","name":"Outdoor Seating & Tables","slug":"outdoor-outdoorseatingandtables","subcategories":[]}]},{"id":"ottomans","name":"Ottomans","slug":"livingroom-ottomans","subcategories":[]},{"id":"tea-table-sets","name":"Tea Table Sets","slug":"livingroom-teasets","subcategories":[]}]},{"id":"bedroom","name":"Bedroom","slug":"bedroom","subcategories":[{"id":"beds","name":"Beds","slug":"bedroom-beds","subcategories":[{"id":"king-beds","name":"King Beds","slug":"bedroom-beds-kingbeds","subcategories":[]},{"id":"queen-beds","name":"Queen Beds","slug":"bedroom-beds-queenbeds","subcategories":[]},{"id":"single-beds","name":"Single Beds","slug":"bedroom-beds-singlebeds","subcategories":[]},{"id":"bunk-beds","name":"Bunk Beds","slug":"bedroom-beds-bunkbeds","subcategories":[]}]},{"id":"wardrobes","name":"Wardrobes","slug":"bedroom-wardrobes","subcategories":[{"id":"2-door-wardrobes","name":"2 Door Wardrobes","slug":"bedroom-wardrobes-2doorswingwardrobes","subcategories":[]},{"id":"3-door-wardrobes","name":"3 Door Wardrobes","slug":"bedroom-wardrobes-3doorswingwardrobes","subcategories":[]},{"id":"4-door-wardrobes","name":"4 Door Wardrobes","slug":"bedroom-wardrobes-4doorswingwardrobes","subcategories":[]},{"id":"sliding-wardrobes","name":"Sliding Wardrobes","slug":"bedroom-wardrobes-2doorslidingwardrobes","subcategories":[]}]},{"id":"mattresses","name":"Mattresses","slug":"bedroom-mattresses","subcategories":[{"id":"king-mattresses","name":"King Mattresses","slug":"bedroom-mattresses-kingmattresses","subcategories":[]},{"id":"queen-mattresses","name":"Queen Mattresses","slug":"bedroom-mattresses-queenmattresses","subcategories":[]},{"id":"single-mattresses","name":"Single Mattresses","slug":"bedroom-mattresses-singlemattresses","subcategories":[]}]},{"id":"bed-side-tables","name":"Bed Side Tables","slug":"bedroom-bedsidetables","subcategories":[]},{"id":"chest-of-drawers","name":"Chest of Drawers","slug":"bedroom-chestofdrawers","subcategories":[]},{"id":"dresser-mirrors","name":"Dresser Mirrors","slug":"bedroom-dressermirrors","subcategories":[]}]},{"id":"dining-room","name":"Dining Room","slug":"diningroom","subcategories":[{"id":"dining-sets","name":"Dining Sets","slug":"diningroom-diningtablesets","subcategories":[{"id":"4-seater-dining-sets","name":"4 Seater Dining Sets","slug":"diningroom-diningtablesets-4seaterdiningtablesets","subcategories":[]},{"id":"6-seater-dining-sets","name":"6 Seater Dining Sets","slug":"diningroom-diningtablesets-6seaterdiningtablesets","subcategories":[]},{"id":"8-seater-dining-sets","name":"8 Seater Dining Sets","slug":"diningroom-diningtablesets-8seaterdiningtablesets","subcategories":[]}]},{"id":"dining-tables","name":"Dining Tables","slug":"diningroom-diningtables","subcategories":[{"id":"4-seater-dining-tables","name":"4 Seater Dining Tables","slug":"diningroom-diningtables-4seatertables","subcategories":[]},{"id":"6-seater-dining-tables","name":"6 Seater Dining Tables","slug":"diningroom-diningtables-6seatertables","subcategories":[]},{"id":"8-seater-dining-tables","name":"8 Seater Dining Tables","slug":"diningroom-diningtables-8seatertables","subcategories":[]}]},{"id":"bar-furniture","name":"Bar Furniture","slug":"diningroom-bar","subcategories":[{"id":"bar-cabinet-curios","name":"Bar Cabinet-Curios","slug":"diningroom-bar-barcabinetcurios","subcategories":[]},{"id":"bar-stools-chairs","name":"Bar Stools & Chairs","slug":"diningroom-bar-barstools","subcategories":[]},{"id":"serving-trolleys","name":"Serving Trolleys","slug":"diningroom-bar-servingtrolleys","subcategories":[]}]},{"id":"dining-chairs","name":"Dining Chairs","slug":"diningroom-diningchairs","subcategories":[]},{"id":"dining-benches","name":"Dining Benches","slug":"diningroom-diningbenches","subcategories":[]},{"id":"crockery-units","name":"Crockery Units","slug":"diningroom-crockeryunits","subcategories":[]}]},{"id":"decor","name":"Decor","slug":"decor","subcategories":[{"id":"home-accessories","name":"Home Accessories","slug":"decor-homeaccessories","subcategories":[{"id":"figurines","name":"Figurines","slug":"decor-homeaccessories-figurines","subcategories":[]},{"id":"vases","name":"Vases","slug":"decor-homeaccessories-vases","subcategories":[]},{"id":"table-accents","name":"Table Accents","slug":"decor-homeaccessories-tableaccents","subcategories":[]},{"id":"candle-holders-lanterns","name":"Candle Holders & Lanterns","slug":"decor-homeaccessories-candleholdersandlanterns","subcategories":[]},{"id":"potpourri-bowls-platters","name":"Potpourri Bowls & Platters","slug":"decor-homeaccessories-bowls","subcategories":[]},{"id":"clocks","name":"Clocks","slug":"decor-homeaccessories-clocks","subcategories":[]},{"id":"desk-accessories","name":"Desk Accessories","slug":"decor-homeaccessories-deskaccessories","subcategories":[]},{"id":"gift-accessories","name":"Gift Accessories","slug":"decor-homeaccessories-giftaccessories","subcategories":[]}]},{"id":"lighting","name":"Lighting","slug":"decor-lighting","subcategories":[{"id":"table-lamps","name":"Table Lamps","slug":"decor-lighting-tablelamps","subcategories":[]},{"id":"wall-lamps","name":"Wall Lamps","slug":"decor-lighting-walllamps","subcategories":[]},{"id":"hanging-lamps","name":"Hanging Lamps","slug":"decor-lighting-ceilinglamps","subcategories":[]},{"id":"floor-lamps","name":"Floor Lamps","slug":"decor-lighting-floorlamps","subcategories":[]},{"id":"decorative-lights","name":"Decorative Lights","slug":"decor-lighting-decorativelights","subcategories":[]},{"id":"string-lights","name":"String Lights","slug":"decor-lighting-stringlights","subcategories":[]},{"id":"bulbs","name":"Bulbs","slug":"decor-lighting-bulbs","subcategories":[]}]},{"id":"wall-decor","name":"Wall Decor","slug":"decor-wallaccent","subcategories":[{"id":"wall-accents","name":"Wall Accents","slug":"decor-wallaccent-walldecor","subcategories":[]},{"id":"decorative-mirrors","name":"Decorative Mirrors","slug":"decor-wallaccent-decorativemirrors","subcategories":[]},{"id":"photo-frames","name":"Photo Frames","slug":"decor-wallaccent-photoframes","subcategories":[]},{"id":"posters-paintings","name":"Posters & Paintings","slug":"decor-wallaccent-pictureframes","subcategories":[]}]},{"id":"home-fragrances","name":"Home Fragrances","slug":"decor-homefragrance","subcategories":[{"id":"candles","name":"Candles","slug":"decor-homefragrance-candles","subcategories":[]},{"id":"fragrances-potpourris","name":"Fragrances & Potpourris","slug":"decor-homefragrance-fragranceandpotpourri","subcategories":[]},{"id":"diffusers","name":"Diffusers","slug":"decor-homefragrance-diffusers","subcategories":[]},{"id":"aroma-oils","name":"Aroma Oils","slug":"decor-homefragrance-aromaoil","subcategories":[]},{"id":"room-car-sprays","name":"Room & Car Sprays","slug":"decor-homefragrance-roomsprays","subcategories":[]}]},{"id":"garden","name":"Garden","slug":"decor-garden","subcategories":[{"id":"artificial-plants-flowers","name":"Artificial Plants & Flowers","slug":"decor-garden-artificialplantsandflowers","subcategories":[]},{"id":"pots-planters","name":"Pots & Planters","slug":"decor-garden-potsandplanters","subcategories":[]},{"id":"fountains","name":"Fountains","slug":"decor-garden-indoorandoutdoorfountains","subcategories":[]}]}]},{"id":"kitchen","name":"Kitchen","slug":"kitchen","subcategories":[{"id":"storage-containers","name":"Storage & Containers","slug":"kitchen-storageandcontainers","subcategories":[{"id":"containers-jars","name":"Containers & Jars","slug":"kitchen-storageandcontainers-containersandjars","subcategories":[]},{"id":"bottles","name":"Bottles","slug":"kitchen-storageandcontainers-bottles","subcategories":[]},{"id":"flasks","name":"Flasks","slug":"kitchen-storageandcontainers-flask","subcategories":[]},{"id":"lunch-boxes-bags","name":"Lunch Boxes & Bags","slug":"kitchen-storageandcontainers-lunchboxandbags","subcategories":[]},{"id":"kitchen-organisers","name":"Kitchen Organisers","slug":"kitchen-storageandcontainers-organisers","subcategories":[]}]},{"id":"cookware","name":"Cookware","slug":"kitchen-cooking","subcategories":[{"id":"cookware-sets","name":"Cookware Sets","slug":"kitchen-cooking-cookwaresets","subcategories":[]},{"id":"induction-cookware","name":"Induction Cookware","slug":"kitchen-cooking-inductioncookware","subcategories":[]},{"id":"pots-pans","name":"Pots & Pans","slug":"kitchen-cooking-potsandpans","subcategories":[]},{"id":"kadhai-woks","name":"Kadhai & Woks","slug":"kitchen-cooking-kadhaiandwoks","subcategories":[]},{"id":"cooking-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-cooking-toolsandgadgets","subcategories":[]},{"id":"pressure-cookers","name":"Pressure Cookers","slug":"kitchen-cooking-pressurecookers","subcategories":[]},{"id":"tawas","name":"Tawas","slug":"kitchen-cooking-tawas","subcategories":[]}]},{"id":"kitchenware","name":"Kitchenware","slug":"kitchen-kitchenware","subcategories":[{"id":"kitchen-trolleys","name":"Kitchen Trolleys","slug":"kitchen-kitchenware-kitchentrolley","subcategories":[]},{"id":"knives-scissors","name":"Knives & Scissors","slug":"kitchen-kitchenware-knivesandscissors","subcategories":[]},{"id":"casseroles","name":"Casseroles","slug":"kitchen-kitchenware-casseroles","subcategories":[]},{"id":"oil-vinegar-servers","name":"Oil & Vinegar Servers","slug":"kitchen-kitchenware-oilandvinegarserver","subcategories":[]},{"id":"utensil-holders","name":"Utensil Holders","slug":"kitchen-kitchenware-utensilholders","subcategories":[]},{"id":"chopping-boards","name":"Chopping Boards","slug":"kitchen-kitchenware-choppingboards","subcategories":[]},{"id":"dish-racks","name":"Dish Racks","slug":"kitchen-kitchenware-dishracks","subcategories":[]},{"id":"fruit-baskets","name":"Fruit Baskets","slug":"kitchen-kitchenware-fruitstands","subcategories":[]},{"id":"strainers-colanders","name":"Strainers & Colanders","slug":"kitchen-kitchenware-strainersandcolanders","subcategories":[]},{"id":"kitchenware-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-kitchenware-toolsandgadgets","subcategories":[]}]},{"id":"kitchen-linen","name":"Kitchen Linen","slug":"kitchen-kitchenlinens","subcategories":[{"id":"aprons","name":"Aprons","slug":"kitchen-kitchenlinens-aprons","subcategories":[]},{"id":"pot-holders-mittens","name":"Pot Holders & Mittens","slug":"kitchen-kitchenlinens-potholders","subcategories":[]},{"id":"kitchen-towels","name":"Kitchen Towels","slug":"kitchen-kitchenlinens-kitchentowels","subcategories":[]}]},{"id":"bakeware","name":"Bakeware","slug":"kitchen-bakeware","subcategories":[]},{"id":"kitchen-appliances","name":"Kitchen Appliances","slug":"kitchen-appliances","subcategories":[]}]},{"id":"furnishings","name":"Furnishings","slug":"furnishing","subcategories":[{"id":"bedding","name":"Bedding","slug":"furnishing-bedding","subcategories":[{"id":"double-bedsheets","name":"Double Bedsheets","slug":"furnishing-bedding-doublebedsheets","subcategories":[]},{"id":"single-bedsheets","name":"Single Bedsheets","slug":"furnishing-bedding-singlebedsheets","subcategories":[]},{"id":"bedding-sets","name":"Bedding Sets","slug":"furnishing-bedding-beddingsets","subcategories":[]},{"id":"pillows-pillow-covers","name":"Pillows & Pillow Covers","slug":"furnishing-bedding-pillowsandpillowcovers","subcategories":[]},{"id":"blankets-quilts","name":"Blankets & Quilts","slug":"furnishing-bedding-blanketsandquilts","subcategories":[]},{"id":"comforters","name":"Comforters","slug":"furnishing-bedding-comforters","subcategories":[]},{"id":"throws","name":"Throws","slug":"furnishing-bedding-throws","subcategories":[]},{"id":"duvets-duvet-covers","name":"Duvets & Duvet Covers","slug":"furnishing-bedding-duvetandduvetcovers","subcategories":[]},{"id":"dohars","name":"Dohars","slug":"furnishing-bedding-dohars","subcategories":[]},{"id":"bed-covers","name":"Bed Covers","slug":"furnishing-bedding-bedcovers","subcategories":[]}]},{"id":"cushions","name":"Cushions","slug":"furnishing-cushions","subcategories":[{"id":"cushion-covers","name":"Cushion Covers","slug":"furnishing-cushions-cushioncovers","subcategories":[]},{"id":"filled-cushions","name":"Filled Cushions","slug":"furnishing-cushions-filledcushions","subcategories":[]},{"id":"cushion-fillers","name":"Cushion Fillers","slug":"furnishing-cushions-cushionfilling","subcategories":[]},{"id":"floor-cushions","name":"Floor Cushions","slug":"furnishing-cushions-floorcushions","subcategories":[]}]},{"id":"curtains-blinds","name":"Curtains & Blinds","slug":"furnishing-curtains","subcategories":[{"id":"door-curtains","name":"Door Curtains","slug":"furnishing-curtains-doorcurtains","subcategories":[]},{"id":"window-curtains","name":"Window Curtains","slug":"furnishing-curtains-windowcurtains","subcategories":[]},{"id":"blinds","name":"Blinds","slug":"furnishing-curtains-blinds","subcategories":[]},{"id":"rods-accessories","name":"Rods & Accessories","slug":"furnishing-curtains-rodsandaccessories","subcategories":[]}]},{"id":"accessories","name":"Accessories","slug":"furnishing-accessories","subcategories":[{"id":"bags","name":"Bags","slug":"furnishing-accessories-bags","subcategories":[]},{"id":"pads-mats","name":"Pads & Mats","slug":"furnishing-accessories-padsandmats","subcategories":[]},{"id":"sofa-covers","name":"Sofa Covers","slug":"furnishing-accessories-sofacovers","subcategories":[]}]},{"id":"floor-coverings","name":"Floor Coverings","slug":"furnishing-floorcoverings","subcategories":[{"id":"carpets-rugs","name":"Carpets & Rugs","slug":"furnishing-floorcoverings-carpets","subcategories":[]},{"id":"dhurries","name":"Dhurries","slug":"furnishing-floorcoverings-dhurries","subcategories":[]},{"id":"doormats","name":"Doormats","slug":"furnishing-floorcoverings-doormats","subcategories":[]}]}]},{"id":"tableware","name":"Tableware","slug":"dining","subcategories":[{"id":"serving","name":"Serving","slug":"dining-serving","subcategories":[{"id":"trays-platters","name":"Trays & Platters","slug":"dining-serving-traysandplatters","subcategories":[]},{"id":"glasses-jugs","name":"Glasses & Jugs","slug":"dining-serving-glassesandjugs","subcategories":[]},{"id":"bar-accessories","name":"Bar Accessories","slug":"dining-serving-baraccessories","subcategories":[]},{"id":"salt-pepper-shakers","name":"Salt & Pepper Shakers","slug":"dining-serving-saltandpeppershakers","subcategories":[]},{"id":"chip-dip","name":"Chip & Dip","slug":"dining-serving-chipanddip","subcategories":[]}]},{"id":"crockery","name":"Crockery","slug":"dining-crockery","subcategories":[{"id":"bowls","name":"Bowls","slug":"dining-crockery-bowls","subcategories":[]},{"id":"plates","name":"Plates","slug":"dining-crockery-plates","subcategories":[]},{"id":"mugs","name":"Mugs","slug":"dining-crockery-mugsandcups","subcategories":[]},{"id":"cups-saucers","name":"Cups & Saucers","slug":"dining-crockery-cupsandsaucers","subcategories":[]},{"id":"pots-kettles","name":"Pots & Kettles","slug":"dining-crockery-potsandkettles","subcategories":[]},{"id":"dinner-sets","name":"Dinner Sets","slug":"dining-crockery-dinnersets","subcategories":[]}]},{"id":"cutlery","name":"Cutlery","slug":"dining-cutlery","subcategories":[{"id":"spoons","name":"Spoons","slug":"dining-cutlery-spoons","subcategories":[]},{"id":"cutlery-sets","name":"Cutlery & Cutlery Sets","slug":"dining-cutlery-cutlerysets","subcategories":[]},{"id":"cutlery-holders","name":"Cutlery Holders","slug":"dining-cutlery-cutleryholders","subcategories":[]}]},{"id":"table-linens","name":"Table Linens","slug":"dining-tableaccessories","subcategories":[{"id":"placemats","name":"Placemats","slug":"dining-tableaccessories-placemats","subcategories":[]},{"id":"table-runners","name":"Table Runners","slug":"dining-tableaccessories-tablerunners","subcategories":[]},{"id":"table-cloths","name":"Table Cloths","slug":"dining-tableaccessories-tablecloths","subcategories":[]},{"id":"trivets-coasters","name":"Trivets & Coasters","slug":"dining-tableaccessories-trivetandcoasters","subcategories":[]},{"id":"tissue-holders","name":"Tissue Holders","slug":"dining-tableaccessories-tissueholders","subcategories":[]}]}]},{"id":"bath-laundry","name":"Bath & Laundry","slug":"bathandlaundry","subcategories":[{"id":"bath-linen","name":"Bath Linen","slug":"bathandlaundry-bath","subcategories":[{"id":"towels","name":"Towels","slug":"bathandlaundry-bath-towel","subcategories":[]},{"id":"robes","name":"Robes","slug":"bathandlaundry-bath-robes","subcategories":[]},{"id":"bathmats","name":"Bathmats","slug":"bathandlaundry-bath-bathmats","subcategories":[]}]},{"id":"bath-accessories","name":"Bath Accessories","slug":"bathandlaundry-bathaccessories","subcategories":[{"id":"holders-tumblers","name":"Holders & Tumblers","slug":"bathandlaundry-bathaccessories-holdersandtumblers","subcategories":[]},{"id":"soap-dispensers","name":"Soap Dispensers","slug":"bathandlaundry-bathaccessories-soapdispensers","subcategories":[]},{"id":"soap-dishes","name":"Soap Dishes","slug":"bathandlaundry-bathaccessories-soapdishes","subcategories":[]},{"id":"bath-sets","name":"Bath Sets","slug":"bathandlaundry-bathaccessories-accessorysets","subcategories":[]},{"id":"storage-mirrors","name":"Storage & Mirrors","slug":"bathandlaundry-bathaccessories-storageandmirrors","subcategories":[]},{"id":"towel-holders","name":"Towel Holders","slug":"bathandlaundry-bathaccessories-towelholders","subcategories":[]},{"id":"toilet-accessories","name":"Toilet Accessories","slug":"bathandlaundry-bathaccessories-toiletpaperandbrushholders","subcategories":[]},{"id":"shower-curtains","name":"Shower Curtains","slug":"bathandlaundry-bathaccessories-showercurtains","subcategories":[]},{"id":"bath-stools","name":"Bath Stools","slug":"bathandlaundry-bathaccessories-bathstools","subcategories":[]}]},{"id":"laundry","name":"Laundry","slug":"bathandlaundry-laundry","subcategories":[{"id":"laundry-storage-baskets","name":"Laundry Storage & Baskets","slug":"bathandlaundry-laundry-storage","subcategories":[]},{"id":"cleaning-accessories","name":"Cleaning Accessories","slug":"bathandlaundry-laundry-cleaningaccessories","subcategories":[]},{"id":"dustbins","name":"Dustbins","slug":"bathandlaundry-laundry-dustbins","subcategories":[]},{"id":"cloth-dryers","name":"Cloth Dryers","slug":"bathandlaundry-laundry-clothdryers","subcategories":[]},{"id":"hangers-hooks","name":"Hangers & Hooks","slug":"bathandlaundry-laundry-hangersandhooks","subcategories":[]}]}]},{"id":"gifting","name":"Gifting","slug":"gifts","subcategories":[{"id":"housewarming-gifts","name":"Housewarming Gifts","slug":"gifts-housewarminggifts","subcategories":[]},{"id":"wedding-gifts","name":"Wedding Gifts","slug":"gifts-weddinggifts","subcategories":[]},{"id":"anniversary-gifts","name":"Anniversary Gifts","slug":"gifts-anniversarygifts","subcategories":[]},{"id":"birthday-gifts","name":"Birthday Gifts","slug":"gifts-birthdaygifts","subcategories":[]},{"id":"gifts-for-him","name":"Gifts for Him","slug":"gifts-giftsforhim","subcategories":[]},{"id":"gifts-for-her","name":"Gifts for Her","slug":"gifts-giftsforher","subcategories":[]},{"id":"festive-gifts","name":"Festive Gifts","slug":"gifts-festivegifts","subcategories":[{"id":"ganesh-chaturthi","name":"Ganesh Chaturthi","slug":"gifts-festivegifts-ganeshchaturthigifts","subcategories":[]}]},{"id":"special-occasions","name":"Special Occasions","slug":"gifts-specialoccasiongifts","subcategories":[]}]}];
-const BUILD = "30 Oct 18:31";
+const BUILD = "30 Oct 2026 · QA fixes";
 let TAXONOMY = DEFAULT_TAX;
 const bySlug = {}; // slug -> {cat,sub,type}
 function reindex(){
@@ -219,6 +219,8 @@ const $ = (s,r=document)=>r.querySelector(s);
 const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const inr = n=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(+n||0);
 const num = v=>{const n=parseFloat(v);return isNaN(n)?0:n};
+/* A rupee amount as people type it in a spreadsheet: "₹1,20,000", "Rs. 1200", "1,200.50". NaN if it isn't one. */
+const money = v=>{if(typeof v==="number")return v;const t=String(v??"").replace(/₹|rs\.?|inr|,|\s/gi,"");return t===""||!/^-?\d*\.?\d+$/.test(t)?NaN:parseFloat(t)};
 const dkey = (d=new Date())=>{const z=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`};
 const tms = ts=>ts?.toMillis?ts.toMillis():(ts?.seconds?ts.seconds*1000:Date.now());
 const fdt = ms=>new Date(ms).toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
@@ -388,6 +390,13 @@ const takeFrom=(m,n)=>{const o={...m};let left=n;
   if(left>0){const k=ks[0]||UNLOC;o[k]=(+o[k]||0)-left}
   return o};
 const addTo=(m,loc,n)=>{const o={...m},k=String(loc||"").trim()||UNLOC;o[k]=(+o[k]||0)+n;return o};
+// put n pieces of a bill line back where they were taken from (older bills only know the first place)
+const putBack=(m,i,n)=>{let o={...m},left=n;
+  (Array.isArray(i.takenAt)?i.takenAt:[]).forEach(u=>{const t=Math.min(left,Math.max(0,+u.qty||0));if(t>0){o=addTo(o,u.loc,t);left-=t}});
+  if(left>0)o=addTo(o,i.takenFrom||primaryLoc(o)||UNLOC,left);
+  return o};
+const usedList=used=>used.map(([loc,qty])=>({loc,qty}));
+const freeQty=d=>(+d.qty||0)-Math.max(0,+d.booked||0);
 const primaryLoc=m=>{const e=Object.entries(m).filter(([,v])=>+v>0).sort((a,b)=>b[1]-a[1]);return e.length?e[0][0]:""};
 const bk = p=>Math.max(0,+p.booked||0);
 const avail = p=>(+p.qty||0)-bk(p);
@@ -424,26 +433,56 @@ async function ensureProfile(u){
   return s.exists()?s.data():null;   // profiles are created only by an admin (or by hand for the very first admin)
 }
 
-function stopListeners(){S.unsub.forEach(f=>f());S.unsub=[]}
+function stopListeners(){S.unsub.forEach(f=>f());S.unsub=[];HIST.q.forEach(x=>x.unsub&&x.unsub());HIST.q.clear();HIST.live={}}
+/* ---------- History beyond the live window ----------
+   The live lists only hold the newest records, so the app stays quick. A ledger, a past month,
+   or one old bill reaches further back by asking for exactly those records; they are merged
+   into the same lists, so every screen and total sees the whole history it needs. */
+const HIST={live:{},q:new Map()};
+const HCOL={sales:"sales",bookings:"bookings",payments:"payments",purchases:"purchases",vpays:"vendorPayments"};
+function histMerge(key){
+  const m=new Map();HIST.q.forEach(x=>{if(x.key===key)x.docs.forEach((d,id)=>m.set(id,d))});
+  (HIST.live[key]||[]).forEach(d=>m.set(d.id,d));   // the live copy always wins
+  S[key]=[...m.values()].sort((a,b)=>tms(b.createdAt)-tms(a.createdAt));
+}
+function histLive(key){return s=>{HIST.live[key]=s.docs.map(d=>({id:d.id,...d.data()}));histMerge(key);render(true)}}
+// keep listening to what has been opened this session (at most 40 queries; the oldest is dropped)
+function histNeed(key,...conds){
+  if(!S.user)return;
+  const qk=key+"|"+JSON.stringify(conds);if(HIST.q.has(qk))return;
+  const x={key,docs:new Map(),unsub:null};HIST.q.set(qk,x);
+  const r=conds[0]==="id"?doc(db,HCOL[key],conds[1]):query(collection(db,HCOL[key]),...conds.map(c=>where(...c)));
+  x.unsub=onSnapshot(r,sn=>{x.docs=new Map((sn.docs?sn.docs:sn.exists()?[sn]:[]).map(d=>[d.id,{id:d.id,...d.data()}]));histMerge(key);render(true)},e=>console.warn(e));
+  if(HIST.q.size>40){const [k0,o]=HIST.q.entries().next().value;o.unsub&&o.unsub();HIST.q.delete(k0);histMerge(o.key)}
+}
+const monthRange=m=>[["dateKey",">=",m+"-01"],["dateKey","<=",m+"-31"]];
+function histCustomer(c){
+  histNeed("sales",["customerId","==",c.id]);histNeed("bookings",["customerId","==",c.id]);histNeed("payments",["customerId","==",c.id]);
+  if(c.phone){histNeed("sales",["customer.phone","==",c.phone]);histNeed("bookings",["customerPhone","==",c.phone]);histNeed("payments",["customerPhone","==",c.phone])}
+}
 function startListeners(){
   stopListeners();
   const on=(q,fn)=>S.unsub.push(onSnapshot(q,fn,e=>console.warn(e)));
-  on(doc(db,"settings","store"),s=>{if(s.exists())S.settings={...S.settings,...s.data()};render()});
+  on(doc(db,"settings","store"),s=>{if(s.exists())S.settings={...S.settings,...s.data()};render(true)});
   on(doc(db,"settings","taxonomy"),s=>{let t=DEFAULT_TAX;if(s.exists()){try{t=JSON.parse(s.data().json)}catch(e){}}TAXONOMY=t;reindex();render(true)});
   on(doc(db,"settings","lists"),s=>{S.lists={...DEFAULT_LISTS,...(s.exists()?s.data():{})};render(true)});
   on(doc(db,"settings","perms"),s=>{const d=s.exists()?s.data():{};
     S.perms={manager:{...DEFAULT_PERMS.manager,...(d.manager||{})},sales:{...DEFAULT_PERMS.sales,...(d.sales||{})}};render(true)});
   on(collection(db,"products"),s=>{S.products=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
-  on(query(collection(db,"sales"),orderBy("createdAt","desc"),limit(500)),s=>{S.sales=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  on(query(collection(db,"sales"),orderBy("createdAt","desc"),limit(500)),histLive("sales"));
   on(collection(db,"customers"),s=>{S.customers=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(collection(db,"vendors"),s=>{S.vendors=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
-  on(query(collection(db,"purchases"),orderBy("createdAt","desc"),limit(1000)),s=>{S.purchases=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
-  on(query(collection(db,"vendorPayments"),orderBy("createdAt","desc"),limit(1000)),s=>{S.vpays=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
-  on(query(collection(db,"bookings"),orderBy("createdAt","desc"),limit(500)),s=>{S.bookings=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
-  on(query(collection(db,"payments"),orderBy("createdAt","desc"),limit(1000)),s=>{S.payments=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  on(query(collection(db,"purchases"),orderBy("createdAt","desc"),limit(1000)),histLive("purchases"));
+  on(query(collection(db,"vendorPayments"),orderBy("createdAt","desc"),limit(1000)),histLive("vpays"));
+  on(query(collection(db,"bookings"),orderBy("createdAt","desc"),limit(500)),histLive("bookings"));
+  on(query(collection(db,"payments"),orderBy("createdAt","desc"),limit(1000)),histLive("payments"));
   on(query(collection(db,"requests"),orderBy("createdAt","desc"),limit(300)),s=>{S.requests=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"movements"),orderBy("createdAt","desc"),limit(200)),s=>{S.moves=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   if(isAdmin())on(collection(db,"users"),s=>{S.users=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  // every open booking, however old — they reserve stock and are on the Bookings screen
+  histNeed("bookings",["status","==","booked"]);
+  // this month's sales for the dashboard
+  histNeed("sales",...monthRange(dkey().slice(0,7)));
 }
 
 if(!configured){setupScreen()}
@@ -476,6 +515,7 @@ function routeFromHash(){
   else if(DETAIL[S.view])S.view=DETAIL[S.view];
 }
 window.addEventListener("hashchange",()=>{routeFromHash();render()});
+["input","change"].forEach(t=>document.addEventListener(t,e=>{const x=e.target;if(x&&x.id&&x.closest&&x.closest("#main"))x.dataset.typed="1"},true));
 window.go=setView;
 function render(soft){
   if(!S.profile||!activeRole(S.profile.role))return;
@@ -484,6 +524,9 @@ function render(soft){
   if(["vendors","vendor","purchase"].includes(S.view)&&!(can("manageVendors")||can("vendorLedger")))S.view="dashboard";
   // don't clobber inputs while typing during snapshot updates
   if(soft&&document.activeElement&&/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)&&$("main")?.contains(document.activeElement))return;
+  // a redraw caused by someone else's change keeps whatever this person has typed but not saved
+  const typed=soft&&S.view===render.view?[...document.querySelectorAll("#main [data-typed]")].filter(e=>e.id).map(e=>[e.id,e.type==="checkbox"||e.type==="radio"?e.checked:e.value]):[];
+  render.view=S.view;
   const items=navItems();
   $("#root").innerHTML=`<div class="app">
    <nav class="side"><div class="logo">${esc(S.settings.storeName)}<small>${fullMode()?"Inventory + Sales":"Inventory"}</small></div>
@@ -495,6 +538,7 @@ function render(soft){
     customers:vCustomers,customer:vCustomer,bookings:vBookings,booking:vBooking,newbooking:vNewBooking,team:vTeam,approvals:vApprovals,
     vendors:vVendors,vendor:vVendor,sale:vSale,purchase:vPurchase}[S.view]||vDash;
   v($("#main"));
+  typed.forEach(([id,val])=>{const e=document.getElementById(id);if(!e)return;if(typeof val==="boolean")e.checked=val;else e.value=val;e.dataset.typed="1"});
   hydrateImages();
 }
 /* A dashboard tile opens the screen behind its number, set up to show the same thing. */
@@ -509,7 +553,8 @@ window.doSignOut=()=>signOut(auth);
 window.openMore=()=>{
   $("#modal").innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-width:380px"><h3>Menu</h3>
   <div class="grid">${navItems().slice(4).map(n=>`<button class="btn sec" style="text-align:left" onclick="closeModal();go('${n[0]}')">${n[2]} &nbsp;${n[1]}</button>`).join("")}</div>
-  <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Close</button></div></div></div>`;
+  <p class="small mute" style="margin-top:12px">Signed in as <b>${esc(S.profile.name)}</b> · ${esc(ROLE_LABEL[ROLE()]||S.profile.role)} · build ${esc(BUILD)}</p>
+  <div class="row" style="margin-top:8px;justify-content:space-between"><button class="btn bad" id="more-out" onclick="closeModal();doSignOut()">Sign out</button><button class="btn sec" onclick="closeModal()">Close</button></div></div></div>`;
 };
 
 /* ---------- Dashboard ---------- */
@@ -696,8 +741,11 @@ window.openProduct=function(id,preset){
     sel.value=have?have.value:v;
     if(!S.lists.locations.some(x=>String(x).toLowerCase()===v.toLowerCase())){try{await saveList("locations",[...S.lists.locations,v].sort(natcmp));toast("Location added")}catch(e){toast(emsg(e),1)}}
   };
-  $("#p-save").onclick=()=>saveProduct(id);
-  $("#p-del")&&($("#p-del").onclick=async()=>{if(!confirm("Delete this product permanently? Sales history is kept."))return;await deleteDoc(doc(db,"products",id));if(S.products.find(x=>x.id===id)?.hasImage)await deleteDoc(doc(db,"productImages",id)).catch(()=>{});closeModal();toast("Deleted")});
+  $("#p-save").onclick=once(()=>saveProduct(id));
+  $("#p-del")&&($("#p-del").onclick=async()=>{
+    const bkd=+(S.products.find(x=>x.id===id)?.booked)||0;
+    if(bkd>0)return toast(`${bkd} of this product ${bkd===1?"is":"are"} booked. Deliver or cancel those bookings before deleting it.`,1);
+    if(!confirm("Delete this product permanently? Sales history is kept."))return;await deleteDoc(doc(db,"products",id));if(S.products.find(x=>x.id===id)?.hasImage)await deleteDoc(doc(db,"productImages",id)).catch(()=>{});closeModal();toast("Deleted")});
 };
 async function saveProduct(id){
   const v=i=>$(i).value.trim();
@@ -721,7 +769,12 @@ async function saveProduct(id){
     dimension:dimNorm(v("#p-dim")),dimUnit:dimNorm(v("#p-dim"))?v("#p-dimunit"):"",
     reorder:$("#p-re")?num(v("#p-re")):num(old.reorder),unit:v("#p-unit"),location:v("#p-loc"),description:v("#p-desc"),active:true,
     updatedAt:serverTimestamp(),updatedBy:S.user.uid};
-  let r;
+  let r,split=false;
+  if(id&&d.location!==(old.location||"")){
+    const m0=locMapOf(old),ks=Object.keys(m0).filter(k=>+m0[k]);
+    if(ks.length===1)d.locQty={[d.location||UNLOC]:+m0[ks[0]]};            // all of it was in one place: it moves too
+    else if(ks.length>1){d.location=old.location||"";split=true}            // spread over places: moved with Stock → Transfer
+  }
   try{
     const b=writeBatch(db);
     r=id?doc(db,"products",id):doc(collection(db,"products"));
@@ -732,12 +785,14 @@ async function saveProduct(id){
     if(IMGSTATE.newImg){b.set(doc(db,"productImages",r.id),{data:IMGSTATE.newImg,updatedAt:serverTimestamp()});IMG.cache.set(r.id,IMGSTATE.newImg)}
     else if(IMGSTATE.rm&&old.hasImage){b.delete(doc(db,"productImages",r.id));IMG.cache.delete(r.id)}
     await b.commit();
-    closeModal();toast("Saved");
+    closeModal();toast(split?"Saved — this product sits in several places, so its location was left alone. Use Stock → Transfer to move pieces.":"Saved");
     const back=window.__afterProduct;window.__afterProduct=null;if(back)back(r.id);
   }catch(e){toast(emsg(e),1)}
 }
 function mv(pid,pname,sku,type,delta,before,after,note){return{productId:pid,productName:pname,sku,type,delta,before,after,note:note||"",by:S.user.uid,byName:S.profile.name,createdAt:serverTimestamp()}}
 window.closeModal=()=>{closeCamera();$("#modal").innerHTML=""};
+// one press at a time: the button stays disabled until the save it started has finished
+function once(fn){return async function(...a){if(this&&this.disabled)return;if(this)this.disabled=true;try{return await fn.apply(this,a)}finally{if(this)this.disabled=false}}}
 
 /* ---------- Stock ---------- */
 window.openStock=function(id,only){
@@ -845,6 +900,9 @@ window.openStock=function(id,only){
     else if(K.qty===""||q<0)return toast("Enter a valid quantity",1);
     else if(mode!=="set"&&q<=0)return toast("Enter how many pieces",1);
     if(mode==="transfer"&&from===to)return toast("Pick two different places",1);
+    const bkd=Math.max(0,+p.booked||0);
+    if(mode==="set"&&bkd&&!S.settings.allowNegative){const m0=locMapOf(p),tot=Object.entries({...m0,[to]:q}).reduce((a,[,v])=>a+(+v||0),0);
+      if(tot<bkd&&!confirm(`After this count the total is ${tot}, but ${bkd} are booked for customers. Those bookings won't be deliverable until more stock comes in.\n\nSave the count anyway?`))return}
     const btn=$("#s-save");btn.disabled=true;btn.textContent="Saving…";
     try{
       await runTransaction(db,async tx=>{
@@ -860,6 +918,8 @@ window.openStock=function(id,only){
         else if(mode==="out"){
           after=cur-q;
           if(after<0&&!S.settings.allowNegative)throw new Error("Not enough stock (only "+cur+")");
+          const bk0=Math.max(0,+d.booked||0);
+          if(after<bk0&&!S.settings.allowNegative)throw new Error(`${bk0} are booked for customers, so at most ${Math.max(0,cur-bk0)} can be taken out`);
           const have=+map[to]||0;
           if(q>have&&!S.settings.allowNegative)throw new Error(`Only ${have} at ${to}`);
           map={...map,[to]:have-q};
@@ -910,7 +970,8 @@ function vStock(el){
 /* ---------- POS ---------- */
 function cartTotals(){
   const gross=S.cart.reduce((a,i)=>a+i.price*i.qty,0);
-  let disc=S.cartDiscType==="pct"?gross*Math.min(100,S.cartDiscount)/100:Math.min(gross,S.cartDiscount);
+  const dv=Math.max(0,num(S.cartDiscount));   // a discount can never add to the bill
+  let disc=S.cartDiscType==="pct"?gross*Math.min(100,dv)/100:Math.min(gross,dv);
   disc=Math.round(disc*100)/100;const total=Math.round((gross-disc)*100)/100;
   let gst=0;S.cart.forEach(i=>{const share=gross?i.price*i.qty/gross:0;const line=i.price*i.qty-disc*share;gst+=line-line/(1+i.gst/100)});
   gst=Math.round(gst*100)/100;
@@ -949,7 +1010,7 @@ function vSell(el){
   const keepCust=()=>{S.cust={name:$("#c-name").value,ph:$("#c-ph").value,pay:$("#c-pay").value}};
   if(S.cust){$("#c-name").value=S.cust.name||"";$("#c-ph").value=S.cust.ph||"";$("#c-pay").value=S.cust.pay||"Cash"}
   const custInfo=()=>{const ph=$("#c-ph").value.trim(),ex=findCustByPhone(ph);const box=$("#c-cinfo");
-    if(!ex){box.innerHTML=ph&&custKey(ph).length>=6?`<span class="mute">New customer — saved automatically with this sale</span>`:"";return}
+    if(!ex){box.innerHTML=!ph?"":okPhone(ph)?`<span class="mute">New customer — saved automatically with this sale</span>`:`<span style="color:var(--warn)">A phone number needs 10 digits</span>`;return}
     if(!$("#c-name").value.trim())$("#c-name").value=ex.name||"";
     const st=custStats(ex),led=custLedger(ex);
     box.innerHTML=`<span class="tag ok">Saved customer</span> ${esc(ex.name)} · ${st.sales.length} past ${st.sales.length===1?"bill":"bills"} · ${inr(st.spend)} spent${st.open.length?` · ${st.open.length} open booking(s)`:""} ${led.balance?balTag(led.balance):""} <a href="#customer/${ex.id}">ledger</a>`};
@@ -967,12 +1028,15 @@ window.cartLoc=(ix,v)=>{S.cart[ix].loc=v;render()};
 window.cartSet=(ix,v)=>{const i=S.cart[ix],p=S.products.find(x=>x.id===i.pid);let n=Math.max(1,Math.floor(num(v)));if(n>avail(p)&&!S.settings.allowNegative){n=avail(p);toast(bk(p)?`Only ${avail(p)} available (${bk(p)} booked)`:`Only ${avail(p)} in stock`,1)}i.qty=n;render()};
 
 async function completeSale(){
-  const btn=$("#c-done");btn.disabled=true;btn.textContent="Saving…";
+  const btn=$("#c-done");
   const t=cartTotals(),cust={name:$("#c-name").value.trim(),phone:$("#c-ph").value.trim()},pay=$("#c-pay").value;
+  if(cust.phone&&!okPhone(cust.phone))return toast("That phone number is too short — it needs 10 digits, or leave it blank for a walk-in",1);
+  if(isCredit(pay)&&!cust.phone)return toast("A bill on Credit needs the customer's phone number, so it shows in their ledger",1);
+  btn.disabled=true;btn.textContent="Saving…";
   const cart=S.cart.map(i=>({...i}));
   try{
     let inv="",saleId="",customerId="";
-    if(cust.phone&&custKey(cust.phone).length>=6){
+    if(cust.phone&&okPhone(cust.phone)){
       const ex=findCustByPhone(cust.phone);
       if(ex){customerId=ex.id;if(isAdmin()&&cust.name&&cust.name!==ex.name)await updateDoc(doc(db,"customers",ex.id),{name:cust.name,updatedAt:serverTimestamp()}).catch(()=>{})}
       else{const r=doc(collection(db,"customers"));await setDoc(r,{name:cust.name||"Walk-in",phone:cust.phone,email:"",address:"",notes:"",createdAt:serverTimestamp(),createdBy:S.user.uid});customerId=r.id}
@@ -980,21 +1044,32 @@ async function completeSale(){
     await runTransaction(db,async tx=>{
       const cr=doc(db,"counters","invoice"),cs=await tx.get(cr);
       const refs=cart.map(i=>doc(db,"products",i.pid));const snaps=[];for(const r of refs)snaps.push(await tx.get(r));
-      snaps.forEach((s,ix)=>{if(!s.exists())throw new Error(cart[ix].name+" no longer exists");if(s.data().qty<cart[ix].qty&&!S.settings.allowNegative)throw new Error("Not enough stock for "+cart[ix].name+" (only "+s.data().qty+")")});
+      snaps.forEach((s,ix)=>{if(!s.exists())throw new Error(cart[ix].name+" no longer exists");const fr=freeQty(s.data());
+        if(fr<cart[ix].qty&&!S.settings.allowNegative)throw new Error(`Not enough free stock for ${cart[ix].name} — only ${Math.max(0,fr)} available`+(+s.data().booked>0?` (${s.data().booked} booked)`:""))});
       const n=(cs.exists()?cs.data().n:0)+1;inv=(S.settings.invoicePrefix||"INV")+"-"+String(n).padStart(5,"0");
       tx.set(cr,{n});
-      const sr=doc(collection(db,"sales"));saleId=sr.id;
-      snaps.forEach((s,ix)=>{const c=cart[ix],cur=s.data().qty,t=takeAt(locMapOf(s.data()),c.qty,c.loc);
+      const sr=doc(collection(db,"sales"));saleId=sr.id;const usedBy=[];
+      snaps.forEach((s,ix)=>{const c=cart[ix],cur=s.data().qty,t=takeAt(locMapOf(s.data()),c.qty,c.loc);usedBy[ix]=usedList(t.used);
         tx.update(refs[ix],{qty:cur-c.qty,locQty:t.map,location:primaryLoc(t.map)||s.data().location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
         tx.set(doc(collection(db,"movements")),{...mv(c.pid,c.name,c.sku,"sale",-c.qty,cur,cur-c.qty,inv+" · from "+t.used.map(u=>`${u[0]} (${u[1]})`).join(", ")),fromLoc:t.used.map(u=>u[0]).join(", "),toLoc:""})});
-      tx.set(sr,{invoiceNo:inv,items:cart.map(i=>({pid:i.pid,sku:i.sku,name:i.name,price:i.price,qty:i.qty,gst:i.gst,cost:i.cost,takenFrom:i.loc||"",lineTotal:Math.round(i.price*i.qty*100)/100})),
+      tx.set(sr,{invoiceNo:inv,items:cart.map((i,ix)=>({pid:i.pid,sku:i.sku,name:i.name,price:i.price,qty:i.qty,gst:i.gst,cost:i.cost,takenFrom:i.loc||"",takenAt:usedBy[ix]||[],lineTotal:Math.round(i.price*i.qty*100)/100})),
         subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,customer:cust,customerId,payment:pay,status:"completed",
         soldBy:S.user.uid,soldByName:S.profile.name,dateKey:dkey(),createdAt:serverTimestamp()});
     });
     S.cart=[];S.cartDiscount=0;S.cust=null;S.posQ="";
     toast("Sale "+inv+" saved");render();
-    printReceipt({invoiceNo:inv,items:cart,subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,customer:cust,payment:pay,soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
+    saleDone("Sale "+inv+" saved",{invoiceNo:inv,items:cart,subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,customer:cust,payment:pay,soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
   }catch(e){toast(e.message||"Couldn't save — are you online?",1);btn.disabled=false;btn.textContent="Complete sale"}
+}
+/* After a sale or delivery: say clearly that it is saved, and offer the receipt as a real tap
+   (a print window opened after the save finishes is blocked by phones and pop-up blockers). */
+function saleDone(title,rec,extra){
+  window.__receipt=rec;
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:420px;text-align:center" role="dialog" aria-modal="true" aria-labelledby="sd-h">
+   <div style="font-size:40px;line-height:1;color:var(--ok)">✓</div><h3 id="sd-h" style="margin:8px 0 4px">${esc(title)}</h3>
+   <p class="mute">${inr(rec.total)}${rec.customer?.name?" · "+esc(rec.customer.name):""}${extra?`<br>${esc(extra)}`:""}</p>
+   <div class="row" style="margin-top:14px;justify-content:center"><button class="btn" id="sd-print" onclick="printReceipt(window.__receipt)">Print receipt</button><button class="btn sec" onclick="closeModal()">Done</button></div></div></div>`;
+  $("#sd-print").focus();
 }
 window.printReceipt=function(s){
   const st=S.settings,w=window.open("","_blank","width=380,height=640");if(!w)return toast("Allow pop-ups to print",1);
@@ -1011,6 +1086,7 @@ window.printReceipt=function(s){
 function vSales(el){
   const byMonth=S.salesRange==="month";
   const day=S.salesDay||dkey(),mon=S.salesMonth||dkey().slice(0,7);
+  if(byMonth)histNeed("sales",...monthRange(mon));else histNeed("sales",["dateKey","==",day]);
   const L=byMonth?S.sales.filter(s=>String(s.dateKey||"").startsWith(mon)):S.sales.filter(s=>!day||s.dateKey===day);
   const ok=L.filter(s=>s.status!=="void");const tot=ok.reduce((a,s)=>a+s.total,0);
   const prof=ok.reduce((a,s)=>a+s.items.reduce((b,i)=>b+(i.price*i.qty-(i.cost||0)*i.qty),0)-s.discount,0);
@@ -1022,7 +1098,7 @@ function vSales(el){
   <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Invoice</th><th>Customer</th><th>Items</th><th class="n">Total</th><th></th></tr></thead><tbody>
   ${L.map(s=>`<tr style="${s.status==="void"?"opacity:.5":""}"><td data-l="Invoice"><a href="#sale/${s.id}"><b>${esc(s.invoiceNo)}</b></a> ${s.status==="void"?`<span class="tag out">void</span>`:""}<br><span class="small mute">${fdt(tms(s.createdAt))} · ${esc(s.soldByName||"")}</span></td><td data-l="Customer">${esc(s.customer?.name||"Walk-in")}<br><span class="small mute">${esc(s.payment)}</span></td>
    <td data-l="Items" class="small">${s.items.map(i=>plink(i.pid,i.name)+" ×"+num(i.qty)).join(", ")}</td><td data-l="Total" class="n">${inr(s.total)}</td>
-   <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="location.hash='sale/'+'${s.id}'">Open bill</button><button class="btn sm sec" onclick="reprint('${s.id}')">Print</button>${s.status!=="void"?(can("voidSale")?`<button class="btn sm sec" onclick="voidSale('${s.id}')">Void</button>`:rqBtn("sale.void",s.id,`Invoice ${s.invoiceNo} · ${inr(s.total)}`,{})):""}</div></td></tr>`).join("")||`<tr><td colspan="5" class="mute">No sales ${byMonth?"in this month":"on this date"}.</td></tr>`}
+   <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="location.hash='sale/'+'${s.id}'">Open bill</button><button class="btn sm sec" onclick="reprint('${s.id}')">Print</button>${s.status!=="void"&&!s.bookingId?(can("voidSale")?`<button class="btn sm sec" onclick="voidSale('${s.id}')">Void</button>`:rqBtn("sale.void",s.id,`Invoice ${s.invoiceNo} · ${inr(s.total)}`,{})):""}</div></td></tr>`).join("")||`<tr><td colspan="5" class="mute">No sales ${byMonth?"in this month":"on this date"}.</td></tr>`}
   </tbody></table></div>`;
   $("#srange").onchange=e=>{S.salesRange=e.target.value;setTimeout(render,0)};
   if($("#sd"))$("#sd").onchange=e=>{S.salesDay=e.target.value;setTimeout(render,0)};
@@ -1031,18 +1107,23 @@ function vSales(el){
 window.reprint=id=>{const s=S.sales.find(x=>x.id===id);if(s)printReceipt(s)};
 window.voidSale=async id=>{
   if(!can("voidSale"))return toast("You don't have permission to void a bill",1);
-  const s=S.sales.find(x=>x.id===id);if(!s||!confirm("Void "+s.invoiceNo+"? Stock will be returned."))return;
-  try{await doVoidSale(id);toast("Sale voided");render()}catch(e){toast(emsg(e),1)}
+  const s=S.sales.find(x=>x.id===id);if(!s)return;
+  if(s.bookingId)return toast(`${s.invoiceNo} came from delivering a booking — use Edit bill to correct it instead of voiding`,1);
+  if(voidSale.busy||!confirm("Void "+s.invoiceNo+"? Stock will be returned to where it was taken from."))return;
+  voidSale.busy=true;
+  try{await doVoidSale(id);toast("Sale voided");render()}catch(e){toast(emsg(e),1)}finally{voidSale.busy=false}
 };
 async function doVoidSale(id){
   const s=S.sales.find(x=>x.id===id);
   if(!s)throw new Error("That bill no longer exists");
+  if(s.bookingId)throw new Error(`${s.invoiceNo} was raised by delivering booking ${s.bookingNo||""}. Voiding it would leave the booking and the customer's ledger wrong — use Edit bill to correct the amount collected instead.`);
   {await runTransaction(db,async tx=>{
     const sr=doc(db,"sales",id),sd=await tx.get(sr);if(sd.data().status==="void")throw new Error("Already void");
     const refs=s.items.map(i=>doc(db,"products",i.pid)),snaps=[];for(const r of refs)snaps.push(await tx.get(r));
-    snaps.forEach((p,ix)=>{if(!p.exists())return;const cur=p.data().qty,i=s.items[ix];
-      tx.update(refs[ix],{qty:cur+i.qty,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
-      tx.set(doc(collection(db,"movements")),mv(i.pid,i.name,i.sku,"void",i.qty,cur,cur+i.qty,"Void "+s.invoiceNo))});
+    snaps.forEach((p,ix)=>{if(!p.exists())return;const d=p.data(),cur=+d.qty||0,i=s.items[ix],q=Math.floor(num(i.qty)),map=putBack(locMapOf(d),i,q);
+      Object.keys(map).forEach(k=>{if(!map[k])delete map[k]});
+      tx.update(refs[ix],{qty:cur+q,locQty:map,location:primaryLoc(map)||d.location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+      tx.set(doc(collection(db,"movements")),{...mv(i.pid,i.name,i.sku,"void",q,cur,cur+q,"Void "+s.invoiceNo),toLoc:(i.takenAt||[]).map(u=>u.loc).join(", ")||i.takenFrom||"",fromLoc:""})});
     tx.update(sr,{status:"void",voidedBy:S.profile.name,voidedAt:serverTimestamp()});
   })}
 }
@@ -1062,9 +1143,10 @@ function sumItems(items,disc){
 const histRows=log=>(log||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0)).map(x=>
   `<div style="padding:7px 0;border-bottom:1px solid var(--line)">${esc(x.what||"Changed")}<br><span class="small mute">${x.t?fdt(x.t):""} · ${esc(x.by||"")}${x.why?" · "+esc(x.why):""}</span></div>`).join("");
 function vSale(el){
+  histNeed("sales","id",S.detailSale);
   const s=S.sales.find(x=>x.id===S.detailSale);
   if(!s){el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('sales')">← Back</button><h2>Invoice not found</h2></div></div>`;return}
-  const dead=s.status==="void",adv=num(s.advance),got=r2(num(s.balancePaid??(num(s.total)-adv))),left=r2(num(s.total)-adv-got);
+  const dead=s.status==="void",adv=num(s.advance),got=!s.bookingId&&isCredit(s.payment)?0:r2(num(s.balancePaid??(num(s.total)-adv))),left=r2(num(s.total)-adv-got);
   const bg=s.bookingId?S.bookings.find(b=>b.id===s.bookingId):null,log=s.editLog||[];
   const R=[["Invoice no.",`<b>${esc(s.invoiceNo)}</b>`],["Billed on",fdt(tms(s.createdAt))],
    ["Customer",`${esc(s.customer?.name||"Walk-in")}${s.customer?.phone?` · <a href="tel:${esc(s.customer.phone)}">${esc(s.customer.phone)}</a>`:""}${s.customerId?` · <a href="#customer/${esc(s.customerId)}">open ledger</a>`:""}`],
@@ -1078,8 +1160,8 @@ function vSale(el){
    ...(left>0?[["Still pending",`<span style="color:var(--bad)">${inr(left)}</span>`]]:[])];
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('sales')">← Back</button><h2>${esc(s.invoiceNo)}</h2>${dead?`<span class="tag out">void</span>`:""}</div>
    <div class="row"><button class="btn sec" onclick="printInvoice('${s.id}')">Print bill</button><button class="btn sec" onclick="reprint('${s.id}')">Print receipt</button>
-   ${dead?"":isAdmin()?`<button class="btn" onclick="openSaleEdit('${s.id}')">Edit bill</button><button class="btn sec" onclick="voidSale('${s.id}')">Void</button>`
-     :(can("voidSale")?`<button class="btn sec" onclick="voidSale('${s.id}')">Void</button>`:rqBtn("sale.void",s.id,`Invoice ${s.invoiceNo} · ${inr(s.total)}`,{}))}</div></div>
+   ${dead?"":isAdmin()?`<button class="btn" onclick="openSaleEdit('${s.id}')">Edit bill</button>${s.bookingId?"":`<button class="btn sec" onclick="voidSale('${s.id}')">Void</button>`}`
+     :s.bookingId?"":(can("voidSale")?`<button class="btn sec" onclick="voidSale('${s.id}')">Void</button>`:rqBtn("sale.void",s.id,`Invoice ${s.invoiceNo} · ${inr(s.total)}`,{}))}</div></div>
   ${dead?`<div class="card" style="margin-bottom:12px"><b>This bill is void.</b> <span class="mute">The stock went back in and it counts for nothing in the customer's ledger.</span></div>`:""}
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
    <div class="card" style="padding:6px 14px"><table>${R.map(r=>`<tr><td class="mute" style="width:40%">${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table></div>
@@ -1195,7 +1277,7 @@ async function saveSaleEdit(){
       snaps.forEach((p,ix)=>{const x=delta[ix];
         if(!p.exists())throw new Error("A product on this bill no longer exists");
         const d=p.data(),cur=+d.qty||0;
-        if(x.d>0&&cur<x.d&&!S.settings.allowNegative)throw new Error(`Only ${cur} of ${d.name} left in stock`);
+        if(x.d>0&&freeQty(d)<x.d&&!S.settings.allowNegative)throw new Error(`Only ${Math.max(0,freeQty(d))} of ${d.name} free in stock`+(+d.booked>0?` (${d.booked} booked)`:""));
         const map=x.d>0?takeAt(locMapOf(d),x.d,x.loc).map:addTo(locMapOf(d),x.loc||primaryLoc(locMapOf(d)),-x.d);
         tx.update(refs[ix],{qty:cur-x.d,locQty:map,location:primaryLoc(map)||d.location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
         tx.set(doc(collection(db,"movements")),{...mv(x.pid,d.name,d.sku,x.d>0?"sale":"return",-x.d,cur,cur-x.d,
@@ -1238,8 +1320,11 @@ window.printInvoice=id=>{
 };
 
 /* ---------- Customers ---------- */
-const custKey=ph=>String(ph||"").replace(/\D/g,"");
-const findCustByPhone=ph=>{const k=custKey(ph);return k.length>=6?S.customers.find(c=>custKey(c.phone)===k):null};
+/* One key per phone number however it was typed: "+91 98765 43210", "098765 43210" and
+   "9876543210" are the same customer. */
+const custKey=ph=>{const d=String(ph||"").replace(/\D/g,"");return d.length>10&&/^(0|91|0091)/.test(d)?d.slice(-10):d};
+const okPhone=ph=>custKey(ph).length>=10;
+const findCustByPhone=ph=>{const k=custKey(ph);return okPhone(ph)?S.customers.find(c=>custKey(c.phone)===k):null};
 function custStats(c){
   const k=custKey(c.phone);
   const match=o=>o.customerId===c.id||(k&&custKey(o.customerPhone||o.customer?.phone)===k);
@@ -1320,6 +1405,7 @@ function custLedger(c){
 const balTag=b=>b<0?`<span class="tag out">${inr(Math.abs(b))} pending</span>`:b>0?`<span class="tag ok">${inr(b)} credit</span>`:`<span class="tag">settled</span>`;
 function vCustomer(el){
   const c=S.customers.find(x=>x.id===S.detailCust);
+  if(c)histCustomer(c);
   if(!c){el.innerHTML=`<div class="top"><h2>Customer not found</h2><button class="btn sec" onclick="go('customers')">← Back</button></div>`;return}
   const st=custStats(c),L=custLedger(c);
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('customers')">← Back</button><h2>${esc(c.name)}</h2></div>
@@ -1392,14 +1478,15 @@ window.openCustomer=function(id){
    <div class="full"><label>Notes</label><textarea id="cu-no" rows="2">${esc(c.notes)}</textarea></div></div>
   <div class="row" style="margin-top:14px;justify-content:space-between"><div>${id&&isAdmin()?`<button class="btn bad sm" id="cu-del">Delete</button>`:""}</div>
    <div class="row"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="cu-save">Save</button></div></div></div></div>`;
-  $("#cu-save").onclick=async()=>{
+  $("#cu-save").onclick=once(async()=>{
     const name=$("#cu-name").value.trim(),phone=$("#cu-ph").value.trim();
-    if(!name||custKey(phone).length<6)return toast("Name and a valid phone number are required",1);
+    if(!name)return toast("A name is required",1);
+    if(!okPhone(phone))return toast("The phone number needs 10 digits",1);
     const dup=S.customers.find(x=>custKey(x.phone)===custKey(phone)&&x.id!==id);
     if(dup)return toast(`That phone already belongs to ${dup.name}`,1);
     const d={name,phone,email:$("#cu-em").value.trim(),address:$("#cu-ad").value.trim(),notes:$("#cu-no").value.trim(),updatedAt:serverTimestamp(),updatedBy:S.user.uid};
     try{if(id)await updateDoc(doc(db,"customers",id),d);else await setDoc(doc(collection(db,"customers")),{...d,createdAt:serverTimestamp(),createdBy:S.user.uid});closeModal();toast("Saved")}catch(e){toast(emsg(e),1)}
-  };
+  });
   $("#cu-del")&&($("#cu-del").onclick=async()=>{if(!confirm("Delete this customer? Their bills and bookings stay."))return;
     try{await deleteDoc(doc(db,"customers",id));closeModal();if(S.view==="customer")go("customers");else render();toast("Deleted")}catch(e){toast(emsg(e),1)}});
 };
@@ -1493,6 +1580,7 @@ window.openPayment=function(custId,bookingId){
     const amt=num($("#pm-amt").value);
     if(amt<=0)return toast("Enter the amount received",1);
     const b=mine.find(x=>x.id===sel.value);
+    if(b&&b.status==="booked"&&amt>Math.max(0,bkDue(b))&&!confirm(`${inr(amt)} is more than the ${inr(Math.max(0,bkDue(b)))} still due on ${b.bookingNo}.\n\nSave it anyway? The extra stays with the shop as credit for this customer.`))return;
     const btn=$("#pm-go");btn.disabled=true;
     try{
       await setDoc(doc(collection(db,"payments")),{customerId:c.id,customerName:c.name,customerPhone:c.phone,
@@ -1556,6 +1644,7 @@ function vVendors(el){
 }
 function vVendor(el){
   const v=S.vendors.find(x=>x.id===S.detailVendor);
+  if(v){histNeed("purchases",["vendorId","==",v.id]);histNeed("vpays",["vendorId","==",v.id])}
   if(!v){el.innerHTML=`<div class="top"><h2>Vendor not found</h2><button class="btn sec" onclick="go('vendors')">← Back</button></div>`;return}
   const st=vendorStats(v),notes=(v.log||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0)),L=vendorLedger(v);
   const R=[["Category",esc(v.category||"—")],
@@ -1628,6 +1717,7 @@ const vendBalTag=b=>b<0?`<span class="tag out">${inr(Math.abs(b))} payable</span
 /* One purchase bill, in full: what the vendor sent, what it cost, and where the pieces went. */
 const purCharges=p=>(p.charges||[]).length?p.charges:(num(p.other)?[{label:"Other charges",amount:num(p.other)}]:[]);
 function vPurchase(el){
+  histNeed("purchases","id",S.detailPur);
   const p=S.purchases.find(x=>x.id===S.detailPur);
   if(!p){el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('vendors')">← Back</button><h2>Purchase not found</h2></div></div>`;return}
   const v=S.vendors.find(x=>x.id===p.vendorId),ch=purCharges(p),log=p.editLog||[];
@@ -2079,11 +2169,27 @@ const rqBtn=(kind,id,label,cur)=>{
   return ex?`<span class="tag low">awaiting approval</span>`
     :`<button class="btn sm sec" onclick="askCorrection(${esc(JSON.stringify(kind))},${esc(JSON.stringify(id))},${esc(JSON.stringify(label))},${esc(JSON.stringify(cur||{}))})">Ask admin</button>`;
 };
+/* What a request points at, read from the live record rather than from the request,
+   so the admin sees the real thing and the real current values. */
+function reqTarget(r){
+  const k=String(r.kind||"").split(".")[0];
+  if(k==="booking"){const b=S.bookings.find(x=>x.id===r.targetId);return b&&{label:`Booking ${b.bookingNo} · ${b.customerName} · ${inr(b.total)}`,now:{advance:b.advance,deliveryDate:b.deliveryDate||"",notes:b.notes||""},rec:b}}
+  if(k==="payment"){const p=S.payments.find(x=>x.id===r.targetId);return p&&{label:`${inr(p.amount)} from ${p.customerName||"customer"} on ${p.date||""}`,now:{amount:p.amount,date:p.date||"",note:p.note||""},rec:p}}
+  if(k==="sale"){const s=S.sales.find(x=>x.id===r.targetId);return s&&{label:`Invoice ${s.invoiceNo} · ${inr(s.total)}`,now:{},rec:s}}
+  if(k==="stock"){const p=S.products.find(x=>x.id===r.targetId);return p&&{label:`${p.name} (${p.sku}) · ${qtyText(p.qty,p.unit)} in stock`,now:{qty:p.qty},rec:p}}
+  return null;
+}
 window.decideRequest=async(id,ok)=>{
   if(!isAdmin())return;
   const r=S.requests.find(x=>x.id===id);if(!r||r.status!=="pending")return;
-  const note=ok?"":(prompt("Reason for rejecting (optional):")||"");
-  if(ok&&!confirm(`Approve: ${RQ[r.kind]?.title||r.kind}\n${r.label}\n\nRequested by ${r.requestedByName}.`))return;
+  let note="";
+  if(!ok){const v=prompt("Reason for rejecting (optional):");if(v===null)return;note=v.trim()}
+  const tg=reqTarget(r);
+  if(ok&&!tg)return toast("The record this request is about no longer exists — reject it instead",1);
+  let warn="";
+  if(ok&&r.kind==="stock.set"&&r.before&&String(r.before.qty)!==String(tg.now.qty))
+    warn=`\n\nStock has changed since this was asked: it was ${r.before.qty} then, it is ${tg.now.qty} now. The count of ${r.changes?.qty} will replace today's figure.`;
+  if(ok&&!confirm(`Approve: ${RQ[r.kind]?.title||r.kind}\n${tg.label}\n\nRequested by ${r.requestedByName}.${warn}`))return;
   try{
     if(ok)await applyRequest(r);
     await updateDoc(doc(db,"requests",id),{status:ok?"approved":"rejected",decidedBy:S.user.uid,decidedByName:S.profile.name,decidedAt:serverTimestamp(),decisionNote:note});
@@ -2094,12 +2200,21 @@ async function applyRequest(r){
   const c=r.changes||{};
   if(r.kind==="booking.edit"){
     const b=S.bookings.find(x=>x.id===r.targetId);if(!b)throw new Error("That booking no longer exists");
-    const adv=num(c.advance);
+    if(b.status!=="booked")throw new Error(`That booking is already ${b.status} — reject this request`);
+    const adv=r2(num(c.advance));
+    if(adv<0)throw new Error("The booking amount can't be negative");
     if(adv>num(b.total))throw new Error("The booking amount is more than the order value");
     await updateDoc(doc(db,"bookings",r.targetId),{advance:adv,balance:r2(num(b.total)-adv),deliveryDate:c.deliveryDate||"",notes:c.notes||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
   }
-  else if(r.kind==="booking.cancel")await doCancelBooking(r.targetId,{mode:c.settle||"credit",amount:num(c.amount)||bkReceived(S.bookings.find(x=>x.id===r.targetId)||{}),note:r.reason||""});
-  else if(r.kind==="payment.edit")await updateDoc(doc(db,"payments",r.targetId),{amount:num(c.amount),date:c.date||dkey(),note:c.note||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+  else if(r.kind==="booking.cancel"){
+    const b=S.bookings.find(x=>x.id===r.targetId);if(!b)throw new Error("That booking no longer exists");
+    // whatever was received stays as credit; the admin settles it from the booking page
+    await doCancelBooking(r.targetId,{mode:"credit",amount:bkReceived(b),note:r.reason||""});
+  }
+  else if(r.kind==="payment.edit"){
+    const amt=r2(num(c.amount));if(amt<=0)throw new Error("The corrected amount has to be more than zero");
+    await updateDoc(doc(db,"payments",r.targetId),{amount:amt,date:c.date||dkey(),note:c.note||"",correctedBy:S.profile.name,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+  }
   else if(r.kind==="payment.remove")await deleteDoc(doc(db,"payments",r.targetId));
   else if(r.kind==="sale.void")await doVoidSale(r.targetId);
   else if(r.kind==="stock.set"){
@@ -2127,11 +2242,11 @@ function vApprovals(el){
    <select id="rq-f" style="width:auto">${[["pending","Pending"],["approved","Approved"],["rejected","Rejected"],["all","All"]].map(o=>`<option value="${o[0]}" ${f===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></div>
   <p class="mute small" style="margin-bottom:12px">${mine?"Your requests to change something already saved. An admin decides.":"A manager or sales executive has asked to change something already saved. Nothing changes until you approve it."}</p>
   <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Asked</th><th>What</th><th>Change</th><th>Reason</th><th></th></tr></thead><tbody>
-  ${L.map(r=>{const def=RQ[r.kind]||{fields:[]};
-    const diff=def.fields.map(fd=>{const was=r.before?.[fd[0]],now=r.changes?.[fd[0]];
+  ${L.map(r=>{const def=RQ[r.kind]||{fields:[]},tg=r.status==="pending"?reqTarget(r):null,cur=tg?tg.now:(r.before||{});
+    const diff=def.fields.map(fd=>{const was=cur[fd[0]],now=r.changes?.[fd[0]];
       return (String(was??"")===String(now??""))?"":`${fd[1]}: <b>${esc(String(was??"—"))}</b> → <b>${esc(String(now??"—"))}</b>`}).filter(Boolean).join("<br>");
     return `<tr><td data-l="Asked" class="small">${fdt(tms(r.createdAt))}<br><span class="mute">${esc(r.requestedByName)} · ${esc(r.requestedRole||"")}</span></td>
-     <td data-l="What"><b>${esc(def.title||r.kind)}</b><br><span class="small mute">${esc(r.label||"")}</span></td>
+     <td data-l="What"><b>${esc(def.title||r.kind)}</b><br><span class="small mute">${esc(tg?tg.label:r.status==="pending"?"Record no longer exists":(r.label||""))}</span></td>
      <td data-l="Change" class="small">${diff||`<span class="mute">—</span>`}</td>
      <td data-l="Reason" class="small">${esc(r.reason||"")}${r.status!=="pending"?`<br><span class="mute">${esc(r.status)} by ${esc(r.decidedByName||"")}${r.decisionNote?" · "+esc(r.decisionNote):""}</span>`:""}</td>
      <td data-l="">${r.status==="pending"&&isAdmin()?`<div class="row" style="justify-content:flex-end"><button class="btn sm" onclick="decideRequest('${r.id}',true)">Approve</button><button class="btn sm sec" onclick="decideRequest('${r.id}',false)">Reject</button></div>`:`<span class="tag ${r.status==="approved"?"ok":r.status==="pending"?"low":"out"}">${esc(r.status)}</span>`}</td></tr>`}).join("")
@@ -2181,7 +2296,7 @@ function vNewBooking(el){
   const info=()=>{const ex=findCustByPhone($("#bk-ph").value);const box=$("#bk-cinfo");
     if(ex){S.bcustId=ex.id;if(!$("#bk-name").value.trim()){$("#bk-name").value=ex.name;S.bname=ex.name}
       const st=custStats(ex),led=custLedger(ex);box.innerHTML=`<span class="tag ok">Saved customer</span> ${st.sales.length} bill(s) · ${inr(st.spend)} spent ${led.balance?balTag(led.balance):""}`}
-    else{S.bcustId="";box.innerHTML=custKey($("#bk-ph").value).length>=6?`<span class="mute">New customer — saved with this booking</span>`:""}};
+    else{S.bcustId="";const v=$("#bk-ph").value.trim();box.innerHTML=!v?"":okPhone(v)?`<span class="mute">New customer — saved with this booking</span>`:`<span style="color:var(--warn)">A phone number needs 10 digits</span>`}};
   $("#bk-ph").oninput=()=>{keep();info()};info();
   ["#bk-name","#bk-adv","#bk-date","#bk-notes"].forEach(i=>{$(i).onchange=keep;$(i).oninput=keep});
   const bsum=()=>{const el=$("#bk-sum");if(el)el.innerHTML=bkSum(bkTotals(S.bcart,S.bdisc,S.bdiscType),num($("#bk-adv").value))};
@@ -2200,10 +2315,12 @@ window.bkSet=(ix,v)=>{const i=S.bcart[ix],p=S.products.find(x=>x.id===i.pid);let
   if(p&&n>avail(p)&&!S.settings.allowNegative){n=avail(p);toast(`Only ${avail(p)} available`,1)}i.qty=n;render()};
 async function createBooking(){
   const btn=$("#bk-done");const phone=$("#bk-ph").value.trim(),name=$("#bk-name").value.trim();
-  if(custKey(phone).length<6||!name)return toast("Customer name and phone are required",1);
+  if(!okPhone(phone))return toast(phone?"The phone number needs 10 digits":"The customer's phone number is required",1);
+  if(!name)return toast("The customer's name is required",1);
   const adv=num($("#bk-adv").value),date=$("#bk-date").value,notes=$("#bk-notes").value.trim();
   const t=bkTotals(S.bcart,S.bdisc,S.bdiscType);
   if(t.total<=0)return toast("The order value has to be more than zero",1);
+  if(adv<0)return toast("The booking amount can't be negative",1);
   if(adv>t.total)return toast("Booking amount is more than the order value",1);
   btn.disabled=true;btn.textContent="Saving…";
   const cart=S.bcart.map(i=>({...i}));
@@ -2240,7 +2357,7 @@ function vBookings(el){
   el.innerHTML=`<div class="top"><h2>Bookings <span class="mute small">(${open.length} open)</span></h2>
    <div class="row"><button class="btn" onclick="bookFor()">+ New booking</button><button class="btn sec" onclick="exportBookings()">Export</button></div></div>
   <div class="grid stats" style="margin-bottom:12px">
-   <div class="card stat"><div class="k">Open bookings</div><div class="v">${open.length}</div><div class="s">${open.reduce((a,b)=>a+b.items.reduce((x,i)=>x+i.qty,0),0)} units reserved</div></div>
+   <div class="card stat"><div class="k">Open bookings</div><div class="v">${open.length}</div><div class="s">${open.reduce((a,b)=>a+b.items.reduce((x,i)=>x+num(i.qty),0),0)} units reserved</div></div>
    <div class="card stat"><div class="k">Received on open bookings</div><div class="v">${inr(open.reduce((a,b)=>a+bkReceived(b),0))}</div><div class="s">${inr(open.reduce((a,b)=>a+bkDue(b),0))} still due</div></div>
    <div class="card stat"><div class="k">Due for delivery</div><div class="v" style="color:var(--warn)">${open.filter(b=>b.deliveryDate&&b.deliveryDate<=tk).length}</div><div class="s">on or before today</div></div></div>
   <div class="card" style="margin-bottom:12px"><div class="f filters">
@@ -2264,6 +2381,7 @@ function vBookings(el){
   $("#bf-st").onchange=e=>{S.bf.status=e.target.value;render()};
 }
 function vBooking(el){
+  histNeed("bookings","id",S.detailBk);histNeed("payments",["bookingId","==",S.detailBk]);
   const b=S.bookings.find(x=>x.id===S.detailBk);
   if(!b){el.innerHTML=`<div class="top"><h2>Booking not found</h2><button class="btn sec" onclick="go('bookings')">← Back</button></div>`;return}
   const recd=bkReceived(b),bal=bkDue(b),pays=payFor(b.id).slice().sort((x,y)=>dayMs(x.date)-dayMs(y.date)),sale=b.saleId?S.sales.find(s=>s.id===b.saleId):null;
@@ -2338,7 +2456,7 @@ window.editBooking=id=>{
    <div><label>Tentative delivery date</label><input id="eb-date" type="date" value="${esc(b.deliveryDate||"")}"></div>
    <div><label>Notes</label><textarea id="eb-no" rows="2">${esc(b.notes||"")}</textarea></div></div>
   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="eb-save">Save</button></div></div></div>`;
-  $("#eb-save").onclick=async()=>{
+  $("#eb-save").onclick=once(async()=>{
     const adv=num($("#eb-adv").value);
     const d={deliveryDate:$("#eb-date").value,notes:$("#eb-no").value.trim(),updatedAt:serverTimestamp(),updatedBy:S.user.uid};
     let total=num(b.total);
@@ -2349,10 +2467,11 @@ window.editBooking=id=>{
       const t=sumItems(b.items,disc);
       Object.assign(d,{subtotal:gross,discount:disc,total:t.total,gstAmount:t.gst});
     }
+    if(adv<0)return toast("The booking amount can't be negative",1);
     if(adv>total)return toast(`Booking amount is more than the order value (${inr(total)})`,1);
     Object.assign(d,{advance:adv,balance:r2(total-adv)});
     try{await updateDoc(doc(db,"bookings",id),d);closeModal();toast("Booking updated")}catch(e){toast(emsg(e),1)}
-  };
+  });
 };
 window.cancelBooking=id=>{
   if(!can("cancelBooking"))return toast("You don't have permission to cancel a booking",1);
@@ -2360,7 +2479,7 @@ window.cancelBooking=id=>{
   const recd=bkReceived(b);
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:520px"><h3>Cancel ${esc(b.bookingNo)}</h3>
   <p class="mute small">${esc(b.customerName)} · ${esc(b.customerPhone)} — ${b.items.map(i=>esc(i.name)+" ×"+num(i.qty)).join(", ")}<br>
-   The ${b.items.reduce((a,i)=>a+i.qty,0)} reserved piece(s) go back into free stock.</p>
+   The ${b.items.reduce((a,i)=>a+num(i.qty),0)} reserved piece(s) go back into free stock.</p>
   ${recd>0?`<div class="card" style="margin:10px 0;padding:10px 12px">
    <div class="row" style="justify-content:space-between;font-weight:700"><span>Received so far</span><span>${inr(recd)}</span></div></div>
    <label>What happens to that ${inr(recd)}?</label>
@@ -2418,12 +2537,15 @@ window.deliverBooking=id=>{
    <div><label>Mode</label><select id="dv-mode">${S.lists.payModes.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div></div>
   <p class="small mute" id="dv-note" style="margin-top:8px"></p>
   <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="dv-go">Deliver &amp; bill</button></div></div></div>`;
-  const note=()=>{const got=num($("#dv-amt").value),left=r2(due-got);
-    $("#dv-note").innerHTML=left>0?`<span style="color:var(--warn)">${inr(left)} will stay pending in the customer's ledger.</span>`
-      :left<0?`<span style="color:var(--bad)">That is more than the balance.</span>`:"Balance settled in full.";
-    $("#dv-go").disabled=left<0};
+  const note=()=>{const got=num($("#dv-amt").value),left=r2(due-got),bad=got<0||(got>0&&left<0);
+    $("#dv-note").innerHTML=got<0?`<span style="color:var(--bad)">That can't be a negative amount.</span>`
+      :due<0&&got===0?`<span style="color:var(--ok)">The customer has already paid ${inr(-due)} more than the order value — that stays with the shop as credit.</span>`
+      :left<0?`<span style="color:var(--bad)">That is more than the balance.</span>`
+      :left>0?`<span style="color:var(--warn)">${inr(left)} will stay pending in the customer's ledger.</span>`:"Balance settled in full.";
+    $("#dv-go").disabled=bad};
   $("#dv-amt").oninput=note;note();
   $("#dv-go").onclick=()=>{
+    if($("#dv-go").disabled)return;
     const picks={};document.querySelectorAll(".dv-loc").forEach(s=>{picks[s.dataset.ix]=s.value});
     doDeliver(id,num($("#dv-amt").value),$("#dv-mode").value,recd,picks);
   };
@@ -2441,11 +2563,11 @@ async function doDeliver(id,collect,mode,recd,picks){
       snaps.forEach((s,ix)=>{if(!s.exists())throw new Error(b.items[ix].name+" no longer exists");
         if((+s.data().qty||0)<b.items[ix].qty&&!S.settings.allowNegative)throw new Error(`Not enough stock for ${b.items[ix].name} (only ${s.data().qty})`)});
       const n=(cs.exists()?cs.data().n:0)+1;inv=(S.settings.invoicePrefix||"INV")+"-"+String(n).padStart(5,"0");tx.set(cr,{n});
-      const sr=doc(collection(db,"sales"));
-      snaps.forEach((s,ix)=>{const i=b.items[ix],d=s.data(),cur=+d.qty||0,t=takeAt(locMapOf(d),i.qty,(picks||{})[ix]);
+      const sr=doc(collection(db,"sales"));const usedBy=[];
+      snaps.forEach((s,ix)=>{const i=b.items[ix],d=s.data(),cur=+d.qty||0,t=takeAt(locMapOf(d),i.qty,(picks||{})[ix]);usedBy[ix]=usedList(t.used);
         tx.update(refs[ix],{qty:cur-i.qty,locQty:t.map,location:primaryLoc(t.map)||d.location||"",booked:Math.max(0,(+d.booked||0)-i.qty),updatedAt:serverTimestamp(),updatedBy:S.user.uid});
         tx.set(doc(collection(db,"movements")),{...mv(i.pid,i.name,i.sku,"sale",-i.qty,cur,cur-i.qty,inv+" (booking "+b.bookingNo+") · from "+t.used.map(u=>`${u[0]} (${u[1]})`).join(", ")),fromLoc:t.used.map(u=>u[0]).join(", "),toLoc:""})});
-      tx.set(sr,{invoiceNo:inv,items:b.items,subtotal:num(b.subtotal??b.total),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
+      tx.set(sr,{invoiceNo:inv,items:b.items.map((i,ix)=>({...i,takenFrom:(usedBy[ix]&&usedBy[ix][0]?.loc)||"",takenAt:usedBy[ix]||[]})),subtotal:num(b.subtotal??b.total),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
         taxable:r2(num(b.total)-num(b.gstAmount)),customer:{name:b.customerName,phone:b.customerPhone},customerId:b.customerId||"",
         payment:mode||"Booking balance",status:"completed",advance:r2(recd),balancePaid:r2(collect),bookingId:id,bookingNo:b.bookingNo,
         soldBy:S.user.uid,soldByName:S.profile.name,dateKey:dkey(),createdAt:serverTimestamp()});
@@ -2454,15 +2576,15 @@ async function doDeliver(id,collect,mode,recd,picks){
     closeModal();
     const left=r2(num(b.total)-recd-collect);
     toast(`Delivered — invoice ${inv}${left>0?` · ${inr(left)} still pending`:""}`);
-    printReceipt({invoiceNo:inv,items:b.items,subtotal:num(b.subtotal??b.total),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
-      customer:{name:b.customerName,phone:b.customerPhone},payment:mode||"Booking balance",advance:r2(recd),balanceLeft:left,bookingNo:b.bookingNo,
+    saleDone(`Delivered — invoice ${inv}`,{invoiceNo:inv,items:b.items,subtotal:num(b.subtotal??b.total),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
+      customer:{name:b.customerName,phone:b.customerPhone},payment:mode||"Booking balance",advance:r2(recd),balancePaid:r2(collect),balanceLeft:left,bookingNo:b.bookingNo,
       soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
   }catch(e){toast(emsg(e),1);const g=$("#dv-go");if(g){g.disabled=false;g.textContent="Deliver & bill"}}
 }
 window.printBooking=id=>{
   const b=S.bookings.find(x=>x.id===id);if(!b)return;const st=S.settings;
   const w=window.open("","_blank","width=380,height=640");if(!w)return toast("Allow pop-ups to print",1);
-  const bal=num(b.total)-num(b.advance);
+  const bal=Math.max(0,bkDue(b)),recd=bkReceived(b);
   w.document.write(`<html><head><title>${esc(b.bookingNo)}</title><style>body{font:13px monospace;width:300px;margin:8px auto}h2{text-align:center;margin:0}.c{text-align:center}.r{display:flex;justify-content:space-between}.m{font-size:11px;color:#444}hr{border:0;border-top:1px dashed #000}</style></head><body>
   <h2>${esc(st.storeName)}</h2><div class="c">${esc(st.address||"")}<br>${st.phone?"Ph: "+esc(st.phone):""}</div><hr>
   <div class="c"><b>BOOKING SLIP</b></div>
@@ -2471,7 +2593,7 @@ window.printBooking=id=>{
   ${b.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${num(i.qty)} × ${inr(i.price)}</span><span>${inr(i.lineTotal??i.price*i.qty)}</span></div>`).join("")}<hr>
   ${num(b.discount)?`<div class="r"><span>Items</span><span>${inr(b.subtotal??b.total)}</span></div><div class="r"><span>Discount</span><span>-${inr(b.discount)}</span></div>`:""}
   <div class="r"><span>Order value</span><span>${inr(b.total)}</span></div>
-  <div class="r"><span>Booking amount paid</span><span>${inr(b.advance)}</span></div>
+  <div class="r"><span>Received so far</span><span>${inr(recd)}</span></div>
   <div class="r"><b>BALANCE DUE</b><b>${inr(bal)}</b></div>
   <div>Tentative delivery: ${esc(b.deliveryDate||"to be confirmed")}</div>${b.notes?`<div>Note: ${esc(b.notes)}</div>`:""}<hr>
   <div class="c">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),300)<\/script></body></html>`);w.document.close();
@@ -2601,6 +2723,7 @@ function vSettings(el){
    <p class="mute small">Choose how this store uses the app. Applies to every staff device.</p>
    <label style="display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:14px;margin-bottom:8px"><input type="radio" name="mode" value="inventory" style="width:auto;margin-top:3px" ${st.mode==="inventory"?"checked":""} ${isAdmin()?"":"disabled"}><span><b>Inventory only</b><br><span class="mute small">Track stock, receive goods, adjust counts. No billing.</span></span></label>
    <label style="display:flex;gap:8px;align-items:flex-start;color:var(--ink);font-size:14px"><input type="radio" name="mode" value="full" style="width:auto;margin-top:3px" ${st.mode==="full"?"checked":""} ${isAdmin()?"":"disabled"}><span><b>Inventory + Sales</b><br><span class="mute small">Adds billing screen, GST receipts, sales history; stock reduces automatically.</span></span></label></div>
+  <div class="card"><h3 style="margin-bottom:6px">Signed in</h3><p class="mute small" style="margin-bottom:10px">${esc(S.profile.name)} · ${esc(S.profile.email||S.user?.email||"")} · ${esc(ROLE_LABEL[ROLE()]||S.profile.role)}</p><button class="btn sec" onclick="doSignOut()">Sign out</button></div>
   <div class="card"><h3 style="margin-bottom:10px">Appearance</h3>
    <p class="mute small">Light or dark, on <b>this device only</b> — each phone, tablet and computer keeps its own choice, so the showroom screen can stay light while your phone goes dark at night.</p>
    <div class="tabs" style="margin-top:10px">
@@ -2629,8 +2752,8 @@ function vSettings(el){
     <p><button class="btn" onclick="go('team')">Open the Staff screen</button></p></div>`:""}
   </div>`;
   if(isAdmin()){
-    $("#s-save").onclick=async()=>{const mode=document.querySelector("input[name=mode]:checked").value;
-      try{await setDoc(doc(db,"settings","store"),{storeName:$("#s-nm").value.trim()||"My Store",address:$("#s-ad").value.trim(),phone:$("#s-ph").value.trim(),gstin:$("#s-gs").value.trim(),invoicePrefix:$("#s-pf").value.trim()||"INV",footer:$("#s-ft").value.trim(),allowNegative:$("#s-neg").checked,mode},{merge:true});toast("Settings saved")}catch(e){toast(emsg(e),1)}};
+    $("#s-save").onclick=once(async()=>{const mode=document.querySelector("input[name=mode]:checked").value;
+      try{await setDoc(doc(db,"settings","store"),{storeName:$("#s-nm").value.trim()||"My Store",address:$("#s-ad").value.trim(),phone:$("#s-ph").value.trim(),gstin:$("#s-gs").value.trim(),invoicePrefix:$("#s-pf").value.trim()||"INV",footer:$("#s-ft").value.trim(),allowNegative:$("#s-neg").checked,mode},{merge:true});toast("Settings saved")}catch(e){toast(emsg(e),1)}});
   }
 }
 function listCard(key,title,hint){
@@ -2659,7 +2782,14 @@ window.listRename=async(key,i)=>{
   try{
     await saveList(key,sortList(key,arr.map((x,j)=>j===i?nv:x)));
     const pk={locations:"location",units:"unit"}[key];
-    if(pk){const aff=S.products.filter(p=>p[pk]===old);for(let k=0;k<aff.length;k+=400){const b=writeBatch(db);aff.slice(k,k+400).forEach(p=>b.update(doc(db,"products",p.id),{[pk]:nv}));await b.commit()}}
+    if(pk==="location"){
+      // the stock sitting under the old name moves to the new one (added to anything already there)
+      const aff=S.products.filter(p=>p.location===old||Object.prototype.hasOwnProperty.call(p.locQty||{},old));
+      for(let k=0;k<aff.length;k+=400){const b=writeBatch(db);aff.slice(k,k+400).forEach(p=>{
+        const m=locMapOf(p),q=+m[old]||0;delete m[old];const map=q?addTo(m,nv,q):m;
+        b.update(doc(db,"products",p.id),{locQty:map,location:p.location===old?nv:(p.location||primaryLoc(map)||"")})});await b.commit()}
+    }
+    else if(pk){const aff=S.products.filter(p=>p[pk]===old);for(let k=0;k<aff.length;k+=400){const b=writeBatch(db);aff.slice(k,k+400).forEach(p=>b.update(doc(db,"products",p.id),{[pk]:nv}));await b.commit()}}
   }catch(e){toast(emsg(e),1)}
 };
 let secApp;
@@ -2877,9 +3007,9 @@ async function buildTemplate(EJ,tax,lists){
   // How to use
   how.getColumn(1).width=20;how.getColumn(2).width=100;
   const T=[["Product import sheet",""],["",""],["Steps","1. Fill the Products sheet, one product per row. Orange headers are required: sku, name, category, price."],["","2. Choose category, then sub-category, then type from the dropdowns. categorySlug fills itself."],["","3. Delete the grey EXAMPLE row (row 2)."],["","4. Save as .xlsx and upload it in the app: Products > Import Excel."],["",""],["Column","Meaning"],
-   ["sku","Your unique product code. Existing SKUs are updated (stock is NOT changed); new SKUs are created."],["barcode","Leave blank to let the app generate one (Products > Barcode labels > Generate missing barcodes). An assigned barcode is never overwritten by a blank cell."],
+   ["sku","Your unique product code. Existing SKUs are updated (stock is NOT changed) and a blank cell keeps what is already saved; new SKUs are created."],["barcode","Leave blank to let the app generate one (Products > Barcode labels > Generate missing barcodes). An assigned barcode is never overwritten by a blank cell."],
    ["category / subcategory / type","Pick from the dropdowns. Type is optional; sub-category is optional for category-level items."],["imageUrl","Optional link to a product photo. Photos can also be added per product in the app."],
-   ["mrp / price / cost","Rupees. price = selling price including GST. mrp defaults to price if blank."],["gst","Percent included in the price. Blank = 18."],["qty","Opening stock for NEW products only."],["reorder","Low-stock alert level. Blank = 2."],["unit","pcs, set, pair, etc. Blank = pcs."],["location","Pick a rack/location. A new one is added to your list automatically on import."]];
+   ["mrp / price / cost","Rupees. price = selling price including GST. mrp defaults to price if blank."],["gst","Percent included in the price. Blank = 0 for a new product."],["qty","Opening stock for NEW products only."],["reorder","Low-stock alert level. Blank = 0 for a new product."],["unit","pcs, set, pair, etc. Blank = pcs."],["location","Pick a rack/location. A new one is added to your list automatically on import."]];
   T.forEach((r,i)=>{const a=how.getCell(i+1,1),b=how.getCell(i+1,2);a.value=r[0];b.value=r[1];a.font=AR({bold:true});b.font=AR();b.alignment={wrapText:true,vertical:"top"}});
   const T2=[["",""],["Customers sheet","Fill name and phone (both required), plus optional email, address and notes. Import it from Customers > Import Excel. A phone number that already exists updates that customer instead of adding a second one."]];
   T2.forEach((r,i)=>{const n=T.length+i+1,a=how.getCell(n,1),b=how.getCell(n,2);a.value=r[0];b.value=r[1];a.font=AR({bold:true});b.font=AR();b.alignment={wrapText:true,vertical:"top"}});
@@ -2990,12 +3120,16 @@ window.openImport=(kind="products")=>{
   $("#imp-f").onchange=async e=>{
     const f=e.target.files[0];if(!f)return;$("#imp-r").textContent="Reading…";good=[];$("#imp-go").disabled=true;
     try{
-      const rows=await readFileRows(f);const bad=[];let skipped=0;
+      const rows=await readFileRows(f);const bad=[],fileBar={};let skipped=0;
       rows.forEach(r=>{
         if(/^example\b/i.test(r.name||"")){skipped++;return}
         if(!r.sku||!r.name)return bad.push(`Row ${r._row}: sku and name are required`);
         if(r.price===undefined||r.price==="")return bad.push(`Row ${r._row} (${r.sku}): price is missing`);
-        if(r.barcode){const o=S.products.find(p=>p.barcode===r.barcode&&p.sku.toLowerCase()!==String(r.sku).toLowerCase());if(o)return bad.push(`Row ${r._row} (${r.sku}): barcode already used by ${o.sku}`)}
+        if(!(money(r.price)>0))return bad.push(`Row ${r._row} (${r.sku}): price "${r.price}" is not an amount`);
+        for(const k of ["mrp","cost","gst","qty","reorder"])if(r[k]!==undefined&&r[k]!==""&&!(money(r[k])>=0))return bad.push(`Row ${r._row} (${r.sku}): ${k} "${r[k]}" is not a number`);
+        if(r.barcode){const o=S.products.find(p=>p.barcode===r.barcode&&p.sku.toLowerCase()!==String(r.sku).toLowerCase());if(o)return bad.push(`Row ${r._row} (${r.sku}): barcode already used by ${o.sku}`);
+          const f2=fileBar[r.barcode];if(f2&&f2!==String(r.sku).toLowerCase())return bad.push(`Row ${r._row} (${r.sku}): barcode ${r.barcode} is also on another row of this file`);
+          fileBar[r.barcode]=String(r.sku).toLowerCase()}
         const m=resolveCategory(r);if(m.err)return bad.push(`Row ${r._row} (${r.sku}): ${m.err}`);
         good.push({r,m});
       });
@@ -3010,14 +3144,26 @@ window.openImport=(kind="products")=>{
       for(let i=0;i<good.length;i+=150){const b=writeBatch(db);
         good.slice(i,i+150).forEach(({r,m})=>{const c=m.cat,s=m.sub,t=m.type;const key=r.sku.toLowerCase();
           const vr=r.vendor?S.vendors.find(x=>norm(x.name)===norm(r.vendor)):null;
+          const has=k=>r[k]!==undefined&&String(r[k]).trim()!=="",amt=k=>has(k)?money(r[k]):0;
           const d={sku:r.sku,name:r.name,vendor:r.vendor||"",vendorId:vr?.id||"",barcode:r.barcode||"",categoryId:c.id,categoryName:c.name,categorySlug:c.slug,
             subcategoryId:s?.id||"",subcategoryName:s?.name||"",subcategorySlug:s?.slug||"",typeId:t?.id||"",typeName:t?.name||"",typeSlug:t?.slug||"",fullSlug:(t||s||c).slug,
             dimension:dimNorm(r.dimension),dimUnit:String(r.dimUnit||"").trim(),
-            mrp:num(r.mrp)||num(r.price),price:num(r.price),cost:num(r.cost),gst:r.gst===undefined||r.gst===""?0:num(r.gst),reorder:r.reorder===undefined||r.reorder===""?0:num(r.reorder),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+            mrp:amt("mrp")||money(r.price),price:money(r.price),cost:amt("cost"),gst:amt("gst"),reorder:amt("reorder"),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
           if(r.imageUrl)d.imageUrl=r.imageUrl;
           const ex=bySku[key]||seen[key];
-          if(ex){if(!r.barcode)delete d.barcode;b.update(doc(db,"products",ex.id),d);u++}
-          else{const ref=doc(collection(db,"products")),q=Math.max(0,Math.floor(num(r.qty)));seen[key]={id:ref.id};
+          if(ex){
+            // an existing product: only the cells that are filled in change; a blank cell keeps what is saved
+            const keep={vendor:["vendor","vendorId"],barcode:["barcode"],dimension:["dimension","dimUnit"],mrp:["mrp"],cost:["cost"],gst:["gst"],reorder:["reorder"],unit:["unit"],location:["location"],description:["description"]};
+            Object.entries(keep).forEach(([col,ks])=>{if(!has(col))ks.forEach(k=>delete d[k])});
+            if(has("dimension")&&!has("dimUnit"))delete d.dimUnit;
+            const old=S.products.find(p=>p.id===ex.id);
+            if(old&&d.location!==undefined&&d.location!==(old.location||"")){
+              const m0=locMapOf(old),ks=Object.keys(m0).filter(k=>+m0[k]);
+              if(ks.length===1){const q0=+m0[ks[0]];d.locQty={[d.location||UNLOC]:q0}}   // all of it sat in one place: move it
+              else if(ks.length>1)delete d.location;                                       // spread over places: use Stock → Transfer
+            }
+            b.update(doc(db,"products",ex.id),d);u++}
+          else{const ref=doc(collection(db,"products")),q=Math.max(0,Math.floor(amt("qty")));seen[key]={id:ref.id};
             b.set(ref,{...d,imageUrl:r.imageUrl||"",hasImage:false,qty:q,booked:0,locQty:q?{[d.location||UNLOC]:q}:{},createdAt:serverTimestamp()});
             if(q>0)b.set(doc(collection(db,"movements")),mv(ref.id,r.name,r.sku,"opening",q,0,q,"Excel import"));n++}});
         await b.commit()}
@@ -3043,7 +3189,7 @@ window.openImportCustomers=()=>{
         const name=String(r.name||"").trim(),phone=String(r.phone||"").trim(),k=custKey(phone);
         if(/^example\b/i.test(name)){skipped++;return}
         if(!name||!phone)return bad.push(`Row ${r._row}: name and phone are required`);
-        if(k.length<6)return bad.push(`Row ${r._row} (${name}): "${phone}" is not a valid phone number`);
+        if(k.length<10)return bad.push(`Row ${r._row} (${name}): "${phone}" is not a valid phone number (needs 10 digits)`);
         if(seen.has(k))return bad.push(`Row ${r._row} (${name}): phone ${phone} appears twice in the file`);
         seen.add(k);good.push({name,phone,email:String(r.email||"").trim(),address:String(r.address||"").trim(),notes:String(r.notes||"").trim()});
       });

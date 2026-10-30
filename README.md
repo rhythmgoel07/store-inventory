@@ -37,6 +37,8 @@ Three roles: **admin**, **manager**, **sales executive** (plus **disabled**, whi
 - Add and edit products, prices and photos
 - Change a saved booking without approval · Cancel a booking · Void a bill · Edit a saved customer · Remove a recorded payment
 
+**Signing out on a phone or tablet**: tap **More** in the bottom bar (or open **Settings**) — your name, role and a Sign out button are there.
+
 **Editing and removing a login**: the People list at the bottom of the Staff screen has **Edit**, **Send password reset** and **Remove** against each person.
 - **Edit** changes the name — the label that appears against every entry that person made — and the role. The **email cannot be changed**: it is the sign-in itself, kept in Firebase Authentication, which a browser cannot change on someone else's behalf. To fix a typo in an email, remove the login and create it again.
 - **Remove** takes the login out of the app. Access stops at once and the person disappears from the list, but sales, bookings and stock entries they made are kept with their name on them. **It does not delete their Firebase Authentication account** — nothing running in a browser can — so if someone is leaving for good, finish that in the Firebase console → Authentication. Until then they can still sign in, and see only a "No access" screen.
@@ -45,13 +47,24 @@ Three roles: **admin**, **manager**, **sales executive** (plus **disabled**, whi
 
 Out of the box a manager may receive and transfer stock, see the vendor and see the movement history; a sales executive sees none of that and may not move stock. **Cost price is off for both until you tick it.** Anything left unticked shows that person an **Ask admin** button instead. *Reset to defaults* puts it all back.
 
-The Firestore rules read the same settings, so a permission you withhold is refused by the database, not just hidden on screen. The one exception is the split between stock in, transfer, stock out and set count: all four write the same stock fields, so the database can only tell that the person may move stock at all — which of the four they see is decided by the app. Everything else is enforced for real.
+The Firestore rules read the same settings, so a permission you withhold is refused by the database, not just hidden on screen. The one exception is the split between stock in, transfer, stock out and set count: all four write the same stock fields, so the database can only tell that the person may move stock at all — which of the four they see is decided by the app.
+
+What the database itself guarantees, whatever someone tries from a browser:
+- Someone without a stock permission can only bring stock **down** (selling, delivering) — never raise it. Only a role allowed to void a bill can put pieces back.
+- Every bill, booking, payment, movement and request is stamped with the person actually signed in.
+- Invoice and booking numbers only ever count up by one, so they can't be reset or reused.
+- Ledger adjustments and corrections to a payment are admin-only; staff can only record an ordinary payment of more than zero.
+- A booking can't be created already cancelled, delivered without its invoice, or cancelled after it was delivered.
+- The staff list (names, emails, roles) is visible to admins only.
+
+The "see cost / vendor / movement history" ticks hide those things on screen; they are not a database lock (the product records carry the cost).
 
 ## Corrections need an admin
 Nobody except an admin can change something already saved. A manager or sales executive presses **Ask admin** instead — on a booking, a payment, a bill, or a stock count — fills in the new value and a reason, and it goes to **Approvals**.
 - The admin sees who asked, the old value → the new value, and the reason, then **Approve** (which applies the change) or **Reject**.
 - Nothing changes until approval. The sidebar shows a count of what is waiting.
 - Managers and sales executives see only their own requests on that screen.
+- The Approvals screen describes each request from the live record — its real current values, not what the request says they were — and warns when stock has moved since a count was asked for. Pressing Cancel on the reject box leaves the request waiting.
 
 ## Prices on screen
 - **Every product card shows the selling price and the MRP**, to everyone.
@@ -65,7 +78,10 @@ Nobody except an admin can change something already saved. A manager or sales ex
 - **Set count asks which place you counted.** Pick the location, enter what you physically counted there, and the app says what it thought was there and what will be added or written off. **Only that place changes** — stock at every other location is left exactly as it was, and the total is recomputed. (Before, a count replaced the whole product and flattened the split.) The same is true of a count an admin approves from **Approvals**: the difference lands on the product's main location.
 - **Transfer** moves pieces between places without changing the total, and opens with two different places already picked. **Stock out** takes pieces out of one place and out of the total. Who may do each is set on the Staff screen.
 - **Selling asks where the stock comes from**: every line on the Sell screen has a *Take from* dropdown listing each place and how many are there. If you ask for more than that place holds, the app says so and takes the rest from the next place with stock. Delivering a booking asks the same for any item sitting in more than one place.
-- Each sale remembers where its pieces came from — it shows in the movement log and in the `taken_from` column of the sales export.
+- Each sale remembers where its pieces came from — every place, when they came from more than one — so a void puts each piece back exactly where it was taken from.
+- A sale can only use **free** stock: pieces booked for a customer are refused even if two people are billing at the same moment.
+- A product with open bookings can't be deleted, and stock out can't take away pieces that are booked.
+- Renaming a location moves the stock recorded under it. Changing a product's location in the product form moves its stock too, when it all sits in one place; if it is spread over several, use Stock → Transfer.
 - The Stock screen has a **Stock by location** summary and a movement log that records transfers with their from → to.
 
 ## Products screen
@@ -109,6 +125,7 @@ The bottom of the sidebar, under your name, shows `build 30 Oct 12:58` — the d
 - **Excel in, Excel out:** every import and export is .xlsx in the same layout — dark header row, frozen panes, filter arrows, Arial, rupee columns formatted, and a `photo` column with the product picture embedded wherever products are listed.
 - **Vendor** replaces the old brand field (old data still reads fine; the import accepts a `brand` or `vendor` column).
 - **Images:** each product takes a photo three ways — **📷 Take photo** opens the device camera with a live preview and a Capture button (phone camera or laptop webcam; "Switch camera" appears when there is more than one), **⇪ Upload image** picks an existing file, or paste a link in `imageUrl`. Photos are resized to 640 px and stored in Firestore, so no paid Storage plan is needed. The camera needs an https:// address (GitHub Pages is https) and permission the first time; if it is blocked or missing, the panel says so and points to Upload image.
+- **Importing over existing products** only changes the cells you filled in — a blank cost, GST, vendor or location keeps what is saved. To clear a field, edit the product. Amounts may be typed as `1200`, `1,200` or `₹1,200`; anything else is reported, not imported as 0. Two rows giving the same new barcode are reported.
 - **Templates:** the Import window can regenerate `Inventory_Import_Template.xlsx` from your current categories and lists at any time.
 - **Updating:** push the new files to GitHub. Pages republishes the app by itself, and the workflow below republishes the rules, so there is nothing to paste by hand.
 
@@ -149,6 +166,9 @@ Products → Export gives an .xlsx with a **photo** column (pictures embedded, 2
 - **Print statement** gives the customer an A4 statement; **Export ledger** saves the same thing as Excel.
 - The Customers list adds a **Balance** column (customers who owe money sort first) and totals for pending, credit and billed-to-date. The Sell and New booking screens show any pending amount next to the customer's name.
 - On the Sell and New booking screens, typing a known phone fills the name and shows past bills, spend and open bookings.
+- **One customer per phone number however it is typed** — `+91 98765 43210`, `098765 43210` and `9876543210` are the same person. A number needs 10 digits. (Customers saved twice before this keep their two records.)
+- A bill on **Credit** needs the customer's phone, so the amount shows as pending in their ledger and on the bill.
+- **Ledgers see the whole history.** The app keeps the newest bills and bookings live for speed; opening a customer, a vendor, an old bill or a past day/month fetches everything it needs, however old.
 - Import/export: Customers → Import Excel uses the **Customers** sheet of the template (`name`, `phone` required; `email`, `address`, `notes` optional). A phone that already exists updates that customer rather than adding a duplicate. Export adds bills, total spent, open bookings, advance held, billed, received, balance and pending.
 
 ## Opening a bill
@@ -159,6 +179,8 @@ Every invoice and every purchase bill has a page of its own, and an admin can co
 - A bill raised by delivering a booking keeps its items — those belong to the booking — and only the **amount collected on delivery** and the payment mode can be corrected. The booking is updated in the same step, so the customer's ledger stays right.
 - Every correction is stamped with who made it, when, and the reason you type, and is listed at the bottom of the bill.
 - A manager or sales executive can open and print any bill but not change it; the **Ask admin** button is there for them.
+- **A bill raised by delivering a booking can't be voided** — that would leave the booking and the ledger wrong. Use Edit bill to correct the amount collected.
+- After a sale or a delivery the app shows **Sale saved** with a **Print receipt** button, rather than opening the print window by itself (phones block windows that open on their own).
 
 **Purchase bill.** On the vendor's ledger, the purchase line is a link and there is an **Open bill** button. The page shows the vendor, bill number and date, every item with its rate, each charge head, the bill total, where the stock went and who entered it.
 - **Edit bill** (admin only) reopens the same window you recorded it in, filled with what is already on the bill: items, quantities, rates, charge heads, bill number, date, note and location. Change anything and save.
@@ -172,6 +194,7 @@ Every invoice and every purchase bill has a page of its own, and an admin can co
 - **As many products as you like go in one booking** — keep searching and tapping; each one becomes its own line with its own quantity. Selling works the same way: the cart on the Sell screen holds any number of products and bills them together.
 - **Discount**, in ₹ or %, exactly like the Sell screen — spread across the lines in proportion to their value, so the GST figure stays right. The summary shows items, discount, order value, GST, booking amount and balance due. The order value after discount is what goes in the customer's ledger and onto the invoice when the booking is delivered; the slip and the export show the discount as its own line.
 - Correcting a discount afterwards is **admin-only** (Edit on the booking) and recomputes the order value, GST and balance. A manager with *Change a saved booking* still edits only the booking amount, date and notes, and sees the discount as a read-only line.
+- **Deliver & bill** works even when the customer has already paid more than the order value — nothing is collected and the extra stays as credit. Recording a payment larger than what is due asks first.
 - **Deliver & bill** asks how much is being collected now (the balance by default, but you can take less or nothing). Stock comes down, the reservation clears, and anything left stays pending in the customer's ledger.
 - **Payments**: a customer can pay in as many instalments as they like. Use **+ Record payment** on the booking or the customer page — each one keeps its own date, mode and reference, and shows as a separate line in the ledger. Only an admin can remove one.
 - **Cancel booking** releases the reserved stock and asks what happens to whatever has already been received, which the ledger then reflects:
