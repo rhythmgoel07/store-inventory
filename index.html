@@ -242,7 +242,7 @@ const IMG={cache:new Map()};
 function thumb(p,size=48){
   const st=`width:${size}px;height:${size}px;border-radius:8px;object-fit:cover;background:var(--line);flex:none`;
   if(p.imageUrl)return `<img src="${esc(p.imageUrl)}" loading="lazy" style="${st}" onerror="this.style.visibility='hidden'">`;
-  if(p.hasImage){const c=IMG.cache.get(p.id);return `<img data-pid="${p.id}" ${c?`src="${c}"`:""} style="${st}">`}
+  if(p.hasImage){const c=IMG.cache.get(p.id);return `<img data-pid="${esc(p.id)}" ${c?`src="${esc(c)}"`:""} style="${st}">`}
   return `<div style="${st};display:grid;place-items:center;color:var(--mute);font-size:${Math.round(size/2.4)}px">▣</div>`;
 }
 function hydrateImages(){
@@ -574,7 +574,7 @@ const allLocations=()=>{const m=new Map();[...S.lists.locations,...S.products.ma
 const withCur=(arr,cur)=>cur===undefined||cur===null||cur===""||arr.some(x=>String(x)===String(cur))?arr:[...arr,cur];
 function cardImg(p){
   if(p.imageUrl)return `<img class="pim" alt="" loading="lazy" src="${esc(p.imageUrl)}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'pim',textContent:'▣'}))">`;
-  if(p.hasImage){const c=IMG.cache.get(p.id);return `<img class="pim" alt="" data-pid="${p.id}" ${c?`src="${c}"`:""}>`}
+  if(p.hasImage){const c=IMG.cache.get(p.id);return `<img class="pim" alt="" data-pid="${esc(p.id)}" ${c?`src="${esc(c)}"`:""}>`}
   return `<div class="pim">▣</div>`;
 }
 function pcard(p){
@@ -936,7 +936,7 @@ function vSell(el){
      ${short>0&&ent.length?`<span class="small" style="color:var(--warn)">only ${at?at[1]:0} here — the other ${short} will come from the next place with stock</span>`:""}</div></div>`}).join("")||`<p class="mute">Tap a product to add it.</p>`}
    ${S.cart.length?`<p class="small mute" style="margin-top:6px">Keep searching to put more products on the same bill.</p>`:""}
    <div class="f" style="margin-top:10px"><div><label>Discount</label><div class="row" style="flex-wrap:nowrap"><input id="c-disc" type="number" min="0" value="${S.cartDiscount||""}"><select id="c-dt" style="width:80px"><option value="amt" ${S.cartDiscType==="amt"?"selected":""}>₹</option><option value="pct" ${S.cartDiscType==="pct"?"selected":""}>%</option></select></div></div>
-    <div><label>Payment</label><select id="c-pay">${S.lists.payModes.map(x=>`<option>${x}</option>`).join("")}</select></div>
+    <div><label>Payment</label><select id="c-pay">${S.lists.payModes.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div>
     <div><label>Customer phone</label><input id="c-ph" inputmode="tel" list="c-phl" placeholder="Search saved customers"><datalist id="c-phl">${S.customers.slice(0,400).map(c=>`<option value="${esc(c.phone)}">${esc(c.name)}</option>`).join("")}</datalist></div>
     <div><label>Customer name</label><input id="c-name"></div><div class="full small" id="c-cinfo"></div></div>
    <div id="c-sum" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">${sellSum(t)}</div>
@@ -1001,7 +1001,7 @@ window.printReceipt=function(s){
   w.document.write(`<html><head><title>${esc(s.invoiceNo)}</title><style>body{font:13px monospace;width:300px;margin:8px auto}h2{text-align:center;margin:0}.c{text-align:center}.r{display:flex;justify-content:space-between}.m{font-size:11px;color:#444}hr{border:0;border-top:1px dashed #000}</style></head><body>
   <h2>${esc(st.storeName)}</h2><div class="c">${esc(st.address||"")}<br>${st.phone?"Ph: "+esc(st.phone):""}${st.gstin?"<br>GSTIN: "+esc(st.gstin):""}</div><hr>
   <div class="r"><span>${esc(s.invoiceNo)}</span><span>${fdt(tms(s.createdAt))}</span></div>${s.customer?.name?`<div>Customer: ${esc(s.customer.name)} ${esc(s.customer.phone||"")}</div>`:""}<hr>
-  ${s.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${i.qty} × ${inr(i.price)}</span><span>${inr(i.price*i.qty)}</span></div>`).join("")}<hr>
+  ${s.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${num(i.qty)} × ${inr(i.price)}</span><span>${inr(i.price*i.qty)}</span></div>`).join("")}<hr>
   <div class="r"><span>Subtotal</span><span>${inr(s.subtotal)}</span></div>${s.discount?`<div class="r"><span>Discount</span><span>-${inr(s.discount)}</span></div>`:""}
   <div class="r"><span>GST included</span><span>${inr(s.gstAmount)}</span></div><div class="r"><b>TOTAL</b><b>${inr(s.total)}</b></div>${s.advance?`<div class="r"><span>Already received${s.bookingNo?" ("+esc(s.bookingNo)+")":""}</span><span>-${inr(s.advance)}</span></div><div class="r"><b>PAID NOW</b><b>${inr(s.balancePaid??(s.total-s.advance))}</b></div>`:""}${s.balanceLeft>0?`<div class="r"><b>STILL PENDING</b><b>${inr(s.balanceLeft)}</b></div>`:""}<div>Paid by: ${esc(s.payment)}</div><hr>
   <div class="c">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),300)<\/script></body></html>`);w.document.close();
@@ -1021,7 +1021,7 @@ function vSales(el){
   <div class="grid stats" style="margin-bottom:12px"><div class="card stat"><div class="k">Bills</div><div class="v">${ok.length}</div><div class="s">${byMonth?"in "+esc(mon):"on "+esc(day)}</div></div><div class="card stat"><div class="k">Revenue</div><div class="v">${inr(tot)}</div></div>${isAdmin()?`<div class="card stat"><div class="k">Gross margin</div><div class="v">${inr(prof)}</div><div class="s">vs recorded cost price</div></div>`:""}</div>
   <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Invoice</th><th>Customer</th><th>Items</th><th class="n">Total</th><th></th></tr></thead><tbody>
   ${L.map(s=>`<tr style="${s.status==="void"?"opacity:.5":""}"><td data-l="Invoice"><a href="#sale/${s.id}"><b>${esc(s.invoiceNo)}</b></a> ${s.status==="void"?`<span class="tag out">void</span>`:""}<br><span class="small mute">${fdt(tms(s.createdAt))} · ${esc(s.soldByName||"")}</span></td><td data-l="Customer">${esc(s.customer?.name||"Walk-in")}<br><span class="small mute">${esc(s.payment)}</span></td>
-   <td data-l="Items" class="small">${s.items.map(i=>plink(i.pid,i.name)+" ×"+i.qty).join(", ")}</td><td data-l="Total" class="n">${inr(s.total)}</td>
+   <td data-l="Items" class="small">${s.items.map(i=>plink(i.pid,i.name)+" ×"+num(i.qty)).join(", ")}</td><td data-l="Total" class="n">${inr(s.total)}</td>
    <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="location.hash='sale/'+'${s.id}'">Open bill</button><button class="btn sm sec" onclick="reprint('${s.id}')">Print</button>${s.status!=="void"?(can("voidSale")?`<button class="btn sm sec" onclick="voidSale('${s.id}')">Void</button>`:rqBtn("sale.void",s.id,`Invoice ${s.invoiceNo} · ${inr(s.total)}`,{})):""}</div></td></tr>`).join("")||`<tr><td colspan="5" class="mute">No sales ${byMonth?"in this month":"on this date"}.</td></tr>`}
   </tbody></table></div>`;
   $("#srange").onchange=e=>{S.salesRange=e.target.value;setTimeout(render,0)};
@@ -1067,7 +1067,7 @@ function vSale(el){
   const dead=s.status==="void",adv=num(s.advance),got=r2(num(s.balancePaid??(num(s.total)-adv))),left=r2(num(s.total)-adv-got);
   const bg=s.bookingId?S.bookings.find(b=>b.id===s.bookingId):null,log=s.editLog||[];
   const R=[["Invoice no.",`<b>${esc(s.invoiceNo)}</b>`],["Billed on",fdt(tms(s.createdAt))],
-   ["Customer",`${esc(s.customer?.name||"Walk-in")}${s.customer?.phone?` · <a href="tel:${esc(s.customer.phone)}">${esc(s.customer.phone)}</a>`:""}${s.customerId?` · <a href="#customer/${s.customerId}">open ledger</a>`:""}`],
+   ["Customer",`${esc(s.customer?.name||"Walk-in")}${s.customer?.phone?` · <a href="tel:${esc(s.customer.phone)}">${esc(s.customer.phone)}</a>`:""}${s.customerId?` · <a href="#customer/${esc(s.customerId)}">open ledger</a>`:""}`],
    ["Payment",esc(s.payment||"—")],["Billed by",esc(s.soldByName||"—")],
    ...(bg?[["Against booking",`<a href="#booking/${bg.id}">${esc(bg.bookingNo)}</a> <span class="small mute">· goods were charged when the booking was taken</span>`]]:[]),
    ["Status",dead?`<span class="tag out">void</span>${s.voidedBy?` <span class="small mute">by ${esc(s.voidedBy)}</span>`:""}`:`<span class="tag ok">completed</span>`],
@@ -1115,7 +1115,7 @@ window.openSaleEdit=function(id){
        <span class="mute small">The items and the order value belong to the booking, so they stay as they are. Correct what was collected on delivery here.</span></div>`:""}
      <table class="resp"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate (₹)</th><th class="n">Amount</th>${linked?"":"<th></th>"}</tr></thead><tbody>
      ${E.items.map((i,ix)=>`<tr><td data-l="Item"><div style="text-align:left">${esc(i.name)}<br><span class="small mute">${esc(i.sku)}${i.takenFrom?" · from "+esc(i.takenFrom):""}</span></div></td>
-       <td data-l="Qty" class="n">${linked?i.qty:`<input type="number" min="0" step="1" value="${i.qty}" style="width:70px" onchange="esSet(${ix},'qty',this.value)">`}</td>
+       <td data-l="Qty" class="n">${linked?num(i.qty):`<input type="number" min="0" step="1" value="${num(i.qty)}" style="width:70px" onchange="esSet(${ix},'qty',this.value)">`}</td>
        <td data-l="Rate" class="n">${linked?inr(i.price):`<input type="number" min="0" step="0.01" value="${i.price}" style="width:95px" onchange="esSet(${ix},'price',this.value)">`}</td>
        <td data-l="Amount" class="n">${inr(num(i.price)*num(i.qty))}</td>
        ${linked?"":`<td><button class="btn sm sec" onclick="S.es.items.splice(${ix},1);esDraw()">✕</button></td>`}</tr>`).join("")
@@ -1224,7 +1224,7 @@ window.printInvoice=id=>{
   <div class="m">${esc(s.customer?.name||"Walk-in")}${s.customer?.phone?" · "+esc(s.customer.phone):""}<br>
    ${fdt(tms(s.createdAt))} · ${esc(s.payment||"")}${s.bookingNo?" · against booking "+esc(s.bookingNo):""} · billed by ${esc(s.soldByName||"")}</div>
   <table><thead><tr><th>#</th><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">GST</th><th class="n">Amount</th></tr></thead><tbody>
-  ${s.items.map((i,ix)=>`<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span></td><td class="n">${i.qty}</td>
+  ${s.items.map((i,ix)=>`<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span></td><td class="n">${num(i.qty)}</td>
    <td class="n">${inr(i.price)}</td><td class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td class="n">${inr(i.lineTotal??num(i.price)*num(i.qty))}</td></tr>`).join("")}
   </tbody><tfoot>
    <tr><th colspan="5">Subtotal</th><th class="n">${inr(s.subtotal)}</th></tr>
@@ -1335,7 +1335,7 @@ function vCustomer(el){
    <div class="row" style="justify-content:space-between;padding:10px 2px 4px"><h3>Ledger</h3><span class="small mute">Charges are billed amounts · Paid is money received · a negative balance is pending from the customer</span></div>
    <table class="resp"><thead><tr><th>Date</th><th>Particulars</th><th class="n">Charges</th><th class="n">Paid</th><th class="n">Balance</th><th></th></tr></thead><tbody>
    ${L.rows.map(e=>`<tr${e.kind==="void"?' style="opacity:.55"':""}><td data-l="Date" class="small">${fdt(e.ms)}</td>
-    <td data-l="Particulars">${e.link?`<a href="${e.link}"><b>${esc(e.what)}</b></a>`:`<b>${esc(e.what)}</b>`}${e.status?` <span class="tag ${e.status==="booked"?"low":e.status==="delivered"?"ok":"out"}">${esc(e.status)}</span>`:""}${e.kind==="void"?` <span class="tag out">void</span>`:""}<br><span class="small mute">${esc(e.detail)}</span></td>
+    <td data-l="Particulars">${e.link?`<a href="${esc(e.link)}"><b>${esc(e.what)}</b></a>`:`<b>${esc(e.what)}</b>`}${e.status?` <span class="tag ${e.status==="booked"?"low":e.status==="delivered"?"ok":"out"}">${esc(e.status)}</span>`:""}${e.kind==="void"?` <span class="tag out">void</span>`:""}<br><span class="small mute">${esc(e.detail)}</span></td>
     <td data-l="Charges" class="n">${e.charge?inr(e.charge):"—"}</td>
     <td data-l="Paid" class="n">${e.paid?inr(e.paid):"—"}</td>
     <td data-l="Balance" class="n" style="color:${e.bal<0?"var(--bad)":e.bal>0?"var(--ok)":"inherit"}">${inr(e.bal)}</td>
@@ -1582,13 +1582,13 @@ function vVendor(el){
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
    <div class="card" style="padding:6px 14px"><table>${R.map(r=>`<tr><td class="mute" style="width:42%">${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table></div>
    <div class="card"><h3 style="margin-bottom:8px">Notes (${notes.length})</h3>
-    ${notes.map((n,ix)=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(n.text)}<br><span class="small mute">${esc(n.date||"")} · ${esc(n.by||"")}</span></span>${can("manageVendors")?`<button class="btn sm sec" onclick="delVendorNote('${v.id}',${n.t})">Remove</button>`:""}</div>`).join("")
+    ${notes.map((n,ix)=>`<div class="row" style="justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)"><span>${esc(n.text)}<br><span class="small mute">${esc(n.date||"")} · ${esc(n.by||"")}</span></span>${can("manageVendors")?`<button class="btn sm sec" onclick="delVendorNote('${v.id}',${Number(n.t)||0})">Remove</button>`:""}</div>`).join("")
      ||`<p class="mute">No notes yet. Use <b>+ Add note</b> for things like price revisions, delivery habits or disputes.</p>`}</div></div>
   <div class="card" style="margin-top:12px;padding:6px 12px">
    <div class="row" style="justify-content:space-between;padding:10px 2px 4px"><h3>Ledger</h3><span class="small mute">Billed is what the vendor charged · Paid is what you gave them · a negative balance is still payable</span></div>
    <table class="resp"><thead><tr><th>Date</th><th>Particulars</th><th class="n">Billed</th><th class="n">Paid</th><th class="n">Balance</th><th></th></tr></thead><tbody>
    ${L.rows.map(e=>`<tr><td data-l="Date" class="small">${fdt(e.ms)}</td>
-    <td data-l="Particulars">${e.link?`<a href="${e.link}"><b>${esc(e.what)}</b></a>`:`<b>${esc(e.what)}</b>`}${e.kind==="payment"?` <span class="tag ok">paid</span>`:""}<br><span class="small mute">${esc(e.detail)}</span></td>
+    <td data-l="Particulars">${e.link?`<a href="${esc(e.link)}"><b>${esc(e.what)}</b></a>`:`<b>${esc(e.what)}</b>`}${e.kind==="payment"?` <span class="tag ok">paid</span>`:""}<br><span class="small mute">${esc(e.detail)}</span></td>
     <td data-l="Billed" class="n">${e.charge?inr(e.charge):"—"}</td>
     <td data-l="Paid" class="n">${e.paid?inr(e.paid):"—"}</td>
     <td data-l="Balance" class="n" style="color:${e.bal<0?"var(--bad)":e.bal>0?"var(--ok)":"inherit"}">${inr(e.bal)}</td>
@@ -1673,7 +1673,7 @@ window.printPurchase=id=>{
   <h3 style="margin-top:14px">Purchase ${p.billNo?"· bill "+esc(p.billNo):""}</h3>
   <div class="m">${esc(p.vendorName||"")} · bill dated ${esc(p.date||"")}<br>Entered by ${esc(p.createdByName||"")} · printed ${fdt(Date.now())}</div>
   <table><thead><tr><th>#</th><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>
-  ${(p.items||[]).map((i,ix)=>`<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span></td><td class="n">${i.qty}</td>
+  ${(p.items||[]).map((i,ix)=>`<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span></td><td class="n">${num(i.qty)}</td>
    <td class="n">${inr(i.rate)}</td><td class="n">${inr(i.amount??num(i.rate)*num(i.qty))}</td></tr>`).join("")||`<tr><td colspan="5">No items — charges only.</td></tr>`}
   </tbody><tfoot><tr><th colspan="4">Items value</th><th class="n">${inr(p.subtotal)}</th></tr>
   ${ch.map(c=>`<tr><th colspan="4">${esc(c.label||"Other charge")}</th><th class="n">${inr(c.amount)}</th></tr>`).join("")}
@@ -2077,7 +2077,7 @@ const rqBtn=(kind,id,label,cur)=>{
   if(isAdmin())return "";
   const ex=myReqFor(kind,id);
   return ex?`<span class="tag low">awaiting approval</span>`
-    :`<button class="btn sm sec" onclick='askCorrection(${JSON.stringify(kind)},${JSON.stringify(id)},${JSON.stringify(label)},${JSON.stringify(cur||{})})'>Ask admin</button>`;
+    :`<button class="btn sm sec" onclick="askCorrection(${esc(JSON.stringify(kind))},${esc(JSON.stringify(id))},${esc(JSON.stringify(label))},${esc(JSON.stringify(cur||{}))})">Ask admin</button>`;
 };
 window.decideRequest=async(id,ok)=>{
   if(!isAdmin())return;
@@ -2250,7 +2250,7 @@ function vBookings(el){
   <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Booking</th><th>Customer</th><th>Items</th><th class="n">Amounts</th><th>Delivery</th><th></th></tr></thead><tbody>
   ${L.slice(0,200).map(b=>`<tr><td data-l="Booking"><a href="#booking/${b.id}"><b>${esc(b.bookingNo)}</b></a> <span class="tag ${b.status==="booked"?"low":b.status==="delivered"?"ok":"out"}">${esc(b.status)}</span><br><span class="small mute">${fdt(tms(b.createdAt))} · ${esc(b.createdByName||"")}</span></td>
    <td data-l="Customer">${esc(b.customerName)}<br><a class="small" href="tel:${esc(b.customerPhone)}">${esc(b.customerPhone)}</a></td>
-   <td data-l="Items" class="small">${b.items.slice(0,4).map(i=>`<div style="padding:2px 0">${plink(i.pid,i.name)}<br><span class="mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span><br><span class="mute">${i.qty} × ${inr(i.price)} = <b style="color:var(--ink)">${inr(i.lineTotal??i.price*i.qty)}</b></span></div>`).join("")}${b.items.length>4?`<div class="mute">+ ${b.items.length-4} more item(s)</div>`:""}</td>
+   <td data-l="Items" class="small">${b.items.slice(0,4).map(i=>`<div style="padding:2px 0">${plink(i.pid,i.name)}<br><span class="mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span><br><span class="mute">${num(i.qty)} × ${inr(i.price)} = <b style="color:var(--ink)">${inr(i.lineTotal??i.price*i.qty)}</b></span></div>`).join("")}${b.items.length>4?`<div class="mute">+ ${b.items.length-4} more item(s)</div>`:""}</td>
    <td data-l="Amounts" class="n small">${num(b.discount)?`<div class="mute">Items ${inr(b.subtotal??b.total)}</div><div class="mute">Discount − ${inr(b.discount)}</div>`:""}
     <div><b style="font-size:14px">${inr(b.total)}</b> <span class="mute">order value</span></div>
     <div class="mute">received ${inr(bkReceived(b))}</div>
@@ -2268,7 +2268,7 @@ function vBooking(el){
   if(!b){el.innerHTML=`<div class="top"><h2>Booking not found</h2><button class="btn sec" onclick="go('bookings')">← Back</button></div>`;return}
   const recd=bkReceived(b),bal=bkDue(b),pays=payFor(b.id).slice().sort((x,y)=>dayMs(x.date)-dayMs(y.date)),sale=b.saleId?S.sales.find(s=>s.id===b.saleId):null;
   const R=[["Booking no.",esc(b.bookingNo)],["Status",`<span class="tag ${b.status==="booked"?"low":b.status==="delivered"?"ok":"out"}">${esc(b.status)}</span>`],
-   ["Customer",`${esc(b.customerName)} · <a href="tel:${esc(b.customerPhone)}">${esc(b.customerPhone)}</a>${b.customerId?` · <a href="#customer/${b.customerId}">open customer</a>`:""}`],
+   ["Customer",`${esc(b.customerName)} · <a href="tel:${esc(b.customerPhone)}">${esc(b.customerPhone)}</a>${b.customerId?` · <a href="#customer/${esc(b.customerId)}">open customer</a>`:""}`],
    ...(num(b.discount)?[["Items",inr(b.subtotal??b.total)],["Discount","− "+inr(b.discount)]]:[]),
    ["Order value",inr(b.total)],["GST included",inr(b.gstAmount)],["Booking amount at booking",inr(b.advance)],
    ["Received so far",`${inr(recd)}${pays.length?` <span class="small mute">(${pays.length} later payment${pays.length===1?"":"s"})</span>`:""}`],
@@ -2294,7 +2294,7 @@ function vBooking(el){
     <div class="row" style="justify-content:space-between;padding:9px 0;font-weight:700"><span>${b.status==="cancelled"?"Order reversed":"Balance due"}</span><span style="color:${b.status==="cancelled"?"var(--mute)":bal>0?"var(--bad)":"var(--ok)"}">${b.status==="cancelled"?(settleAmt(b)?inr(settleAmt(b))+" "+esc(SETTLE_LABEL[b.settleMode||"credit"]||""):"—"):inr(bal)}</span></div>
     ${b.status!=="cancelled"&&bal>0?`<button class="btn" style="width:100%" onclick="openPayment('${b.customerId}','${b.id}')">+ Record payment</button>`:""}</div>
    <div class="card"><h3 style="margin-bottom:8px">Items</h3>
-    ${b.items.map(i=>{const p=S.products.find(x=>x.id===i.pid);return `<div class="row" style="flex-wrap:nowrap;align-items:flex-start;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)"><span class="row" style="flex-wrap:nowrap;align-items:flex-start">${p?thumb(p,38):""}<span>${plink(i.pid,i.name)}<br><span class="small mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}<br>${i.qty} × ${inr(i.price)}</span></span></span><b style="white-space:nowrap">${inr(i.lineTotal??i.price*i.qty)}</b></div>`}).join("")}</div></div>`;
+    ${b.items.map(i=>{const p=S.products.find(x=>x.id===i.pid);return `<div class="row" style="flex-wrap:nowrap;align-items:flex-start;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)"><span class="row" style="flex-wrap:nowrap;align-items:flex-start">${p?thumb(p,38):""}<span>${plink(i.pid,i.name)}<br><span class="small mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}<br>${num(i.qty)} × ${inr(i.price)}</span></span></span><b style="white-space:nowrap">${inr(i.lineTotal??i.price*i.qty)}</b></div>`}).join("")}</div></div>`;
 }
 window.settleCancelled=id=>{
   if(!isAdmin())return toast("Only an admin can settle a cancelled booking",1);
@@ -2359,7 +2359,7 @@ window.cancelBooking=id=>{
   const b=S.bookings.find(x=>x.id===id);if(!b||b.status!=="booked")return;
   const recd=bkReceived(b);
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:520px"><h3>Cancel ${esc(b.bookingNo)}</h3>
-  <p class="mute small">${esc(b.customerName)} · ${esc(b.customerPhone)} — ${b.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")}<br>
+  <p class="mute small">${esc(b.customerName)} · ${esc(b.customerPhone)} — ${b.items.map(i=>esc(i.name)+" ×"+num(i.qty)).join(", ")}<br>
    The ${b.items.reduce((a,i)=>a+i.qty,0)} reserved piece(s) go back into free stock.</p>
   ${recd>0?`<div class="card" style="margin:10px 0;padding:10px 12px">
    <div class="row" style="justify-content:space-between;font-weight:700"><span>Received so far</span><span>${inr(recd)}</span></div></div>
@@ -2406,13 +2406,13 @@ window.deliverBooking=id=>{
   const b=S.bookings.find(x=>x.id===id);if(!b||b.status!=="booked")return;
   const recd=bkReceived(b),due=r2(num(b.total)-recd);
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:520px"><h3>Deliver ${esc(b.bookingNo)}</h3>
-  <p class="mute small">${esc(b.customerName)} · ${esc(b.customerPhone)} — ${b.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")}</p>
+  <p class="mute small">${esc(b.customerName)} · ${esc(b.customerPhone)} — ${b.items.map(i=>esc(i.name)+" ×"+num(i.qty)).join(", ")}</p>
   <div class="card" style="margin:10px 0;padding:10px 12px">
    <div class="row" style="justify-content:space-between"><span class="mute">Order value</span><span>${inr(b.total)}</span></div>
    <div class="row" style="justify-content:space-between"><span class="mute">Already received</span><span>${inr(recd)}</span></div>
    <div class="row" style="justify-content:space-between;font-weight:700"><span>Balance</span><span>${inr(due)}</span></div></div>
   ${b.items.map((i,ix)=>{const p=S.products.find(x=>x.id===i.pid),ent=p?locEntries(p):[];
-    return ent.length>1?`<div style="margin-bottom:6px"><label>Take "${esc(i.name)}" (${i.qty}) from</label>
+    return ent.length>1?`<div style="margin-bottom:6px"><label>Take "${esc(i.name)}" (${num(i.qty)}) from</label>
      <select class="dv-loc" data-ix="${ix}">${ent.map(([k,v])=>`<option value="${esc(k)}">${esc(k)} — ${v} in stock</option>`).join("")}</select></div>`:""}).join("")}
   <div class="f"><div><label>Collecting now (₹)</label><input id="dv-amt" type="number" min="0" step="0.01" value="${due>0?due:0}"></div>
    <div><label>Mode</label><select id="dv-mode">${S.lists.payModes.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div></div>
@@ -2468,7 +2468,7 @@ window.printBooking=id=>{
   <div class="c"><b>BOOKING SLIP</b></div>
   <div class="r"><span>${esc(b.bookingNo)}</span><span>${fdt(tms(b.createdAt))}</span></div>
   <div>${esc(b.customerName)} · ${esc(b.customerPhone)}</div><hr>
-  ${b.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${i.qty} × ${inr(i.price)}</span><span>${inr(i.lineTotal??i.price*i.qty)}</span></div>`).join("")}<hr>
+  ${b.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${num(i.qty)} × ${inr(i.price)}</span><span>${inr(i.lineTotal??i.price*i.qty)}</span></div>`).join("")}<hr>
   ${num(b.discount)?`<div class="r"><span>Items</span><span>${inr(b.subtotal??b.total)}</span></div><div class="r"><span>Discount</span><span>-${inr(b.discount)}</span></div>`:""}
   <div class="r"><span>Order value</span><span>${inr(b.total)}</span></div>
   <div class="r"><span>Booking amount paid</span><span>${inr(b.advance)}</span></div>
@@ -2574,7 +2574,7 @@ function vTeam(el){
    ${S.users.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(u=>`<tr><td data-l="Name"><b>${esc(u.name)}</b>${u.id===me?` <span class="tag">you</span>`:""}</td>
     <td data-l="Email">${esc(u.email)}</td>
     <td data-l="Role"><select onchange="setRole('${u.id}',this.value)" ${u.id===me?"disabled":""}>${["sales","manager","admin","disabled"].map(r=>`<option ${(u.role===r||(r==="sales"&&u.role==="staff"))?"selected":""}>${r}</option>`).join("")}</select></td>
-    <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="editUser('${u.id}')">Edit</button><button class="btn sm sec" onclick="resetPw('${esc(u.email)}')">Send password reset</button>${u.id===me?"":`<button class="btn sm sec" onclick="delUser('${u.id}')">Remove</button>`}</div></td></tr>`).join("")
+    <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="editUser('${u.id}')">Edit</button><button class="btn sm sec" data-email="${esc(u.email)}" onclick="resetPw(this.dataset.email)">Send password reset</button>${u.id===me?"":`<button class="btn sm sec" onclick="delUser('${u.id}')">Remove</button>`}</div></td></tr>`).join("")
    ||`<tr><td colspan="4" class="mute">No logins yet.</td></tr>`}
    </tbody></table>
    <p class="mute small">An account can have more than one <b>admin</b> — give the role to anyone who should be able to correct entries. <b>Disabled</b> removes access but keeps the person in this list and on every entry they made. <b>Remove</b> takes the login out of the app altogether; what it cannot do is delete the Firebase Authentication account, so finish that off in the Firebase console → Authentication if the person is leaving for good.</p></div>`;
