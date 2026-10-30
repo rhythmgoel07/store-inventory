@@ -256,7 +256,7 @@ let app,auth,db;
 const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",invoicePrefix:"INV",address:"",phone:"",gstin:"",footer:"Thank you for shopping with us!",allowNegative:false},
   products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",dim:"",loc:"",vendor:"",stock:"all",sort:"name",limit:100},
   lists:{...DEFAULT_LISTS},vendors:[],purchases:[],vpays:[],pcart:[],pchg:[],pq:"",vf:{q:"",cat:""},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:""},bf:{q:"",status:"booked"},detailCust:null,detailBk:null,
-  bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bdate:"",bnotes:"",bq:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",
+  bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bdisc:0,bdiscType:"amt",bdate:"",bnotes:"",bq:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",
   detailSale:null,detailPur:null,es:null,puEdit:"",unsub:[]};
 
 if(configured){
@@ -1199,7 +1199,7 @@ function custLedger(c){
     const adv=num(b.advance),items=b.items.map(i=>`${i.name} ×${i.qty}`).join(", ");
     ev.push({ms:tms(b.createdAt),kind:"booking",ref:b.bookingNo,link:`#booking/${b.id}`,status:b.status,
       what:`Booking ${b.bookingNo}`,
-      detail:items+(b.status==="booked"&&b.deliveryDate?` · delivery ${b.deliveryDate}`:"")+(adv?` · booking amount ${inr(adv)} received`:""),
+      detail:items+(num(b.discount)?` · ${inr(b.discount)} discount`:"")+(b.status==="booked"&&b.deliveryDate?` · delivery ${b.deliveryDate}`:"")+(adv?` · booking amount ${inr(adv)} received`:""),
       charge:num(b.total),paid:adv});
     if(b.status==="cancelled")ev.push({ms:tms(b.cancelledAt||b.createdAt)+1,kind:"cancel",ref:b.bookingNo,link:`#booking/${b.id}`,
       what:`Booking ${b.bookingNo} cancelled`,detail:adv?"order reversed · booking amount stays as credit until refunded":"order reversed",
@@ -1986,19 +1986,22 @@ function vApprovals(el){
 }
 
 /* ---------- Bookings ---------- */
-window.bookFor=id=>{const c=S.customers.find(x=>x.id===id);S.bcart=[];S.badv=0;S.bnotes="";S.bq="";S.bdate="";
+window.bookFor=id=>{const c=S.customers.find(x=>x.id===id);S.bcart=[];S.badv=0;S.bdisc=0;S.bdiscType="amt";S.bnotes="";S.bq="";S.bdate="";
   S.bcustId=id||"";S.bphone=c?.phone||"";S.bname=c?.name||"";setView("newbooking")};
-const bkTotals=cart=>{const gross=cart.reduce((a,i)=>a+i.price*i.qty,0);let gst=0;cart.forEach(i=>{const l=i.price*i.qty;gst+=l-l/(1+(i.gst||0)/100)});return{gross:Math.round(gross*100)/100,gst:Math.round(gst*100)/100}};
-const bkSum=(t,adv)=>`<div class="row" style="justify-content:space-between"><span class="mute">Order value</span><span>${inr(t.gross)}</span></div>
+const discAmt=(gross,v,type)=>r2(type==="pct"?gross*Math.min(100,Math.max(0,num(v)))/100:Math.min(gross,Math.max(0,num(v))));
+const bkTotals=(cart,disc,type)=>sumItems(cart,discAmt(r2(cart.reduce((a,i)=>a+num(i.price)*num(i.qty),0)),disc,type));
+const bkSum=(t,adv)=>`<div class="row" style="justify-content:space-between"><span class="mute">Items</span><span>${inr(t.gross)}</span></div>
+  ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount</span><span>− ${inr(t.disc)}</span></div>
+  <div class="row" style="justify-content:space-between"><span class="mute">Order value</span><span>${inr(t.total)}</span></div>`:""}
   <div class="row" style="justify-content:space-between"><span class="mute">incl. GST</span><span>${inr(t.gst)}</span></div>
   <div class="row" style="justify-content:space-between"><span class="mute">Booking amount</span><span>− ${inr(adv)}</span></div>
-  <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Balance due</span><span>${inr(Math.max(0,t.gross-adv))}</span></div>`;
+  <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Balance due</span><span>${inr(Math.max(0,r2(t.total-num(adv))))}</span></div>`;
 function vNewBooking(el){
   const q=S.bq.toLowerCase();
   const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${vendQ(p)} ${locKeys(p).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
-  const t=bkTotals(S.bcart);
+  const t=bkTotals(S.bcart,S.bdisc,S.bdiscType);
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('bookings')">← Back</button><h2>New booking</h2></div>
-   <button class="btn sec" onclick="S.bcart=[];S.badv=0;render()">Clear items</button></div>
+   <button class="btn sec" onclick="S.bcart=[];S.badv=0;S.bdisc=0;render()">Clear items</button></div>
   <div class="pos"><div><input id="bk-q" placeholder="Scan barcode or search products…" value="${esc(S.bq)}" style="margin-bottom:10px">
    <div class="items">${L.map(p=>`<button class="item" onclick="addBk('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Booking (${S.bcart.length} item${S.bcart.length===1?"":"s"})</h3>
@@ -2006,6 +2009,7 @@ function vNewBooking(el){
     <div class="qty"><button onclick="bkQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="bkSet(${ix},this.value)"><button onclick="bkQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.bcart.splice(${ix},1);render()">Remove</button></div></div>`).join("")||`<p class="mute">Tap a product to add it.</p>`}
    ${S.bcart.length?`<p class="small mute" style="margin-top:6px">Keep searching on the left to put more products in the same booking.</p>`:""}
    <div class="f" style="margin-top:10px">
+    <div><label>Discount</label><div class="row" style="flex-wrap:nowrap"><input id="bk-disc" type="number" min="0" step="0.01" value="${S.bdisc||""}"><select id="bk-dt" style="width:80px"><option value="amt" ${S.bdiscType==="amt"?"selected":""}>₹</option><option value="pct" ${S.bdiscType==="pct"?"selected":""}>%</option></select></div></div>
     <div><label>Customer phone *</label><input id="bk-ph" inputmode="tel" list="bk-phl" value="${esc(S.bphone)}"><datalist id="bk-phl">${S.customers.slice(0,400).map(c=>`<option value="${esc(c.phone)}">${esc(c.name)}</option>`).join("")}</datalist></div>
     <div><label>Customer name *</label><input id="bk-name" value="${esc(S.bname)}"></div>
     <div class="full small" id="bk-cinfo"></div>
@@ -2017,15 +2021,18 @@ function vNewBooking(el){
    <button class="btn" style="width:100%;margin-top:8px;padding:12px" id="bk-done" ${S.bcart.length?"":"disabled"}>Confirm booking</button></div></div>`;
   const q2=$("#bk-q");q2.oninput=()=>{S.bq=q2.value;clearTimeout(vNewBooking.t);vNewBooking.t=setTimeout(()=>{render();const n=$("#bk-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},150)};
   q2.onkeydown=e=>{if(e.key==="Enter"){const v=q2.value.trim().toLowerCase();const p=S.products.find(x=>(x.barcode&&x.barcode.toLowerCase()===v)||x.sku.toLowerCase()===v);if(p){addBk(p.id);S.bq="";render();$("#bk-q").focus()}}};
-  const keep=()=>{S.bphone=$("#bk-ph").value;S.bname=$("#bk-name").value;S.badv=num($("#bk-adv").value);S.bdate=$("#bk-date").value;S.bnotes=$("#bk-notes").value};
+  const keep=()=>{S.bphone=$("#bk-ph").value;S.bname=$("#bk-name").value;S.badv=num($("#bk-adv").value);S.bdate=$("#bk-date").value;S.bnotes=$("#bk-notes").value;
+    S.bdisc=num($("#bk-disc").value);S.bdiscType=$("#bk-dt").value};
   const info=()=>{const ex=findCustByPhone($("#bk-ph").value);const box=$("#bk-cinfo");
     if(ex){S.bcustId=ex.id;if(!$("#bk-name").value.trim()){$("#bk-name").value=ex.name;S.bname=ex.name}
       const st=custStats(ex),led=custLedger(ex);box.innerHTML=`<span class="tag ok">Saved customer</span> ${st.sales.length} bill(s) · ${inr(st.spend)} spent ${led.balance?balTag(led.balance):""}`}
     else{S.bcustId="";box.innerHTML=custKey($("#bk-ph").value).length>=6?`<span class="mute">New customer — saved with this booking</span>`:""}};
   $("#bk-ph").oninput=()=>{keep();info()};info();
   ["#bk-name","#bk-adv","#bk-date","#bk-notes"].forEach(i=>{$(i).onchange=keep;$(i).oninput=keep});
-  const bsum=()=>{const el=$("#bk-sum");if(el)el.innerHTML=bkSum(bkTotals(S.bcart),num($("#bk-adv").value))};
+  const bsum=()=>{const el=$("#bk-sum");if(el)el.innerHTML=bkSum(bkTotals(S.bcart,S.bdisc,S.bdiscType),num($("#bk-adv").value))};
   $("#bk-adv").oninput=$("#bk-adv").onchange=()=>{keep();bsum()};
+  $("#bk-disc").oninput=$("#bk-disc").onchange=()=>{keep();bsum()};
+  $("#bk-dt").onchange=()=>{keep();bsum()};
   $("#bk-done").onclick=createBooking;
 }
 window.addBk=id=>{const p=S.products.find(x=>x.id===id);if(!p)return;
@@ -2040,8 +2047,9 @@ async function createBooking(){
   const btn=$("#bk-done");const phone=$("#bk-ph").value.trim(),name=$("#bk-name").value.trim();
   if(custKey(phone).length<6||!name)return toast("Customer name and phone are required",1);
   const adv=num($("#bk-adv").value),date=$("#bk-date").value,notes=$("#bk-notes").value.trim();
-  const t=bkTotals(S.bcart);
-  if(adv>t.gross)return toast("Booking amount is more than the order value",1);
+  const t=bkTotals(S.bcart,S.bdisc,S.bdiscType);
+  if(t.total<=0)return toast("The order value has to be more than zero",1);
+  if(adv>t.total)return toast("Booking amount is more than the order value",1);
   btn.disabled=true;btn.textContent="Saving…";
   const cart=S.bcart.map(i=>({...i}));
   try{
@@ -2059,10 +2067,10 @@ async function createBooking(){
       snaps.forEach((s,ix)=>tx.update(refs[ix],{booked:Math.max(0,+s.data().booked||0)+cart[ix].qty,updatedAt:serverTimestamp(),updatedBy:S.user.uid}));
       tx.set(doc(collection(db,"bookings")),{bookingNo:bno,customerId,customerName:name,customerPhone:phone,
         items:cart.map(i=>({pid:i.pid,sku:i.sku,name:i.name,price:i.price,qty:i.qty,gst:i.gst,cost:i.cost,lineTotal:Math.round(i.price*i.qty*100)/100})),
-        total:t.gross,gstAmount:t.gst,advance:adv,balance:Math.round((t.gross-adv)*100)/100,deliveryDate:date||"",notes,status:"booked",
+        subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,advance:adv,balance:r2(t.total-adv),deliveryDate:date||"",notes,status:"booked",
         createdBy:S.user.uid,createdByName:S.profile.name,dateKey:dkey(),createdAt:serverTimestamp()});
     });
-    S.bcart=[];S.badv=0;S.bnotes="";S.bdate="";S.bphone="";S.bname="";S.bcustId="";
+    S.bcart=[];S.badv=0;S.bdisc=0;S.bdiscType="amt";S.bnotes="";S.bdate="";S.bphone="";S.bname="";S.bcustId="";
     toast("Booking "+bno+" saved");setView("bookings");
   }catch(e){toast(e.message||"Couldn't save — are you online?",1);btn.disabled=false;btn.textContent="Confirm booking"}
 }
@@ -2101,6 +2109,7 @@ function vBooking(el){
   const recd=bkReceived(b),bal=bkDue(b),pays=payFor(b.id).slice().sort((x,y)=>dayMs(x.date)-dayMs(y.date)),sale=b.saleId?S.sales.find(s=>s.id===b.saleId):null;
   const R=[["Booking no.",esc(b.bookingNo)],["Status",`<span class="tag ${b.status==="booked"?"low":b.status==="delivered"?"ok":"out"}">${esc(b.status)}</span>`],
    ["Customer",`${esc(b.customerName)} · <a href="tel:${esc(b.customerPhone)}">${esc(b.customerPhone)}</a>${b.customerId?` · <a href="#customer/${b.customerId}">open customer</a>`:""}`],
+   ...(num(b.discount)?[["Items",inr(b.subtotal??b.total)],["Discount","− "+inr(b.discount)]]:[]),
    ["Order value",inr(b.total)],["GST included",inr(b.gstAmount)],["Booking amount at booking",inr(b.advance)],
    ["Received so far",`${inr(recd)}${pays.length?` <span class="small mute">(${pays.length} later payment${pays.length===1?"":"s"})</span>`:""}`],
    ...(b.status==="delivered"&&num(b.collectedOnDelivery)?[["Collected on delivery",inr(b.collectedOnDelivery)]]:[]),
@@ -2124,15 +2133,28 @@ function vBooking(el){
 window.editBooking=id=>{
   if(!can("editBooking"))return toast("You don't have permission to change a saved booking",1);
   const b=S.bookings.find(x=>x.id===id);if(!b)return;
+  const gross=r2(num(b.subtotal??b.total));
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:480px"><h3>Edit ${esc(b.bookingNo)}</h3>
-  <div class="grid"><div><label>Booking amount received (₹)</label><input id="eb-adv" type="number" min="0" step="0.01" value="${b.advance||""}"></div>
+  <div class="grid">${isAdmin()?`<div><label>Discount (₹)</label><input id="eb-disc" type="number" min="0" step="0.01" value="${num(b.discount)||""}">
+    <span class="small mute">Items come to ${inr(gross)}. The order value is what is left after the discount.</span></div>`:""}
+   <div><label>Booking amount received (₹)</label><input id="eb-adv" type="number" min="0" step="0.01" value="${b.advance||""}"></div>
    <div><label>Tentative delivery date</label><input id="eb-date" type="date" value="${esc(b.deliveryDate||"")}"></div>
    <div><label>Notes</label><textarea id="eb-no" rows="2">${esc(b.notes||"")}</textarea></div></div>
   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="eb-save">Save</button></div></div></div>`;
   $("#eb-save").onclick=async()=>{
     const adv=num($("#eb-adv").value);
-    if(adv>num(b.total))return toast("Booking amount is more than the order value",1);
-    try{await updateDoc(doc(db,"bookings",id),{advance:adv,balance:Math.round((num(b.total)-adv)*100)/100,deliveryDate:$("#eb-date").value,notes:$("#eb-no").value.trim(),updatedAt:serverTimestamp(),updatedBy:S.user.uid});closeModal();toast("Booking updated")}catch(e){toast(emsg(e),1)}
+    const d={deliveryDate:$("#eb-date").value,notes:$("#eb-no").value.trim(),updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+    let total=num(b.total);
+    if($("#eb-disc")){                       // admin only — it moves the order value
+      const disc=Math.min(gross,Math.max(0,num($("#eb-disc").value)));
+      total=r2(gross-disc);
+      if(total<=0)return toast("That discount leaves nothing to charge",1);
+      const t=sumItems(b.items,disc);
+      Object.assign(d,{subtotal:gross,discount:disc,total:t.total,gstAmount:t.gst});
+    }
+    if(adv>total)return toast(`Booking amount is more than the order value (${inr(total)})`,1);
+    Object.assign(d,{advance:adv,balance:r2(total-adv)});
+    try{await updateDoc(doc(db,"bookings",id),d);closeModal();toast("Booking updated")}catch(e){toast(emsg(e),1)}
   };
 };
 window.cancelBooking=async id=>{
@@ -2197,7 +2219,7 @@ async function doDeliver(id,collect,mode,recd,picks){
       snaps.forEach((s,ix)=>{const i=b.items[ix],d=s.data(),cur=+d.qty||0,t=takeAt(locMapOf(d),i.qty,(picks||{})[ix]);
         tx.update(refs[ix],{qty:cur-i.qty,locQty:t.map,location:primaryLoc(t.map)||d.location||"",booked:Math.max(0,(+d.booked||0)-i.qty),updatedAt:serverTimestamp(),updatedBy:S.user.uid});
         tx.set(doc(collection(db,"movements")),{...mv(i.pid,i.name,i.sku,"sale",-i.qty,cur,cur-i.qty,inv+" (booking "+b.bookingNo+") · from "+t.used.map(u=>`${u[0]} (${u[1]})`).join(", ")),fromLoc:t.used.map(u=>u[0]).join(", "),toLoc:""})});
-      tx.set(sr,{invoiceNo:inv,items:b.items,subtotal:num(b.total),discount:0,total:num(b.total),gstAmount:num(b.gstAmount),
+      tx.set(sr,{invoiceNo:inv,items:b.items,subtotal:num(b.subtotal??b.total),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
         taxable:r2(num(b.total)-num(b.gstAmount)),customer:{name:b.customerName,phone:b.customerPhone},customerId:b.customerId||"",
         payment:mode||"Booking balance",status:"completed",advance:r2(recd),balancePaid:r2(collect),bookingId:id,bookingNo:b.bookingNo,
         soldBy:S.user.uid,soldByName:S.profile.name,dateKey:dkey(),createdAt:serverTimestamp()});
@@ -2206,7 +2228,7 @@ async function doDeliver(id,collect,mode,recd,picks){
     closeModal();
     const left=r2(num(b.total)-recd-collect);
     toast(`Delivered — invoice ${inv}${left>0?` · ${inr(left)} still pending`:""}`);
-    printReceipt({invoiceNo:inv,items:b.items,subtotal:num(b.total),discount:0,total:num(b.total),gstAmount:num(b.gstAmount),
+    printReceipt({invoiceNo:inv,items:b.items,subtotal:num(b.subtotal??b.total),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
       customer:{name:b.customerName,phone:b.customerPhone},payment:mode||"Booking balance",advance:r2(recd),balanceLeft:left,bookingNo:b.bookingNo,
       soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
   }catch(e){toast(emsg(e),1);const g=$("#dv-go");if(g){g.disabled=false;g.textContent="Deliver & bill"}}
@@ -2221,6 +2243,7 @@ window.printBooking=id=>{
   <div class="r"><span>${esc(b.bookingNo)}</span><span>${fdt(tms(b.createdAt))}</span></div>
   <div>${esc(b.customerName)} · ${esc(b.customerPhone)}</div><hr>
   ${b.items.map(i=>`<div>${esc(i.name)}</div><div class="r"><span>${i.qty} × ${inr(i.price)}</span><span>${inr(i.lineTotal??i.price*i.qty)}</span></div>`).join("")}<hr>
+  ${num(b.discount)?`<div class="r"><span>Items</span><span>${inr(b.subtotal??b.total)}</span></div><div class="r"><span>Discount</span><span>-${inr(b.discount)}</span></div>`:""}
   <div class="r"><span>Order value</span><span>${inr(b.total)}</span></div>
   <div class="r"><span>Booking amount paid</span><span>${inr(b.advance)}</span></div>
   <div class="r"><b>BALANCE DUE</b><b>${inr(bal)}</b></div>
@@ -2654,9 +2677,10 @@ window.exportBookings=async()=>{
     const{images,EJ}=await photoMap(lines.map(({i})=>prodOf(i.pid)));
     dlx("bookings-"+dkey()+".xlsx",await buildWorkbook(EJ,[
       {name:"Bookings",freeze:1,cols:[["booking_no",14],["status",12],["booked_on",12],["customer",24],["phone",16,"@"],["items",44],
-        ["order_value",13,MONEY],["gst_included",13,MONEY],["booking_amount",15,MONEY],["received",13,MONEY],["balance_due",13,MONEY],["delivery_date",14],["invoice",16],["notes",30],["taken_by",18]],
+        ["items_value",13,MONEY],["discount",12,MONEY],["order_value",13,MONEY],["gst_included",13,MONEY],["booking_amount",15,MONEY],["received",13,MONEY],["balance_due",13,MONEY],["delivery_date",14],["invoice",16],["notes",30],["taken_by",18]],
        rows:L.map(b=>({booking_no:b.bookingNo,status:b.status,booked_on:b.dateKey||dkey(new Date(tms(b.createdAt))),customer:b.customerName,phone:String(b.customerPhone||""),
-        items:b.items.map(i=>`${i.name} x${i.qty}`).join("; "),order_value:num(b.total),gst_included:num(b.gstAmount),booking_amount:num(b.advance),
+        items:b.items.map(i=>`${i.name} x${i.qty}`).join("; "),items_value:num(b.subtotal??b.total),discount:num(b.discount),
+        order_value:num(b.total),gst_included:num(b.gstAmount),booking_amount:num(b.advance),
         received:bkReceived(b),balance_due:bkDue(b),delivery_date:b.deliveryDate||"",invoice:b.invoiceNo||"",notes:b.notes||"",taken_by:b.createdByName||""}))},
       {name:"Booking items",freeze:3,images,cols:[["photo",11],["booking_no",14],["status",12],["sku",14,"@"],["name",34],["qty",7],["price",12,MONEY],["line_total",13,MONEY],
         ["customer",22],["phone",16,"@"],["delivery_date",14]],
