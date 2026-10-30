@@ -86,6 +86,13 @@ name, SKU, barcode, vendor, dimension + dimension unit, category / sub-category 
 ## Sales screen
 - The range picker at the top switches between **A day** and **A month**. Pick the date or the month beside it; the Bills tile says which period is on screen, and **Export Excel** exports whatever range is showing.
 
+## Phone and dark mode
+- The layout adapts below 820 px (bottom tab bar, stacked panels) and tightens again below 560 px: smaller buttons and headings, narrower gutters, filters two to a row, forms one field per row.
+- **Tables become cards on a phone**, each cell labelled. That includes the tables inside dialogs — recording a purchase, correcting a bill, receiving stock into several places — which used to run off the side of the screen.
+- **Dark mode follows the phone's own setting.** The palette is declared for both schemes, so native date pickers and dropdowns are dark too and the browser does not try to invert the page itself.
+- Links were never given a colour, so every browser used its own blue (and purple once visited), which is close to unreadable on a dark background. They now use a palette colour that reads clearly in both schemes.
+- Every text colour was checked against its background: everything clears 4.5:1 in dark mode and in light, including small grey text and the amber used for warnings, both of which were marginally too light before.
+
 ## Which build am I running?
 The bottom of the sidebar, under your name, shows `build 30 Oct 12:58` — the date and time that copy of `index.html` was built. If a change you were told about is missing, compare that stamp with the latest one: if it is older, the browser is still running a cached copy. A hard refresh (Ctrl+Shift+R, or Cmd+Shift+R on a Mac) fixes it; on a phone, close the app and reopen it. Nothing is lost either way — all the data lives in Firestore, not in the page.
 
