@@ -164,7 +164,14 @@ Every invoice and every purchase bill has a page of its own, and an admin can co
   - **Keep it as credit with the shop** — the amount stays on the customer's account against a future order. This is what the app always did, and it stays the default.
   - **Refunded to the customer** — a refund line is recorded and the balance settles to zero. Handing over the cash or making the transfer is separate; the app records it, it does not pay it.
   - **Kept by the shop as a cancellation charge** — a charge for that amount is recorded, so the money counts as the shop's and the balance settles to zero.
-  The choice, the amount and any note show on the booking page and in the ledger line, and nothing is shown as "due" on a cancelled booking any more. A cancellation an admin approves from **Approvals** keeps the money as credit — the safe default — and can be refunded afterwards with a negative payment. **Print slip** gives the customer a booking slip with the balance and delivery date.
+  The choice, the amount and any note show on the booking page and in the ledger line, and nothing is shown as "due" on a cancelled booking any more.
+- **Settling it later**: a booking already cancelled — including ones cancelled before this existed — shows **Settle the ₹X received** on its page for an admin, with the same three outcomes. The amount is worked out from the advance and the payments against it, so older cancellations are handled correctly without any data fixing.
+
+## An admin can correct the ledger
+A customer's ledger is built from bookings, invoices and payments, so most corrections are made on the thing itself — the bill, the booking, the payment. For everything else an admin has two tools on the customer's page:
+- **+ Adjustment** adds a line in either direction: *credits the customer* (reduces what they owe — a refund paid, a discount given, a small balance written off) or *charges the customer* (increases it — a missed charge, a delivery fee, a retained deposit). The dialog shows what the balance will become before you save, and a **reason is required** — it prints on the statement and is the only record of why the ledger moved.
+- **Edit** beside any payment or adjustment in the ledger corrects its amount, date, mode or note in place. The line then carries "corrected by <name>" alongside who entered it. **Remove** still deletes one outright.
+Both are admin-only, on screen and in the database rules. A manager or sales executive uses **Ask admin** as before. Adjustments are never tied to a booking, so they move the customer's balance without disturbing any booking's own figures. **Print slip** gives the customer a booking slip with the balance and delivery date.
 - Edit lets you update the booking amount, delivery date and notes as things change.
 - The **bookings list reads like the slip**: every item with its SKU, sub-category and type, and `2 × ₹52,900.00 = ₹1,05,800.00`, beside a column showing items value, discount, order value, received and due. Bookings with more than four items list the first four and count the rest.
 - Dashboard shows open bookings, advance held and upcoming deliveries; overdue dates turn red.
