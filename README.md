@@ -78,6 +78,9 @@ Nobody except an admin can change something already saved. A manager or sales ex
 ## Data fields per product
 name, SKU, barcode, vendor, dimension + dimension unit, category / sub-category / type (id, name, slug from your taxonomy, plus `fullSlug` of the deepest level), MRP, selling price, cost, GST %, stock, reorder level, unit, location, notes, timestamps, updated-by.
 
+## Which build am I running?
+The bottom of the sidebar, under your name, shows `build 30 Oct 12:58` — the date and time that copy of `index.html` was built. If a change you were told about is missing, compare that stamp with the latest one: if it is older, the browser is still running a cached copy. A hard refresh (Ctrl+Shift+R, or Cmd+Shift+R on a Mac) fixes it; on a phone, close the app and reopen it. Nothing is lost either way — all the data lives in Firestore, not in the page.
+
 ## Notes
 - Works offline for browsing and stock changes (syncs when back online). **Completing a sale needs an internet connection** so two staff can never sell the same last piece.
 - Prices are treated as GST-inclusive (usual retail MRP); the receipt shows the GST portion.
