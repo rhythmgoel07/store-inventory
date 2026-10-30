@@ -288,6 +288,7 @@ const qtyText=(n,unit)=>{
   const label=f?(Math.abs(+n||0)===1?f[0]:f[1]):u;
   return `${+n||0}${label?" "+label:""}`;
 };
+const catLine = p=>[p.subcategoryName,p.typeName].filter(Boolean).join(", ")||p.categoryName||"";
 const dimText = p=>{const d=dimOf(p);return d?(d+(dimUnitOf(p)?" "+dimUnitOf(p):"")):""};
 /* Stock can sit in more than one place. locQty is a {location: quantity} map and qty stays the
    total. Products saved before this existed have no map, so their whole stock is read as sitting
@@ -458,7 +459,7 @@ function vDash(el){
   </div>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:12px">
    <div class="card"><h3 style="margin-bottom:10px">Needs restocking</h3>
-    ${[...out,...low].slice(0,10).map(p=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${plink(p.id,p.name)}<br><span class="small mute">${esc(p.sku)} · ${esc(p.subcategoryName||p.categoryName||"")}</span></span><span class="tag ${outStock(p)?"out":"low"}">${p.qty} left</span></div>`).join("")||`<p class="mute">Everything is well stocked.</p>`}</div>
+    ${[...out,...low].slice(0,10).map(p=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${plink(p.id,p.name)}<br><span class="small mute">${esc(p.sku)}${catLine(p)?" · "+esc(catLine(p)):""}</span></span><span class="tag ${outStock(p)?"out":"low"}">${p.qty} left</span></div>`).join("")||`<p class="mute">Everything is well stocked.</p>`}</div>
    <div class="card"><h3 style="margin-bottom:10px">${can("seeCost")?"Stock value by category":"Units in stock by category"}</h3>
     ${cats.map(([k,v])=>`<div style="margin-bottom:9px"><div class="row" style="justify-content:space-between"><span>${esc(k)}</span><span class="mute small">${can("seeCost")?inr(v):v+" units"}</span></div><div class="bar"><i style="width:${(v/mx*100).toFixed(1)}%"></i></div></div>`).join("")||`<p class="mute">Add products to see this.</p>`}</div>
    ${fullMode()&&openBk.length?`<div class="card"><h3 style="margin-bottom:10px">Upcoming deliveries</h3>
@@ -851,7 +852,7 @@ function vSell(el){
   const t=cartTotals();
   el.innerHTML=`<div class="top"><h2>New sale</h2><button class="btn sec" onclick="S.cart=[];S.cartDiscount=0;render()">Clear</button></div>
   <div class="pos"><div><input id="pos-q" placeholder="Scan barcode or search…" value="${esc(S.posQ)}" style="margin-bottom:10px">
-   <div class="items">${L.map(p=>`<button class="item" onclick="addCart('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
+   <div class="items">${L.map(p=>`<button class="item" onclick="addCart('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""}${catLine(p)?" · "+esc(catLine(p)):""}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Cart (${S.cart.length} item${S.cart.length===1?"":"s"})</h3>
    ${S.cart.map((i,ix)=>{const p=S.products.find(x=>x.id===i.pid),ent=p?locEntries(p):[],at=ent.find(([k])=>k===i.loc),short=at?Math.max(0,i.qty-at[1]):i.qty;
     return `<div class="cartline"><div><b>${esc(i.name)}</b><br><span class="small mute">${inr(i.price)} each</span></div><div style="text-align:right"><b>${inr(i.price*i.qty)}</b></div>
@@ -2002,7 +2003,7 @@ function vNewBooking(el){
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('bookings')">← Back</button><h2>New booking</h2></div>
    <button class="btn sec" onclick="S.bcart=[];S.badv=0;S.bdisc=0;render()">Clear items</button></div>
   <div class="pos"><div><input id="bk-q" placeholder="Scan barcode or search products…" value="${esc(S.bq)}" style="margin-bottom:10px">
-   <div class="items">${L.map(p=>`<button class="item" onclick="addBk('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""} · ${esc(p.subcategoryName||p.categoryName)}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
+   <div class="items">${L.map(p=>`<button class="item" onclick="addBk('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""}${catLine(p)?" · "+esc(catLine(p)):""}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Booking (${S.bcart.length} item${S.bcart.length===1?"":"s"})</h3>
    ${S.bcart.map((i,ix)=>`<div class="cartline"><div><b>${esc(i.name)}</b><br><span class="small mute">${inr(i.price)} each</span></div><div style="text-align:right"><b>${inr(i.price*i.qty)}</b></div>
     <div class="qty"><button onclick="bkQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="bkSet(${ix},this.value)"><button onclick="bkQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.bcart.splice(${ix},1);render()">Remove</button></div></div>`).join("")||`<p class="mute">Tap a product to add it.</p>`}
