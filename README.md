@@ -78,6 +78,14 @@ Nobody except an admin can change something already saved. A manager or sales ex
 ## Data fields per product
 name, SKU, barcode, vendor, dimension + dimension unit, category / sub-category / type (id, name, slug from your taxonomy, plus `fullSlug` of the deepest level), MRP, selling price, cost, GST %, stock, reorder level, unit, location, notes, timestamps, updated-by.
 
+## Dashboard
+- Tiles: **Products**, **Stock value (cost)** (admins and anyone allowed to see cost), **Out of stock**, **Open bookings**, **Today's sales** and **This month's sales**.
+- **Every tile opens the screen behind its number** — a › sits in its corner. Today's sales opens Sales on today, This month's sales opens Sales on the whole month, Open bookings opens the open bookings, Out of stock opens Products already filtered to what has run out, and the other two open Products.
+- Below the tiles: what needs restocking, stock value (or units) by category, upcoming deliveries and recent stock activity.
+
+## Sales screen
+- The range picker at the top switches between **A day** and **A month**. Pick the date or the month beside it; the Bills tile says which period is on screen, and **Export Excel** exports whatever range is showing.
+
 ## Which build am I running?
 The bottom of the sidebar, under your name, shows `build 30 Oct 12:58` — the date and time that copy of `index.html` was built. If a change you were told about is missing, compare that stamp with the latest one: if it is older, the browser is still running a cached copy. A hard refresh (Ctrl+Shift+R, or Cmd+Shift+R on a Mac) fixes it; on a phone, close the app and reopen it. Nothing is lost either way — all the data lives in Firestore, not in the page.
 
