@@ -37,6 +37,12 @@ Three roles: **admin**, **manager**, **sales executive** (plus **disabled**, whi
 - Add and edit products, prices and photos
 - Change a saved booking without approval · Cancel a booking · Void a bill · Edit a saved customer · Remove a recorded payment
 
+**Editing and removing a login**: the People list at the bottom of the Staff screen has **Edit**, **Send password reset** and **Remove** against each person.
+- **Edit** changes the name — the label that appears against every entry that person made — and the role. The **email cannot be changed**: it is the sign-in itself, kept in Firebase Authentication, which a browser cannot change on someone else's behalf. To fix a typo in an email, remove the login and create it again.
+- **Remove** takes the login out of the app. Access stops at once and the person disappears from the list, but sales, bookings and stock entries they made are kept with their name on them. **It does not delete their Firebase Authentication account** — nothing running in a browser can — so if someone is leaving for good, finish that in the Firebase console → Authentication. Until then they can still sign in, and see only a "No access" screen.
+- To keep someone in the list instead, set their role to **disabled**: no access, history kept, and easy to switch back on.
+- You cannot change your own role or remove your own login, and the last remaining admin cannot be demoted or removed — otherwise the store would be left with nobody who can create logins.
+
 Out of the box a manager may receive and transfer stock, see the vendor and see the movement history; a sales executive sees none of that and may not move stock. **Cost price is off for both until you tick it.** Anything left unticked shows that person an **Ask admin** button instead. *Reset to defaults* puts it all back.
 
 The Firestore rules read the same settings, so a permission you withhold is refused by the database, not just hidden on screen. The one exception is the split between stock in, transfer, stock out and set count: all four write the same stock fields, so the database can only tell that the person may move stock at all — which of the four they see is decided by the app. Everything else is enforced for real.
