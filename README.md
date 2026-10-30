@@ -49,7 +49,7 @@ Nobody except an admin can change something already saved. A manager or sales ex
 
 ## Prices on screen
 - **Every product card shows the selling price and the MRP**, to everyone.
-- **Cost price (and the margin %) appears on the card as well**, but only for an admin and for a role you have ticked *See cost price and margin* for. The same tick controls the cost and margin rows on the product page, the cost figures on the dashboard, and the Export button on the Products screen (the sheet carries cost prices).
+- **Cost price appears on the card as well** (the margin % does not — it is on the product page), but only for an admin and for a role you have ticked *See cost price and margin* for. The same tick controls the cost and margin rows on the product page, the cost figures on the dashboard, and the Export button on the Products screen (the sheet carries cost prices).
 - **The product page opens for everyone.** Name, SKU, barcode, category, MRP, selling price, GST, stock, size, bookings, locations, notes and timestamps are always shown; cost price, margin, the vendor and the stock movement history each wait on their own permission.
 - **Wherever a product is named it is a link to that page** — the dashboard's restock list and activity feed, the Sales and Bookings lists, an invoice, a purchase bill, a booking, the stock screen and its movement log, and a vendor's product list. A product deleted since is left as plain text.
 

@@ -504,13 +504,12 @@ function cardImg(p){
 }
 function pcard(p){
   const href="#product/"+encodeURIComponent(p.id);
-  const mg=num(p.price)>0&&num(p.cost)>0?((num(p.price)-num(p.cost))/num(p.price)*100).toFixed(0)+"%":"";
   return `<div class="pcard adm" onclick="location.hash='${href.slice(1)}'">${cardImg(p)}<div class="pb">
    <a class="pn" href="${href}" onclick="event.stopPropagation()">${esc(p.name)}</a>
    <div class="sku">${esc(p.sku)}</div>
    <div class="pr"><b>Sale ${inr(p.price)}</b></div>
    <div class="pr mrp">MRP ${inr(p.mrp??p.price)}</div>
-   ${can("seeCost")?`<div class="pr cost">Cost ${inr(p.cost)}${mg?` (${mg})`:""}</div>`:""}
+   ${can("seeCost")?`<div class="pr cost">Cost ${inr(p.cost)}</div>`:""}
    <div class="small mute locs">📍 ${(()=>{const e=locEntries(p);
      return e.length?e.map(([k,v])=>`${esc(k)} ×<b>${v}</b>`).join(" · "):esc(p.location||"—")})()}</div>
    ${dimText(p)?`<div class="small dim">📐 ${esc(dimText(p))}</div>`:""}
