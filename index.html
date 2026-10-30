@@ -288,7 +288,7 @@ const qtyText=(n,unit)=>{
   const label=f?(Math.abs(+n||0)===1?f[0]:f[1]):u;
   return `${+n||0}${label?" "+label:""}`;
 };
-const catLine = p=>[p.subcategoryName,p.typeName].filter(Boolean).join(", ")||p.categoryName||"";
+const catLine = p=>[p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).slice(-2).join(", ");
 const dimText = p=>{const d=dimOf(p);return d?(d+(dimUnitOf(p)?" "+dimUnitOf(p):"")):""};
 /* Stock can sit in more than one place. locQty is a {location: quantity} map and qty stays the
    total. Products saved before this existed have no map, so their whole stock is read as sitting
