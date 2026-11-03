@@ -74,9 +74,10 @@ Nobody except an admin can change something already saved. A manager or sales ex
 
 ## Prices on screen
 - **Every product card shows the selling price and the MRP**, to everyone.
+- **Settings → Prices on product cards** lets an admin untick any of the three — selling price, MRP, cost price — and that figure simply is not printed on the thumbnail cards. It applies to every device in the store, saves the moment you tick it, and changes nothing else: the product's own page still shows everything the person is allowed to see, and barcode labels still carry MRP and the selling price. Cost price still needs *See cost price* on top, so unticking it hides the figure from everyone while the permission still decides who could have seen it.
 - **Cost price appears on the card as well** (the margin % does not — it is on the product page), but only for an admin and for a role you have ticked *See cost price and margin* for. The same tick controls the cost and margin rows on the product page, the cost figures on the dashboard, and the Export button on the Products screen (the sheet carries cost prices).
 - **The product page opens for everyone.** Name, SKU, barcode, category, MRP, selling price, GST, stock, size, bookings, locations, notes and timestamps are always shown; cost price, margin, the vendor and the stock movement history each wait on their own permission.
-- **Wherever a product is named it is a link to that page** — the dashboard's restock list and activity feed, the Sales and Bookings lists, an invoice, a purchase bill, a booking, the stock screen and its movement log, and a vendor's product list. A product deleted since is left as plain text.
+- **Wherever a product is named it is a link to that page** — the dashboard's activity feed, the Sales and Bookings lists, an invoice, a purchase bill, a booking, the stock screen and its movement log, and a vendor's product list. A product deleted since is left as plain text.
 
 ## Stock and locations
 - Stock is tracked **per location**, so one SKU can sit partly on the floor and partly in the godown. Every screen shows the split — the product card reads `📍 Godown Rack 3 ×1 · Floor 1 - A2 ×1`, and the product page, stock screen and Excel export show it too. A transfer never changes the SKU, the barcode or the total; it only moves pieces between places.
@@ -112,9 +113,10 @@ Nobody except an admin can change something already saved. A manager or sales ex
 name, SKU, barcode, vendor, dimension + dimension unit, category / sub-category / type (id, name, slug from your taxonomy, plus `fullSlug` of the deepest level), MRP, selling price, cost, GST %, stock, reorder level, unit, location, notes, timestamps, updated-by.
 
 ## Dashboard
-- Tiles: **Products**, **Stock value (cost)** (admins and anyone allowed to see cost), **Out of stock**, **Open bookings**, **Today's sales** and **This month's sales**.
-- **Every tile opens the screen behind its number** — a › sits in its corner. Today's sales opens Sales on today, This month's sales opens Sales on the whole month, Open bookings opens the open bookings, Out of stock opens Products already filtered to what has run out, and the other two open Products.
-- Below the tiles: what needs restocking, stock value (or units) by category, upcoming deliveries and recent stock activity.
+- Tiles: **Products**, **Stock value (cost)** (admins and anyone allowed to see cost), **Open bookings**, **Today's sales** and **This month's sales**.
+- **Every tile opens the screen behind its number** — a › sits in its corner. Today's sales opens Sales on today, This month's sales opens Sales on the whole month, Open bookings opens the open bookings, and the other two open Products.
+- Below the tiles: stock value (or units) by category, upcoming deliveries and recent stock activity.
+- **There is no restocking list or out-of-stock tile.** Products answers that question properly: set the stock filter to **Out of stock** (or **Low stock**) and you get every one of them as a full card with its photo, locations and a Stock button, instead of the first ten names. The Stock screen keeps its own **Low & out of stock** list for the same reason.
 
 ## Sales screen
 - The range picker at the top switches between **A day** and **A month**. Pick the date or the month beside it; the Bills tile says which period is on screen, and **Export Excel** exports whatever range is showing.
