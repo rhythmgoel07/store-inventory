@@ -47,6 +47,25 @@ Out of the box a manager may receive and transfer stock, see the vendor and see 
 
 The Firestore rules read the same settings, so a permission you withhold is refused by the database, not just hidden on screen. The one exception is the split between stock in, transfer, stock out and set count: all four write the same stock fields, so the database can only tell that the person may move stock at all — which of the four they see is decided by the app. Everything else is enforced for real.
 
+## Backdating a sale or a booking (admin only)
+An entry made days after it happened should carry the date it happened, or the day's takings and
+the month's figures never add up.
+
+- On **Sell** and **New booking** an admin sees a **Date of sale** field, set to today. Change it
+  and the bill or booking is dated then: it lands on that day in Sales, in the month's total, and
+  in the right place in the customer's ledger.
+- **Both dates are kept.** The record carries the date you chose and, separately, when it was
+  actually entered and by whom. The invoice and booking pages show a **backdated** tag and a line
+  reading "Entered 03 Nov by Rhythm — the bill is dated 25 Oct", and the tag appears in the Sales
+  and Bookings lists too. Nothing is quietly rewritten.
+- **Stock still moves today.** The shelf only learns about the sale when you enter it, so the
+  movement log is dated now. The same goes for the invoice number: it is the next one in the
+  sequence, so a backdated bill can carry a later number than one dated after it.
+- Limits: not a future date, and not more than 400 days back.
+- A manager or sales executive never sees the field, and the app ignores the date even if one is
+  forced into the page. Note that the enforcement is the app and the admin role, not the database
+  rules, so an admin remains the only practical route.
+
 ## Corrections need an admin
 Nobody except an admin can change something already saved. A manager or sales executive presses **Ask admin** instead — on a booking, a payment, a bill, or a stock count — fills in the new value and a reason, and it goes to **Approvals**.
 - The admin sees who asked, the old value → the new value, and the reason, then **Approve** (which applies the change) or **Reject**.
