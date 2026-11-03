@@ -86,6 +86,11 @@ Nobody except an admin can change something already saved. A manager or sales ex
 - **Selling asks where the stock comes from**: every line on the Sell screen has a *Take from* dropdown listing each place and how many are there. If you ask for more than that place holds, the app says so and takes the rest from the next place with stock. Delivering a booking asks the same for any item sitting in more than one place.
 - Each sale remembers where its pieces came from — it shows in the movement log and in the `taken_from` column of the sales export.
 - The Stock screen has a **Stock by location** summary and a movement log that records transfers with their from → to.
+- **Move many products to one place at once.** Products → **Select products** turns the grid into tick boxes; tick the ones you want (or **Select all**, which takes everything the current filters show, so you can filter to one rack and move the lot). The bar at the top counts what is picked and how many pieces that is, and **Move / set location** asks where they go, with two choices:
+  - **Move every piece there** — the stock itself moves. Totals never change, a product split across two racks is brought together, and each product gets its own transfer line in the movement log. Needs the *Transfer stock* permission.
+  - **Only set the rack label** — where the pieces are recorded stays as it is, and only the product's main location changes. For products with no stock, or to say where the next delivery should go. Needs *Add and edit products*.
+
+  Products already sitting at the destination are left untouched rather than given a pointless `A2 → A2` movement line, and the message afterwards says how many were already there. A role with neither permission does not see the button. Hundreds at a time are safe — the writes go up in chunks of 150 products so no single batch exceeds what Firestore allows.
 
 ## Products screen
 - Results are **thumbnail cards**: photo, name, SKU, selling price, MRP, cost price (where allowed), the stock split by location, size, bookings and the stock tag.
