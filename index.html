@@ -158,6 +158,22 @@ table td.c,table th.c{text-align:center}
 .pcard .pr{font-size:13.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pcard .mrp{font-size:11.5px;color:var(--mute)}
 .pcard .cost{font-size:12px;color:var(--mute);font-weight:600}
+.pgal{display:flex;flex-wrap:wrap;gap:8px}
+.gthumb{position:relative;width:84px;height:84px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--line);flex:none}
+.gthumb.cover{border-color:var(--brand2);box-shadow:0 0 0 2px color-mix(in srgb,var(--brand2) 35%,transparent)}
+.gthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.gthumb button.gbtn{position:absolute;width:22px;height:22px;padding:0;border-radius:999px;border:0;cursor:pointer;
+  font-size:11px;line-height:1;display:grid;place-items:center;background:rgba(0,0,0,.6);color:#fff}
+.gthumb button.gbtn:hover{background:rgba(0,0,0,.85)}
+.gthumb .gbtn.x{top:3px;right:3px}
+.gthumb .gbtn.star{bottom:3px;left:3px}
+.gthumb .glabel{position:absolute;left:0;right:0;bottom:0;background:var(--brand);color:#fff;font-size:10px;
+  letter-spacing:.04em;text-align:center;padding:1px 0}
+.gthumb.pick{cursor:pointer}
+.gthumb.pick.on{border-color:var(--brand2);box-shadow:0 0 0 2px color-mix(in srgb,var(--brand2) 35%,transparent)}
+.pwrap{position:relative}
+.pcount{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;
+  font-size:11px;padding:1px 7px;letter-spacing:.02em}
 .pcard .meta{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:6px}
 .tb{margin-left:10px;display:inline-flex;gap:4px;vertical-align:middle}
 .detail{display:grid;grid-template-columns:minmax(200px,320px) 1fr;gap:16px}
@@ -180,7 +196,7 @@ import {firebaseConfig} from "./firebase-config.js";
 
 /* ---------- Taxonomy (embedded from homecentre_taxonomy.json) ---------- */
 const DEFAULT_TAX = [{"id":"living-room","name":"Living Room","slug":"livingroom","subcategories":[{"id":"sofas","name":"Sofas","slug":"livingroom-sofas","subcategories":[{"id":"3-seater-sofas","name":"3 Seater Sofas","slug":"livingroom-sofas-3seatersofas","subcategories":[]},{"id":"2-seater-sofas","name":"2 Seater Sofas","slug":"livingroom-sofas-2seatersofas","subcategories":[]},{"id":"1-seater-sofas","name":"1 Seater Sofas","slug":"livingroom-sofas-1seatersofas","subcategories":[]},{"id":"sofa-sets","name":"Sofa Sets","slug":"livingroom-sofas-sofasets","subcategories":[]},{"id":"sofa-cum-beds","name":"Sofa Cum Beds","slug":"livingroom-sofas-sofacumbeds","subcategories":[]},{"id":"corner-sofas","name":"Corner Sofas","slug":"livingroom-sofas-cornersofa","subcategories":[]}]},{"id":"customised-furniture","name":"Customised Furniture","slug":"customizedfurniture","subcategories":[]},{"id":"recliners","name":"Recliners","slug":"livingroom-recliners","subcategories":[{"id":"3-seater-recliners","name":"3 Seater Recliners","slug":"livingroom-recliners-3seaterrecliners","subcategories":[]},{"id":"2-seater-recliners","name":"2 Seater Recliners","slug":"livingroom-recliners-2seaterrecliners","subcategories":[]},{"id":"1-seater-recliners","name":"1 Seater Recliners","slug":"livingroom-recliners-1seaterrecliners","subcategories":[]},{"id":"recliner-sets","name":"Recliner Sets","slug":"livingroom-recliners-reclinersets","subcategories":[]}]},{"id":"occasional-chairs","name":"Occasional Chairs","slug":"livingroom-occasionalchairs","subcategories":[{"id":"accent-chairs","name":"Accent Chairs","slug":"livingroom-occasionalchairs-accentchairs","subcategories":[]},{"id":"folding-chairs","name":"Folding Chairs","slug":"livingroom-occasionalchairs-foldingchairs","subcategories":[]},{"id":"cafe-chairs","name":"Cafe Chairs","slug":"livingroom-occasionalchairs-cafechairs","subcategories":[]},{"id":"plastic-chairs","name":"Plastic Chairs","slug":"livingroom-occasionalchairs-plasticchairs","subcategories":[]}]},{"id":"benches-stools","name":"Benches & Stools","slug":"livingroom-benchandstools","subcategories":[{"id":"benches","name":"Benches","slug":"livingroom-benchandstools-benches","subcategories":[]},{"id":"stools","name":"Stools","slug":"livingroom-benchandstools-stools","subcategories":[]}]},{"id":"bean-bags-pouffes","name":"Bean Bags & Pouffes","slug":"livingroom-beanbagsandpouffes","subcategories":[{"id":"pouffes","name":"Pouffes","slug":"livingroom-beanbagsandpouffes-pouffes","subcategories":[]},{"id":"bean-bags","name":"Bean Bags","slug":"livingroom-beanbagsandpouffes-beanbags","subcategories":[]}]},{"id":"tables","name":"Tables","slug":"livingroom-tables","subcategories":[{"id":"centre-tables","name":"Centre Tables","slug":"livingroom-tables-centertables","subcategories":[]},{"id":"end-tables","name":"End Tables","slug":"livingroom-tables-endtables","subcategories":[]},{"id":"console-tables","name":"Console Tables","slug":"livingroom-tables-consoletables","subcategories":[]},{"id":"nesting-tables","name":"Nesting Tables","slug":"livingroom-tables-nestingtables","subcategories":[]}]},{"id":"tv-media-units","name":"TV & Media Units","slug":"livingroom-tvandmediaunits","subcategories":[{"id":"tv-consoles","name":"TV Consoles","slug":"livingroom-tvandmediaunits-tvconsoles","subcategories":[]},{"id":"tv-units","name":"TV Units","slug":"livingroom-tvandmediaunits-tvunits","subcategories":[]}]},{"id":"shelves","name":"Shelves","slug":"livingroom-shelves","subcategories":[{"id":"wall-shelves","name":"Wall Shelves","slug":"livingroom-shelves-wallshelves","subcategories":[]},{"id":"corner-shelves","name":"Corner Shelves","slug":"livingroom-shelves-cornershelves","subcategories":[]},{"id":"home-mandir","name":"Home Mandir","slug":"livingroom-shelves-homemandir","subcategories":[]}]},{"id":"shoe-racks","name":"Shoe Racks","slug":"livingroom-shoeracks","subcategories":[{"id":"shoe-cabinets","name":"Shoe Cabinets","slug":"livingroom-shoeracks-shoecabinets","subcategories":[]},{"id":"open-shoe-racks","name":"Open Shoe Racks","slug":"livingroom-shoeracks-shoeopenshelves","subcategories":[]}]},{"id":"study-work","name":"Study & Work","slug":"livingroom-studyandwork","subcategories":[{"id":"study-office-tables","name":"Study & Office Tables","slug":"livingroom-studyandwork-studyandofficetables","subcategories":[]},{"id":"study-office-chairs","name":"Study & Office Chairs","slug":"livingroom-studyandwork-studyandofficechairs","subcategories":[]}]},{"id":"book-cases-cabinets","name":"Book Cases & Cabinets","slug":"livingroom-bookcaseandcabinets","subcategories":[{"id":"book-cabinets","name":"Book Cabinets","slug":"livingroom-bookcaseandcabinets-bookcabinets","subcategories":[]},{"id":"open-book-shelves","name":"Open Book Shelves","slug":"livingroom-bookcaseandcabinets-openbookshelves","subcategories":[]}]},{"id":"outdoor-furniture","name":"Outdoor Furniture","slug":"outdoor","subcategories":[{"id":"outdoor-seating-tables","name":"Outdoor Seating & Tables","slug":"outdoor-outdoorseatingandtables","subcategories":[]}]},{"id":"ottomans","name":"Ottomans","slug":"livingroom-ottomans","subcategories":[]},{"id":"tea-table-sets","name":"Tea Table Sets","slug":"livingroom-teasets","subcategories":[]}]},{"id":"bedroom","name":"Bedroom","slug":"bedroom","subcategories":[{"id":"beds","name":"Beds","slug":"bedroom-beds","subcategories":[{"id":"king-beds","name":"King Beds","slug":"bedroom-beds-kingbeds","subcategories":[]},{"id":"queen-beds","name":"Queen Beds","slug":"bedroom-beds-queenbeds","subcategories":[]},{"id":"single-beds","name":"Single Beds","slug":"bedroom-beds-singlebeds","subcategories":[]},{"id":"bunk-beds","name":"Bunk Beds","slug":"bedroom-beds-bunkbeds","subcategories":[]}]},{"id":"wardrobes","name":"Wardrobes","slug":"bedroom-wardrobes","subcategories":[{"id":"2-door-wardrobes","name":"2 Door Wardrobes","slug":"bedroom-wardrobes-2doorswingwardrobes","subcategories":[]},{"id":"3-door-wardrobes","name":"3 Door Wardrobes","slug":"bedroom-wardrobes-3doorswingwardrobes","subcategories":[]},{"id":"4-door-wardrobes","name":"4 Door Wardrobes","slug":"bedroom-wardrobes-4doorswingwardrobes","subcategories":[]},{"id":"sliding-wardrobes","name":"Sliding Wardrobes","slug":"bedroom-wardrobes-2doorslidingwardrobes","subcategories":[]}]},{"id":"mattresses","name":"Mattresses","slug":"bedroom-mattresses","subcategories":[{"id":"king-mattresses","name":"King Mattresses","slug":"bedroom-mattresses-kingmattresses","subcategories":[]},{"id":"queen-mattresses","name":"Queen Mattresses","slug":"bedroom-mattresses-queenmattresses","subcategories":[]},{"id":"single-mattresses","name":"Single Mattresses","slug":"bedroom-mattresses-singlemattresses","subcategories":[]}]},{"id":"bed-side-tables","name":"Bed Side Tables","slug":"bedroom-bedsidetables","subcategories":[]},{"id":"chest-of-drawers","name":"Chest of Drawers","slug":"bedroom-chestofdrawers","subcategories":[]},{"id":"dresser-mirrors","name":"Dresser Mirrors","slug":"bedroom-dressermirrors","subcategories":[]}]},{"id":"dining-room","name":"Dining Room","slug":"diningroom","subcategories":[{"id":"dining-sets","name":"Dining Sets","slug":"diningroom-diningtablesets","subcategories":[{"id":"4-seater-dining-sets","name":"4 Seater Dining Sets","slug":"diningroom-diningtablesets-4seaterdiningtablesets","subcategories":[]},{"id":"6-seater-dining-sets","name":"6 Seater Dining Sets","slug":"diningroom-diningtablesets-6seaterdiningtablesets","subcategories":[]},{"id":"8-seater-dining-sets","name":"8 Seater Dining Sets","slug":"diningroom-diningtablesets-8seaterdiningtablesets","subcategories":[]}]},{"id":"dining-tables","name":"Dining Tables","slug":"diningroom-diningtables","subcategories":[{"id":"4-seater-dining-tables","name":"4 Seater Dining Tables","slug":"diningroom-diningtables-4seatertables","subcategories":[]},{"id":"6-seater-dining-tables","name":"6 Seater Dining Tables","slug":"diningroom-diningtables-6seatertables","subcategories":[]},{"id":"8-seater-dining-tables","name":"8 Seater Dining Tables","slug":"diningroom-diningtables-8seatertables","subcategories":[]}]},{"id":"bar-furniture","name":"Bar Furniture","slug":"diningroom-bar","subcategories":[{"id":"bar-cabinet-curios","name":"Bar Cabinet-Curios","slug":"diningroom-bar-barcabinetcurios","subcategories":[]},{"id":"bar-stools-chairs","name":"Bar Stools & Chairs","slug":"diningroom-bar-barstools","subcategories":[]},{"id":"serving-trolleys","name":"Serving Trolleys","slug":"diningroom-bar-servingtrolleys","subcategories":[]}]},{"id":"dining-chairs","name":"Dining Chairs","slug":"diningroom-diningchairs","subcategories":[]},{"id":"dining-benches","name":"Dining Benches","slug":"diningroom-diningbenches","subcategories":[]},{"id":"crockery-units","name":"Crockery Units","slug":"diningroom-crockeryunits","subcategories":[]}]},{"id":"decor","name":"Decor","slug":"decor","subcategories":[{"id":"home-accessories","name":"Home Accessories","slug":"decor-homeaccessories","subcategories":[{"id":"figurines","name":"Figurines","slug":"decor-homeaccessories-figurines","subcategories":[]},{"id":"vases","name":"Vases","slug":"decor-homeaccessories-vases","subcategories":[]},{"id":"table-accents","name":"Table Accents","slug":"decor-homeaccessories-tableaccents","subcategories":[]},{"id":"candle-holders-lanterns","name":"Candle Holders & Lanterns","slug":"decor-homeaccessories-candleholdersandlanterns","subcategories":[]},{"id":"potpourri-bowls-platters","name":"Potpourri Bowls & Platters","slug":"decor-homeaccessories-bowls","subcategories":[]},{"id":"clocks","name":"Clocks","slug":"decor-homeaccessories-clocks","subcategories":[]},{"id":"desk-accessories","name":"Desk Accessories","slug":"decor-homeaccessories-deskaccessories","subcategories":[]},{"id":"gift-accessories","name":"Gift Accessories","slug":"decor-homeaccessories-giftaccessories","subcategories":[]}]},{"id":"lighting","name":"Lighting","slug":"decor-lighting","subcategories":[{"id":"table-lamps","name":"Table Lamps","slug":"decor-lighting-tablelamps","subcategories":[]},{"id":"wall-lamps","name":"Wall Lamps","slug":"decor-lighting-walllamps","subcategories":[]},{"id":"hanging-lamps","name":"Hanging Lamps","slug":"decor-lighting-ceilinglamps","subcategories":[]},{"id":"floor-lamps","name":"Floor Lamps","slug":"decor-lighting-floorlamps","subcategories":[]},{"id":"decorative-lights","name":"Decorative Lights","slug":"decor-lighting-decorativelights","subcategories":[]},{"id":"string-lights","name":"String Lights","slug":"decor-lighting-stringlights","subcategories":[]},{"id":"bulbs","name":"Bulbs","slug":"decor-lighting-bulbs","subcategories":[]}]},{"id":"wall-decor","name":"Wall Decor","slug":"decor-wallaccent","subcategories":[{"id":"wall-accents","name":"Wall Accents","slug":"decor-wallaccent-walldecor","subcategories":[]},{"id":"decorative-mirrors","name":"Decorative Mirrors","slug":"decor-wallaccent-decorativemirrors","subcategories":[]},{"id":"photo-frames","name":"Photo Frames","slug":"decor-wallaccent-photoframes","subcategories":[]},{"id":"posters-paintings","name":"Posters & Paintings","slug":"decor-wallaccent-pictureframes","subcategories":[]}]},{"id":"home-fragrances","name":"Home Fragrances","slug":"decor-homefragrance","subcategories":[{"id":"candles","name":"Candles","slug":"decor-homefragrance-candles","subcategories":[]},{"id":"fragrances-potpourris","name":"Fragrances & Potpourris","slug":"decor-homefragrance-fragranceandpotpourri","subcategories":[]},{"id":"diffusers","name":"Diffusers","slug":"decor-homefragrance-diffusers","subcategories":[]},{"id":"aroma-oils","name":"Aroma Oils","slug":"decor-homefragrance-aromaoil","subcategories":[]},{"id":"room-car-sprays","name":"Room & Car Sprays","slug":"decor-homefragrance-roomsprays","subcategories":[]}]},{"id":"garden","name":"Garden","slug":"decor-garden","subcategories":[{"id":"artificial-plants-flowers","name":"Artificial Plants & Flowers","slug":"decor-garden-artificialplantsandflowers","subcategories":[]},{"id":"pots-planters","name":"Pots & Planters","slug":"decor-garden-potsandplanters","subcategories":[]},{"id":"fountains","name":"Fountains","slug":"decor-garden-indoorandoutdoorfountains","subcategories":[]}]}]},{"id":"kitchen","name":"Kitchen","slug":"kitchen","subcategories":[{"id":"storage-containers","name":"Storage & Containers","slug":"kitchen-storageandcontainers","subcategories":[{"id":"containers-jars","name":"Containers & Jars","slug":"kitchen-storageandcontainers-containersandjars","subcategories":[]},{"id":"bottles","name":"Bottles","slug":"kitchen-storageandcontainers-bottles","subcategories":[]},{"id":"flasks","name":"Flasks","slug":"kitchen-storageandcontainers-flask","subcategories":[]},{"id":"lunch-boxes-bags","name":"Lunch Boxes & Bags","slug":"kitchen-storageandcontainers-lunchboxandbags","subcategories":[]},{"id":"kitchen-organisers","name":"Kitchen Organisers","slug":"kitchen-storageandcontainers-organisers","subcategories":[]}]},{"id":"cookware","name":"Cookware","slug":"kitchen-cooking","subcategories":[{"id":"cookware-sets","name":"Cookware Sets","slug":"kitchen-cooking-cookwaresets","subcategories":[]},{"id":"induction-cookware","name":"Induction Cookware","slug":"kitchen-cooking-inductioncookware","subcategories":[]},{"id":"pots-pans","name":"Pots & Pans","slug":"kitchen-cooking-potsandpans","subcategories":[]},{"id":"kadhai-woks","name":"Kadhai & Woks","slug":"kitchen-cooking-kadhaiandwoks","subcategories":[]},{"id":"cooking-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-cooking-toolsandgadgets","subcategories":[]},{"id":"pressure-cookers","name":"Pressure Cookers","slug":"kitchen-cooking-pressurecookers","subcategories":[]},{"id":"tawas","name":"Tawas","slug":"kitchen-cooking-tawas","subcategories":[]}]},{"id":"kitchenware","name":"Kitchenware","slug":"kitchen-kitchenware","subcategories":[{"id":"kitchen-trolleys","name":"Kitchen Trolleys","slug":"kitchen-kitchenware-kitchentrolley","subcategories":[]},{"id":"knives-scissors","name":"Knives & Scissors","slug":"kitchen-kitchenware-knivesandscissors","subcategories":[]},{"id":"casseroles","name":"Casseroles","slug":"kitchen-kitchenware-casseroles","subcategories":[]},{"id":"oil-vinegar-servers","name":"Oil & Vinegar Servers","slug":"kitchen-kitchenware-oilandvinegarserver","subcategories":[]},{"id":"utensil-holders","name":"Utensil Holders","slug":"kitchen-kitchenware-utensilholders","subcategories":[]},{"id":"chopping-boards","name":"Chopping Boards","slug":"kitchen-kitchenware-choppingboards","subcategories":[]},{"id":"dish-racks","name":"Dish Racks","slug":"kitchen-kitchenware-dishracks","subcategories":[]},{"id":"fruit-baskets","name":"Fruit Baskets","slug":"kitchen-kitchenware-fruitstands","subcategories":[]},{"id":"strainers-colanders","name":"Strainers & Colanders","slug":"kitchen-kitchenware-strainersandcolanders","subcategories":[]},{"id":"kitchenware-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-kitchenware-toolsandgadgets","subcategories":[]}]},{"id":"kitchen-linen","name":"Kitchen Linen","slug":"kitchen-kitchenlinens","subcategories":[{"id":"aprons","name":"Aprons","slug":"kitchen-kitchenlinens-aprons","subcategories":[]},{"id":"pot-holders-mittens","name":"Pot Holders & Mittens","slug":"kitchen-kitchenlinens-potholders","subcategories":[]},{"id":"kitchen-towels","name":"Kitchen Towels","slug":"kitchen-kitchenlinens-kitchentowels","subcategories":[]}]},{"id":"bakeware","name":"Bakeware","slug":"kitchen-bakeware","subcategories":[]},{"id":"kitchen-appliances","name":"Kitchen Appliances","slug":"kitchen-appliances","subcategories":[]}]},{"id":"furnishings","name":"Furnishings","slug":"furnishing","subcategories":[{"id":"bedding","name":"Bedding","slug":"furnishing-bedding","subcategories":[{"id":"double-bedsheets","name":"Double Bedsheets","slug":"furnishing-bedding-doublebedsheets","subcategories":[]},{"id":"single-bedsheets","name":"Single Bedsheets","slug":"furnishing-bedding-singlebedsheets","subcategories":[]},{"id":"bedding-sets","name":"Bedding Sets","slug":"furnishing-bedding-beddingsets","subcategories":[]},{"id":"pillows-pillow-covers","name":"Pillows & Pillow Covers","slug":"furnishing-bedding-pillowsandpillowcovers","subcategories":[]},{"id":"blankets-quilts","name":"Blankets & Quilts","slug":"furnishing-bedding-blanketsandquilts","subcategories":[]},{"id":"comforters","name":"Comforters","slug":"furnishing-bedding-comforters","subcategories":[]},{"id":"throws","name":"Throws","slug":"furnishing-bedding-throws","subcategories":[]},{"id":"duvets-duvet-covers","name":"Duvets & Duvet Covers","slug":"furnishing-bedding-duvetandduvetcovers","subcategories":[]},{"id":"dohars","name":"Dohars","slug":"furnishing-bedding-dohars","subcategories":[]},{"id":"bed-covers","name":"Bed Covers","slug":"furnishing-bedding-bedcovers","subcategories":[]}]},{"id":"cushions","name":"Cushions","slug":"furnishing-cushions","subcategories":[{"id":"cushion-covers","name":"Cushion Covers","slug":"furnishing-cushions-cushioncovers","subcategories":[]},{"id":"filled-cushions","name":"Filled Cushions","slug":"furnishing-cushions-filledcushions","subcategories":[]},{"id":"cushion-fillers","name":"Cushion Fillers","slug":"furnishing-cushions-cushionfilling","subcategories":[]},{"id":"floor-cushions","name":"Floor Cushions","slug":"furnishing-cushions-floorcushions","subcategories":[]}]},{"id":"curtains-blinds","name":"Curtains & Blinds","slug":"furnishing-curtains","subcategories":[{"id":"door-curtains","name":"Door Curtains","slug":"furnishing-curtains-doorcurtains","subcategories":[]},{"id":"window-curtains","name":"Window Curtains","slug":"furnishing-curtains-windowcurtains","subcategories":[]},{"id":"blinds","name":"Blinds","slug":"furnishing-curtains-blinds","subcategories":[]},{"id":"rods-accessories","name":"Rods & Accessories","slug":"furnishing-curtains-rodsandaccessories","subcategories":[]}]},{"id":"accessories","name":"Accessories","slug":"furnishing-accessories","subcategories":[{"id":"bags","name":"Bags","slug":"furnishing-accessories-bags","subcategories":[]},{"id":"pads-mats","name":"Pads & Mats","slug":"furnishing-accessories-padsandmats","subcategories":[]},{"id":"sofa-covers","name":"Sofa Covers","slug":"furnishing-accessories-sofacovers","subcategories":[]}]},{"id":"floor-coverings","name":"Floor Coverings","slug":"furnishing-floorcoverings","subcategories":[{"id":"carpets-rugs","name":"Carpets & Rugs","slug":"furnishing-floorcoverings-carpets","subcategories":[]},{"id":"dhurries","name":"Dhurries","slug":"furnishing-floorcoverings-dhurries","subcategories":[]},{"id":"doormats","name":"Doormats","slug":"furnishing-floorcoverings-doormats","subcategories":[]}]}]},{"id":"tableware","name":"Tableware","slug":"dining","subcategories":[{"id":"serving","name":"Serving","slug":"dining-serving","subcategories":[{"id":"trays-platters","name":"Trays & Platters","slug":"dining-serving-traysandplatters","subcategories":[]},{"id":"glasses-jugs","name":"Glasses & Jugs","slug":"dining-serving-glassesandjugs","subcategories":[]},{"id":"bar-accessories","name":"Bar Accessories","slug":"dining-serving-baraccessories","subcategories":[]},{"id":"salt-pepper-shakers","name":"Salt & Pepper Shakers","slug":"dining-serving-saltandpeppershakers","subcategories":[]},{"id":"chip-dip","name":"Chip & Dip","slug":"dining-serving-chipanddip","subcategories":[]}]},{"id":"crockery","name":"Crockery","slug":"dining-crockery","subcategories":[{"id":"bowls","name":"Bowls","slug":"dining-crockery-bowls","subcategories":[]},{"id":"plates","name":"Plates","slug":"dining-crockery-plates","subcategories":[]},{"id":"mugs","name":"Mugs","slug":"dining-crockery-mugsandcups","subcategories":[]},{"id":"cups-saucers","name":"Cups & Saucers","slug":"dining-crockery-cupsandsaucers","subcategories":[]},{"id":"pots-kettles","name":"Pots & Kettles","slug":"dining-crockery-potsandkettles","subcategories":[]},{"id":"dinner-sets","name":"Dinner Sets","slug":"dining-crockery-dinnersets","subcategories":[]}]},{"id":"cutlery","name":"Cutlery","slug":"dining-cutlery","subcategories":[{"id":"spoons","name":"Spoons","slug":"dining-cutlery-spoons","subcategories":[]},{"id":"cutlery-sets","name":"Cutlery & Cutlery Sets","slug":"dining-cutlery-cutlerysets","subcategories":[]},{"id":"cutlery-holders","name":"Cutlery Holders","slug":"dining-cutlery-cutleryholders","subcategories":[]}]},{"id":"table-linens","name":"Table Linens","slug":"dining-tableaccessories","subcategories":[{"id":"placemats","name":"Placemats","slug":"dining-tableaccessories-placemats","subcategories":[]},{"id":"table-runners","name":"Table Runners","slug":"dining-tableaccessories-tablerunners","subcategories":[]},{"id":"table-cloths","name":"Table Cloths","slug":"dining-tableaccessories-tablecloths","subcategories":[]},{"id":"trivets-coasters","name":"Trivets & Coasters","slug":"dining-tableaccessories-trivetandcoasters","subcategories":[]},{"id":"tissue-holders","name":"Tissue Holders","slug":"dining-tableaccessories-tissueholders","subcategories":[]}]}]},{"id":"bath-laundry","name":"Bath & Laundry","slug":"bathandlaundry","subcategories":[{"id":"bath-linen","name":"Bath Linen","slug":"bathandlaundry-bath","subcategories":[{"id":"towels","name":"Towels","slug":"bathandlaundry-bath-towel","subcategories":[]},{"id":"robes","name":"Robes","slug":"bathandlaundry-bath-robes","subcategories":[]},{"id":"bathmats","name":"Bathmats","slug":"bathandlaundry-bath-bathmats","subcategories":[]}]},{"id":"bath-accessories","name":"Bath Accessories","slug":"bathandlaundry-bathaccessories","subcategories":[{"id":"holders-tumblers","name":"Holders & Tumblers","slug":"bathandlaundry-bathaccessories-holdersandtumblers","subcategories":[]},{"id":"soap-dispensers","name":"Soap Dispensers","slug":"bathandlaundry-bathaccessories-soapdispensers","subcategories":[]},{"id":"soap-dishes","name":"Soap Dishes","slug":"bathandlaundry-bathaccessories-soapdishes","subcategories":[]},{"id":"bath-sets","name":"Bath Sets","slug":"bathandlaundry-bathaccessories-accessorysets","subcategories":[]},{"id":"storage-mirrors","name":"Storage & Mirrors","slug":"bathandlaundry-bathaccessories-storageandmirrors","subcategories":[]},{"id":"towel-holders","name":"Towel Holders","slug":"bathandlaundry-bathaccessories-towelholders","subcategories":[]},{"id":"toilet-accessories","name":"Toilet Accessories","slug":"bathandlaundry-bathaccessories-toiletpaperandbrushholders","subcategories":[]},{"id":"shower-curtains","name":"Shower Curtains","slug":"bathandlaundry-bathaccessories-showercurtains","subcategories":[]},{"id":"bath-stools","name":"Bath Stools","slug":"bathandlaundry-bathaccessories-bathstools","subcategories":[]}]},{"id":"laundry","name":"Laundry","slug":"bathandlaundry-laundry","subcategories":[{"id":"laundry-storage-baskets","name":"Laundry Storage & Baskets","slug":"bathandlaundry-laundry-storage","subcategories":[]},{"id":"cleaning-accessories","name":"Cleaning Accessories","slug":"bathandlaundry-laundry-cleaningaccessories","subcategories":[]},{"id":"dustbins","name":"Dustbins","slug":"bathandlaundry-laundry-dustbins","subcategories":[]},{"id":"cloth-dryers","name":"Cloth Dryers","slug":"bathandlaundry-laundry-clothdryers","subcategories":[]},{"id":"hangers-hooks","name":"Hangers & Hooks","slug":"bathandlaundry-laundry-hangersandhooks","subcategories":[]}]}]},{"id":"gifting","name":"Gifting","slug":"gifts","subcategories":[{"id":"housewarming-gifts","name":"Housewarming Gifts","slug":"gifts-housewarminggifts","subcategories":[]},{"id":"wedding-gifts","name":"Wedding Gifts","slug":"gifts-weddinggifts","subcategories":[]},{"id":"anniversary-gifts","name":"Anniversary Gifts","slug":"gifts-anniversarygifts","subcategories":[]},{"id":"birthday-gifts","name":"Birthday Gifts","slug":"gifts-birthdaygifts","subcategories":[]},{"id":"gifts-for-him","name":"Gifts for Him","slug":"gifts-giftsforhim","subcategories":[]},{"id":"gifts-for-her","name":"Gifts for Her","slug":"gifts-giftsforher","subcategories":[]},{"id":"festive-gifts","name":"Festive Gifts","slug":"gifts-festivegifts","subcategories":[{"id":"ganesh-chaturthi","name":"Ganesh Chaturthi","slug":"gifts-festivegifts-ganeshchaturthigifts","subcategories":[]}]},{"id":"special-occasions","name":"Special Occasions","slug":"gifts-specialoccasiongifts","subcategories":[]}]}];
-const BUILD = "01 Nov 17:13";
+const BUILD = "03 Nov 19:15";
 let TAXONOMY = DEFAULT_TAX;
 const bySlug = {}; // slug -> {cat,sub,type}
 function reindex(){
@@ -238,7 +254,18 @@ const csvCell=v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""
 function parseCSV(t){const rows=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}else if(ch=='"')q=true;else if(ch==","){r.push(c);c=""}else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t[i+1]=="\n")i++;r.push(c);c="";if(r.some(x=>x!==""))rows.push(r);r=[]}else c+=ch}r.push(c);if(r.some(x=>x!==""))rows.push(r);return rows}
 
 /* ---------- Images ---------- */
-const IMG={cache:new Map()};
+const IMG={cache:new Map(),gal:new Map()};
+const GAL_MAX=8;                       // photos per product, cover included
+const GAL_BYTES=900*1024;              // a Firestore document stops at 1 MiB
+const photoCount=p=>Math.max(num(p?.photoCount)||0,p?.hasImage?1:0);
+/* The extras, fetched once and remembered for the session. */
+async function galleryOf(id,count){
+  if(IMG.gal.has(id))return IMG.gal.get(id);
+  if(!(count>1)){IMG.gal.set(id,[]);return[]}
+  try{const s=await getDoc(doc(db,"productGallery",id));
+    const a=s.exists()?(s.data().photos||[]):[];IMG.gal.set(id,a);return a}
+  catch(e){return[]}
+}
 function thumb(p,size=48){
   const st=`width:${size}px;height:${size}px;border-radius:8px;object-fit:cover;background:var(--line);flex:none`;
   if(p.imageUrl)return `<img src="${esc(p.imageUrl)}" loading="lazy" style="${st}" onerror="this.style.visibility='hidden'">`;
@@ -256,7 +283,37 @@ function compressImage(file,max=480,q=.72){return new Promise((res,rej)=>{const 
       res(c.toDataURL("image/jpeg",q))};
     im.onerror=()=>rej(new Error("This browser couldn't read that image. HEIC photos straight off an iPhone often need converting — try saving it as JPG or PNG first."));
     im.src=r.result};r.onerror=()=>rej(new Error("Couldn't read that file"));r.readAsDataURL(file)})}
-let IMGSTATE={newImg:null,rm:false};
+let IMGSTATE={photos:[],dirty:false,loading:false};
+function galDraw(){
+  const el=$("#p-gal");if(!el)return;
+  const P=IMGSTATE.photos;
+  el.innerHTML=P.map((src,i)=>`<div class="gthumb${i?"":" cover"}">
+    <img src="${src}" alt="">
+    ${i?`<button class="gbtn star" type="button" title="Make this the cover" onclick="galCover(${i})">★</button>`
+       :`<span class="glabel">cover</span>`}
+    <button class="gbtn x" type="button" title="Remove this photo" onclick="galDrop(${i})">✕</button></div>`).join("")
+   ||(IMGSTATE.loading?`<p class="mute small" style="margin:0">Loading photos…</p>`
+      :`<p class="mute small" style="margin:0">No photos yet — take one or upload a few.</p>`);
+  const n=$("#p-galn");if(n)n.textContent=P.length?`${P.length} of ${GAL_MAX}`:"";
+}
+window.galCover=i=>{const P=IMGSTATE.photos;if(i<1||i>=P.length)return;P.unshift(P.splice(i,1)[0]);IMGSTATE.dirty=true;galDraw()};
+window.galDrop=i=>{IMGSTATE.photos.splice(i,1);IMGSTATE.dirty=true;galDraw()};
+/* Opening an existing product pulls its cover from the cache and its extras once. */
+async function loadFormPhotos(id){
+  if(!id){IMGSTATE.loading=false;galDraw();return}
+  const p=S.products.find(x=>x.id===id)||{};
+  const out=[];
+  if(p.hasImage){
+    let c=IMG.cache.get(id);
+    if(!c){try{const s=await getDoc(doc(db,"productImages",id));if(s.exists()){c=s.data().data;IMG.cache.set(id,c)}}catch(e){}}
+    if(c)out.push(c);
+  }
+  (await galleryOf(id,photoCount(p))).forEach(x=>out.push(x));
+  IMGSTATE.loading=false;
+  if(!IMGSTATE.dirty)IMGSTATE.photos=out;            // don't discard a photo added while loading
+  else out.forEach(x=>{if(!IMGSTATE.photos.includes(x))IMGSTATE.photos.unshift(x)});
+  galDraw();
+}
 /* Appearance is a per-device choice, so it lives in this browser rather than in Firestore —
    the showroom tablet can stay light while a phone follows its own night setting. */
 const THEME_KEY="inv-theme";
@@ -583,7 +640,9 @@ function cardImg(p){
 }
 function pcard(p){
   const href="#product/"+encodeURIComponent(p.id);
-  return `<div class="pcard adm" onclick="location.hash='${href.slice(1)}'">${cardImg(p)}<div class="pb">
+  const np=photoCount(p);
+  return `<div class="pcard adm" onclick="location.hash='${href.slice(1)}'">
+   <div class="pwrap">${cardImg(p)}${np>1?`<span class="pcount">📷 ${np}</span>`:""}</div><div class="pb">
    <a class="pn" href="${href}" onclick="event.stopPropagation()">${esc(p.name)}</a>
    <div class="sku">${esc(p.sku)}</div>
    <div class="pr"><b>Sale ${inr(p.price)}</b></div>
@@ -628,15 +687,33 @@ function vProduct(el){
     ["MRP",inr(p.mrp)],["Selling price",inr(p.price)],
     ...(can("seeCost")?[["Cost price",inr(p.cost)],["Margin",margin]]:[]),["GST",(p.gst??0)+"% (included in price)"],
     ["Stock",`<span class="tag ${outStock(p)?"out":lowStock(p)?"low":"ok"}">${esc(qtyText(p.qty,p.unit))}</span>`],["Dimension",dimText(p)?`${esc(dimOf(p))} <span class="mute">${esc(dimUnitOf(p))}</span>`:"—"],["Booked",bk(p)?`${esc(qtyText(bk(p),p.unit))} reserved for bookings · ${avail(p)} free`:"—"],...(SHOW_REORDER?[["Reorder level",p.reorder??"—"]]:[]),["Location",esc(locText(p)||p.location||"—")],
-    ["Image link",p.imageUrl?`<a href="${esc(p.imageUrl)}" target="_blank" rel="noopener">${esc(p.imageUrl)}</a>`:(p.hasImage?"Uploaded photo":"—")],
+    ["Photos",photoCount(p)?`${photoCount(p)} uploaded${p.imageUrl?" · plus a link":""}`:(p.imageUrl?`<a href="${esc(p.imageUrl)}" target="_blank" rel="noopener">linked image</a>`:"—")],
     ["Notes",esc(p.description||"—")],["Added",p.createdAt?fdt(tms(p.createdAt)):"—"],["Last updated",(p.updatedAt?fdt(tms(p.updatedAt)):"—")+(by(p.updatedBy)?" by "+esc(by(p.updatedBy)):"")]];
   const mv=S.moves.filter(m=>m.productId===p.id).slice(0,15);
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('products')">← Back</button><h2>${esc(p.name)}</h2></div>
    <div class="row">${isManager()?`<button class="btn sec" onclick="openStock('${p.id}')">Update stock</button>`:""}${can("editProducts")?`<button class="btn" onclick="openProduct('${p.id}')">Edit product</button>`:""}</div></div>
-  <div class="detail"><div>${cardImg(p).replace('class="pim"','class="pim" style="border-radius:14px"')}</div>
+  <div class="detail"><div><div id="pv-main">${cardImg(p).replace('class="pim"','class="pim" style="border-radius:14px"')}</div>
+    ${photoCount(p)>1?`<div id="pv-strip" class="pgal" style="margin-top:8px"><p class="mute small" style="margin:0">Loading ${photoCount(p)} photos…</p></div>`:""}</div>
    <div class="card" style="padding:6px 14px"><table>${R.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table></div></div>
   ${can("seeMoves")?`<div class="card" style="margin-top:14px"><h3 style="margin-bottom:8px">Recent stock activity</h3>
    ${mv.map(m=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(m.type)} · ${esc(m.note||"")}<br><span class="small mute">${esc(m.byName||"")} · ${fdt(tms(m.createdAt))}</span></span><span style="text-align:right"><b style="color:${m.delta>=0?"var(--ok)":"var(--bad)"}">${m.delta>0?"+":""}${m.delta}</b><br><span class="small mute">→ ${m.after}</span></span></div>`).join("")||`<p class="mute">No recent movements (the log shows the latest 200 across all products).</p>`}</div>`:""}`;
+  if(photoCount(p)>1)showPhotoStrip(p);
+}
+/* The extras arrive after the page, so the page never waits on them. */
+async function showPhotoStrip(p){
+  const extra=await galleryOf(p.id,photoCount(p));
+  const strip=$("#pv-strip");if(!strip)return;
+  let cover=IMG.cache.get(p.id);
+  if(!cover&&p.hasImage){try{const s=await getDoc(doc(db,"productImages",p.id));if(s.exists()){cover=s.data().data;IMG.cache.set(p.id,cover)}}catch(e){}}
+  const all=[...(cover?[cover]:[]),...extra];
+  if(all.length<2){strip.remove();return}
+  strip.innerHTML=all.map((src,i)=>`<div class="gthumb pick${i?"":" on"}" data-i="${i}"><img src="${src}" alt="Photo ${i+1}"></div>`).join("");
+  const main=$("#pv-main");
+  strip.querySelectorAll(".gthumb").forEach(t=>t.onclick=()=>{
+    const i=+t.dataset.i;
+    main.innerHTML=`<img class="pim" style="border-radius:14px" src="${all[i]}" alt="">`;
+    strip.querySelectorAll(".gthumb").forEach(x=>x.classList.toggle("on",x===t));
+  });
 }
 window.S=S;window.render=render;
 
@@ -671,17 +748,32 @@ window.openProduct=function(id,preset){
    <div><label>Unit</label><select id="p-unit">${withCur(S.lists.units,p.unit).map(u=>`<option ${p.unit===u?"selected":""}>${esc(u)}</option>`).join("")}</select></div>
    <div><label>Location / rack</label><div class="row" style="flex-wrap:nowrap"><select id="p-loc"><option value="">—</option>${withCur(allLocations(),p.location).map(x=>`<option ${p.location===x?"selected":""}>${esc(x)}</option>`).join("")}</select><button class="btn sec sm" type="button" id="p-locadd" title="Add a new location">＋</button></div></div>
    <div class="full"><label>Notes / description</label><textarea id="p-desc" rows="2">${esc(p.description)}</textarea></div>
-   <div class="full"><label>Photo</label><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div id="p-prev">${thumb(p,84)}</div>
-    <div class="grid" style="flex:1"><div class="row"><button class="btn sec sm" id="p-cam" type="button">📷 Take photo</button><label class="btn sec sm" style="margin:0;cursor:pointer;color:var(--ink)">⇪ Upload image<input type="file" id="p-file" accept="image/*" hidden></label><button class="btn sec sm" id="p-rmimg" type="button">Remove</button></div>
-    <input id="p-imgurl" placeholder="…or paste an image link (https://…)" value="${esc(p.imageUrl)}"></div></div></div>
+   <div class="full"><label>Photos <span class="mute">— the first one is the cover, up to ${GAL_MAX}</span></label>
+    <div id="p-gal" class="pgal"></div>
+    <div class="row" style="margin-top:8px"><button class="btn sec sm" id="p-cam" type="button">📷 Take photo</button>
+     <label class="btn sec sm" style="margin:0;cursor:pointer;color:var(--ink)">⇪ Upload images<input type="file" id="p-file" accept="image/*" multiple hidden></label>
+     <span class="small mute" id="p-galn"></span></div>
+    <input id="p-imgurl" style="margin-top:8px" placeholder="…or paste an image link (https://…)" value="${esc(p.imageUrl)}"></div>
   </div>
   <div class="row" style="margin-top:16px;justify-content:space-between"><div>${id?`<button class="btn bad sm" id="p-del">Delete</button>`:""}</div><div class="row"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="p-save">Save</button></div></div></div></div>`;
-  IMGSTATE={newImg:null,rm:false};hydrateImages();
-  const setShot=d=>{IMGSTATE.newImg=d;IMGSTATE.rm=false;$("#p-imgurl").value="";$("#p-prev").innerHTML=`<img src="${d}" style="width:84px;height:84px;border-radius:8px;object-fit:cover">`};
-  $("#p-file").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{setShot(await compressImage(f))}catch(x){toast(emsg(x),1)}};
-  $("#p-cam").onclick=()=>openCamera(setShot);
-  $("#p-rmimg").onclick=()=>{IMGSTATE={newImg:null,rm:true};$("#p-imgurl").value="";$("#p-prev").innerHTML=thumb({},84)};
-  $("#p-imgurl").oninput=e=>{const u=e.target.value.trim();if(u){IMGSTATE.newImg=null;$("#p-prev").innerHTML=`<img src="${esc(u)}" style="width:84px;height:84px;border-radius:8px;object-fit:cover" onerror="this.style.visibility='hidden'">`}};
+  IMGSTATE={photos:[],dirty:false,loading:!!id};
+  galDraw();loadFormPhotos(id);
+  const addShot=d=>{
+    if(IMGSTATE.photos.length>=GAL_MAX)return toast(`That is the ${GAL_MAX}-photo limit — remove one first`,1);
+    IMGSTATE.photos.push(d);IMGSTATE.dirty=true;galDraw();
+  };
+  $("#p-file").onchange=async e=>{
+    const files=[...e.target.files];e.target.value="";
+    if(!files.length)return;
+    const room=GAL_MAX-IMGSTATE.photos.length;
+    if(room<=0)return toast(`That is the ${GAL_MAX}-photo limit — remove one first`,1);
+    if(files.length>room)toast(`Room for ${room} more — the first ${room} will be added`,1);
+    for(const f of files.slice(0,room)){
+      try{IMGSTATE.photos.push(await compressImage(f));IMGSTATE.dirty=true;galDraw()}
+      catch(x){toast(emsg(x),1)}
+    }
+  };
+  $("#p-cam").onclick=()=>openCamera(addShot);
   const cs=$("#p-cat"),ss=$("#p-sub"),ts=$("#p-type");
   cs.onchange=()=>{const c=TAXONOMY.find(x=>x.id===cs.value);ss.innerHTML=`<option value="">—</option>`+(c?o(c.subcategories):"");ts.innerHTML=`<option value="">—</option>`};
   ss.onchange=()=>{const c=TAXONOMY.find(x=>x.id===cs.value),s=c?.subcategories.find(x=>x.id===ss.value);ts.innerHTML=`<option value="">—</option>`+(s?o(s.subcategories):"")};
@@ -701,7 +793,10 @@ window.openProduct=function(id,preset){
     if(!S.lists.locations.some(x=>String(x).toLowerCase()===v.toLowerCase())){try{await saveList("locations",[...S.lists.locations,v].sort(natcmp));toast("Location added")}catch(e){toast(emsg(e),1)}}
   };
   $("#p-save").onclick=()=>saveProduct(id);
-  $("#p-del")&&($("#p-del").onclick=async()=>{if(!confirm("Delete this product permanently? Sales history is kept."))return;await deleteDoc(doc(db,"products",id));if(S.products.find(x=>x.id===id)?.hasImage)await deleteDoc(doc(db,"productImages",id)).catch(()=>{});closeModal();toast("Deleted")});
+  $("#p-del")&&($("#p-del").onclick=async()=>{if(!confirm("Delete this product permanently? Sales history is kept."))return;const gone=S.products.find(x=>x.id===id)||{};
+    await deleteDoc(doc(db,"products",id));
+    if(gone.hasImage)await deleteDoc(doc(db,"productImages",id)).catch(()=>{});
+    if(photoCount(gone)>1)await deleteDoc(doc(db,"productGallery",id)).catch(()=>{});closeModal();toast("Deleted")});
 };
 async function saveProduct(id){
   const v=i=>$(i).value.trim();
@@ -712,7 +807,13 @@ async function saveProduct(id){
   const old=S.products.find(x=>x.id===id)||{};
   const cat=TAXONOMY.find(c=>c.id===cid),sub=cat.subcategories.find(s=>s.id===v("#p-sub")),type=sub?.subcategories.find(t=>t.id===v("#p-type"));
   const imageUrl=v("#p-imgurl");
-  const hasImage=IMGSTATE.newImg?true:IMGSTATE.rm?false:!!old.hasImage;
+  const photos=IMGSTATE.photos,touched=IMGSTATE.dirty;
+  const hasImage=touched?photos.length>0:!!old.hasImage;
+  const nPhotos=touched?photos.length:photoCount(old);
+  if(touched&&photos.length>1){
+    const bytes=photos.slice(1).reduce((a,s)=>a+s.length*3/4,0);
+    if(bytes>GAL_BYTES)return toast("Those photos are too large together — remove one and save again",1);
+  }
   const barcode=v("#p-bar")||old.barcode||"";
   if(barcode&&S.products.some(x=>x.barcode===barcode&&x.id!==id))return toast("That barcode is already used by another product",1);
   const vname=v("#p-vendor"),vrec=S.vendors.find(x=>norm(x.name)===norm(vname));
@@ -720,7 +821,7 @@ async function saveProduct(id){
     categoryId:cat.id,categoryName:cat.name,categorySlug:cat.slug,
     subcategoryId:sub?.id||"",subcategoryName:sub?.name||"",subcategorySlug:sub?.slug||"",
     typeId:type?.id||"",typeName:type?.name||"",typeSlug:type?.slug||"",
-    fullSlug:(type||sub||cat).slug,imageUrl,hasImage,
+    fullSlug:(type||sub||cat).slug,imageUrl,hasImage,photoCount:nPhotos,
     mrp:num(v("#p-mrp"))||num(v("#p-price")),price:num(v("#p-price")),cost:num(v("#p-cost")),gst:num(v("#p-gst")),
     dimension:dimNorm(v("#p-dim")),dimUnit:dimNorm(v("#p-dim"))?v("#p-dimunit"):"",
     reorder:$("#p-re")?num(v("#p-re")):num(old.reorder),unit:v("#p-unit"),location:v("#p-loc"),description:v("#p-desc"),active:true,
@@ -733,8 +834,20 @@ async function saveProduct(id){
     else{const q=Math.max(0,Math.floor(num(v("#p-qty"))));
       b.set(r,{...d,qty:q,booked:0,locQty:q?{[d.location||UNLOC]:q}:{},createdAt:serverTimestamp()});
       if(q>0)b.set(doc(collection(db,"movements")),mv(r.id,name,sku,"opening",q,0,q,"Opening stock"))}
-    if(IMGSTATE.newImg){b.set(doc(db,"productImages",r.id),{data:IMGSTATE.newImg,updatedAt:serverTimestamp()});IMG.cache.set(r.id,IMGSTATE.newImg)}
-    else if(IMGSTATE.rm&&old.hasImage){b.delete(doc(db,"productImages",r.id));IMG.cache.delete(r.id)}
+    if(touched){
+      if(photos.length){
+        b.set(doc(db,"productImages",r.id),{data:photos[0],updatedAt:serverTimestamp()});
+        IMG.cache.set(r.id,photos[0]);
+        const extra=photos.slice(1);
+        if(extra.length)b.set(doc(db,"productGallery",r.id),{photos:extra,updatedAt:serverTimestamp()});
+        else if(photoCount(old)>1)b.delete(doc(db,"productGallery",r.id));
+        IMG.gal.set(r.id,extra);
+      }else{
+        if(old.hasImage)b.delete(doc(db,"productImages",r.id));
+        if(photoCount(old)>1)b.delete(doc(db,"productGallery",r.id));
+        IMG.cache.delete(r.id);IMG.gal.set(r.id,[]);
+      }
+    }
     await b.commit();
     closeModal();toast("Saved");
     const back=window.__afterProduct;window.__afterProduct=null;if(back)back(r.id);
@@ -2826,10 +2939,10 @@ async function photoMap(list){
 }
 const MONEY="#,##0.00";
 const PCOLS_X=[["photo",11],["sku",14,"@"],["name",34],["vendor",18],["barcode",18,"@"],["category",20],["subcategory",24],["type",22],["categorySlug",40],["imageUrl",30],
-  ["mrp",12,MONEY],["price",12,MONEY],["cost",12,MONEY],["dimension",14],["dim_unit",11],["gst",7],["qty",7],["booked",8],["available",10],["reorder",9],["unit",7],["location",18],["locations",30],["description",34]];
+  ["mrp",12,MONEY],["price",12,MONEY],["cost",12,MONEY],["dimension",14],["dim_unit",11],["gst",7],["qty",7],["booked",8],["available",10],["reorder",9],["unit",7],["location",18],["locations",30],["photos",8],["description",34]];
 const prow=p=>({sku:p.sku,name:p.name,vendor:vend(p),barcode:String(p.barcode||""),category:p.categoryName||"",subcategory:p.subcategoryName||"",type:p.typeName||"",
   categorySlug:p.fullSlug||"",imageUrl:p.imageUrl||"",mrp:num(p.mrp),price:num(p.price),cost:num(p.cost),dimension:dimOf(p),dim_unit:dimUnitOf(p),gst:num(p.gst),qty:+p.qty||0,booked:bk(p),available:avail(p),
-  reorder:+p.reorder||0,unit:p.unit||"",location:p.location||"",locations:locText(p),description:p.description||""});
+  reorder:+p.reorder||0,unit:p.unit||"",location:p.location||"",locations:locText(p),photos:photoCount(p),description:p.description||""});
 const prodOf=pid=>S.products.find(p=>p.id===pid)||null;
 async function buildTemplate(EJ,tax,lists){
   const colL=n=>{let s="";while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s};
