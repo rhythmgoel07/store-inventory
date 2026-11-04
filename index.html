@@ -225,7 +225,7 @@ import {firebaseConfig} from "./firebase-config.js";
 
 /* ---------- Taxonomy (embedded from homecentre_taxonomy.json) ---------- */
 const DEFAULT_TAX = [{"id":"living-room","name":"Living Room","slug":"livingroom","subcategories":[{"id":"sofas","name":"Sofas","slug":"livingroom-sofas","subcategories":[{"id":"3-seater-sofas","name":"3 Seater Sofas","slug":"livingroom-sofas-3seatersofas","subcategories":[]},{"id":"2-seater-sofas","name":"2 Seater Sofas","slug":"livingroom-sofas-2seatersofas","subcategories":[]},{"id":"1-seater-sofas","name":"1 Seater Sofas","slug":"livingroom-sofas-1seatersofas","subcategories":[]},{"id":"sofa-sets","name":"Sofa Sets","slug":"livingroom-sofas-sofasets","subcategories":[]},{"id":"sofa-cum-beds","name":"Sofa Cum Beds","slug":"livingroom-sofas-sofacumbeds","subcategories":[]},{"id":"corner-sofas","name":"Corner Sofas","slug":"livingroom-sofas-cornersofa","subcategories":[]}]},{"id":"customised-furniture","name":"Customised Furniture","slug":"customizedfurniture","subcategories":[]},{"id":"recliners","name":"Recliners","slug":"livingroom-recliners","subcategories":[{"id":"3-seater-recliners","name":"3 Seater Recliners","slug":"livingroom-recliners-3seaterrecliners","subcategories":[]},{"id":"2-seater-recliners","name":"2 Seater Recliners","slug":"livingroom-recliners-2seaterrecliners","subcategories":[]},{"id":"1-seater-recliners","name":"1 Seater Recliners","slug":"livingroom-recliners-1seaterrecliners","subcategories":[]},{"id":"recliner-sets","name":"Recliner Sets","slug":"livingroom-recliners-reclinersets","subcategories":[]}]},{"id":"occasional-chairs","name":"Occasional Chairs","slug":"livingroom-occasionalchairs","subcategories":[{"id":"accent-chairs","name":"Accent Chairs","slug":"livingroom-occasionalchairs-accentchairs","subcategories":[]},{"id":"folding-chairs","name":"Folding Chairs","slug":"livingroom-occasionalchairs-foldingchairs","subcategories":[]},{"id":"cafe-chairs","name":"Cafe Chairs","slug":"livingroom-occasionalchairs-cafechairs","subcategories":[]},{"id":"plastic-chairs","name":"Plastic Chairs","slug":"livingroom-occasionalchairs-plasticchairs","subcategories":[]}]},{"id":"benches-stools","name":"Benches & Stools","slug":"livingroom-benchandstools","subcategories":[{"id":"benches","name":"Benches","slug":"livingroom-benchandstools-benches","subcategories":[]},{"id":"stools","name":"Stools","slug":"livingroom-benchandstools-stools","subcategories":[]}]},{"id":"bean-bags-pouffes","name":"Bean Bags & Pouffes","slug":"livingroom-beanbagsandpouffes","subcategories":[{"id":"pouffes","name":"Pouffes","slug":"livingroom-beanbagsandpouffes-pouffes","subcategories":[]},{"id":"bean-bags","name":"Bean Bags","slug":"livingroom-beanbagsandpouffes-beanbags","subcategories":[]}]},{"id":"tables","name":"Tables","slug":"livingroom-tables","subcategories":[{"id":"centre-tables","name":"Centre Tables","slug":"livingroom-tables-centertables","subcategories":[]},{"id":"end-tables","name":"End Tables","slug":"livingroom-tables-endtables","subcategories":[]},{"id":"console-tables","name":"Console Tables","slug":"livingroom-tables-consoletables","subcategories":[]},{"id":"nesting-tables","name":"Nesting Tables","slug":"livingroom-tables-nestingtables","subcategories":[]}]},{"id":"tv-media-units","name":"TV & Media Units","slug":"livingroom-tvandmediaunits","subcategories":[{"id":"tv-consoles","name":"TV Consoles","slug":"livingroom-tvandmediaunits-tvconsoles","subcategories":[]},{"id":"tv-units","name":"TV Units","slug":"livingroom-tvandmediaunits-tvunits","subcategories":[]}]},{"id":"shelves","name":"Shelves","slug":"livingroom-shelves","subcategories":[{"id":"wall-shelves","name":"Wall Shelves","slug":"livingroom-shelves-wallshelves","subcategories":[]},{"id":"corner-shelves","name":"Corner Shelves","slug":"livingroom-shelves-cornershelves","subcategories":[]},{"id":"home-mandir","name":"Home Mandir","slug":"livingroom-shelves-homemandir","subcategories":[]}]},{"id":"shoe-racks","name":"Shoe Racks","slug":"livingroom-shoeracks","subcategories":[{"id":"shoe-cabinets","name":"Shoe Cabinets","slug":"livingroom-shoeracks-shoecabinets","subcategories":[]},{"id":"open-shoe-racks","name":"Open Shoe Racks","slug":"livingroom-shoeracks-shoeopenshelves","subcategories":[]}]},{"id":"study-work","name":"Study & Work","slug":"livingroom-studyandwork","subcategories":[{"id":"study-office-tables","name":"Study & Office Tables","slug":"livingroom-studyandwork-studyandofficetables","subcategories":[]},{"id":"study-office-chairs","name":"Study & Office Chairs","slug":"livingroom-studyandwork-studyandofficechairs","subcategories":[]}]},{"id":"book-cases-cabinets","name":"Book Cases & Cabinets","slug":"livingroom-bookcaseandcabinets","subcategories":[{"id":"book-cabinets","name":"Book Cabinets","slug":"livingroom-bookcaseandcabinets-bookcabinets","subcategories":[]},{"id":"open-book-shelves","name":"Open Book Shelves","slug":"livingroom-bookcaseandcabinets-openbookshelves","subcategories":[]}]},{"id":"outdoor-furniture","name":"Outdoor Furniture","slug":"outdoor","subcategories":[{"id":"outdoor-seating-tables","name":"Outdoor Seating & Tables","slug":"outdoor-outdoorseatingandtables","subcategories":[]}]},{"id":"ottomans","name":"Ottomans","slug":"livingroom-ottomans","subcategories":[]},{"id":"tea-table-sets","name":"Tea Table Sets","slug":"livingroom-teasets","subcategories":[]}]},{"id":"bedroom","name":"Bedroom","slug":"bedroom","subcategories":[{"id":"beds","name":"Beds","slug":"bedroom-beds","subcategories":[{"id":"king-beds","name":"King Beds","slug":"bedroom-beds-kingbeds","subcategories":[]},{"id":"queen-beds","name":"Queen Beds","slug":"bedroom-beds-queenbeds","subcategories":[]},{"id":"single-beds","name":"Single Beds","slug":"bedroom-beds-singlebeds","subcategories":[]},{"id":"bunk-beds","name":"Bunk Beds","slug":"bedroom-beds-bunkbeds","subcategories":[]}]},{"id":"wardrobes","name":"Wardrobes","slug":"bedroom-wardrobes","subcategories":[{"id":"2-door-wardrobes","name":"2 Door Wardrobes","slug":"bedroom-wardrobes-2doorswingwardrobes","subcategories":[]},{"id":"3-door-wardrobes","name":"3 Door Wardrobes","slug":"bedroom-wardrobes-3doorswingwardrobes","subcategories":[]},{"id":"4-door-wardrobes","name":"4 Door Wardrobes","slug":"bedroom-wardrobes-4doorswingwardrobes","subcategories":[]},{"id":"sliding-wardrobes","name":"Sliding Wardrobes","slug":"bedroom-wardrobes-2doorslidingwardrobes","subcategories":[]}]},{"id":"mattresses","name":"Mattresses","slug":"bedroom-mattresses","subcategories":[{"id":"king-mattresses","name":"King Mattresses","slug":"bedroom-mattresses-kingmattresses","subcategories":[]},{"id":"queen-mattresses","name":"Queen Mattresses","slug":"bedroom-mattresses-queenmattresses","subcategories":[]},{"id":"single-mattresses","name":"Single Mattresses","slug":"bedroom-mattresses-singlemattresses","subcategories":[]}]},{"id":"bed-side-tables","name":"Bed Side Tables","slug":"bedroom-bedsidetables","subcategories":[]},{"id":"chest-of-drawers","name":"Chest of Drawers","slug":"bedroom-chestofdrawers","subcategories":[]},{"id":"dresser-mirrors","name":"Dresser Mirrors","slug":"bedroom-dressermirrors","subcategories":[]}]},{"id":"dining-room","name":"Dining Room","slug":"diningroom","subcategories":[{"id":"dining-sets","name":"Dining Sets","slug":"diningroom-diningtablesets","subcategories":[{"id":"4-seater-dining-sets","name":"4 Seater Dining Sets","slug":"diningroom-diningtablesets-4seaterdiningtablesets","subcategories":[]},{"id":"6-seater-dining-sets","name":"6 Seater Dining Sets","slug":"diningroom-diningtablesets-6seaterdiningtablesets","subcategories":[]},{"id":"8-seater-dining-sets","name":"8 Seater Dining Sets","slug":"diningroom-diningtablesets-8seaterdiningtablesets","subcategories":[]}]},{"id":"dining-tables","name":"Dining Tables","slug":"diningroom-diningtables","subcategories":[{"id":"4-seater-dining-tables","name":"4 Seater Dining Tables","slug":"diningroom-diningtables-4seatertables","subcategories":[]},{"id":"6-seater-dining-tables","name":"6 Seater Dining Tables","slug":"diningroom-diningtables-6seatertables","subcategories":[]},{"id":"8-seater-dining-tables","name":"8 Seater Dining Tables","slug":"diningroom-diningtables-8seatertables","subcategories":[]}]},{"id":"bar-furniture","name":"Bar Furniture","slug":"diningroom-bar","subcategories":[{"id":"bar-cabinet-curios","name":"Bar Cabinet-Curios","slug":"diningroom-bar-barcabinetcurios","subcategories":[]},{"id":"bar-stools-chairs","name":"Bar Stools & Chairs","slug":"diningroom-bar-barstools","subcategories":[]},{"id":"serving-trolleys","name":"Serving Trolleys","slug":"diningroom-bar-servingtrolleys","subcategories":[]}]},{"id":"dining-chairs","name":"Dining Chairs","slug":"diningroom-diningchairs","subcategories":[]},{"id":"dining-benches","name":"Dining Benches","slug":"diningroom-diningbenches","subcategories":[]},{"id":"crockery-units","name":"Crockery Units","slug":"diningroom-crockeryunits","subcategories":[]}]},{"id":"decor","name":"Decor","slug":"decor","subcategories":[{"id":"home-accessories","name":"Home Accessories","slug":"decor-homeaccessories","subcategories":[{"id":"figurines","name":"Figurines","slug":"decor-homeaccessories-figurines","subcategories":[]},{"id":"vases","name":"Vases","slug":"decor-homeaccessories-vases","subcategories":[]},{"id":"table-accents","name":"Table Accents","slug":"decor-homeaccessories-tableaccents","subcategories":[]},{"id":"candle-holders-lanterns","name":"Candle Holders & Lanterns","slug":"decor-homeaccessories-candleholdersandlanterns","subcategories":[]},{"id":"potpourri-bowls-platters","name":"Potpourri Bowls & Platters","slug":"decor-homeaccessories-bowls","subcategories":[]},{"id":"clocks","name":"Clocks","slug":"decor-homeaccessories-clocks","subcategories":[]},{"id":"desk-accessories","name":"Desk Accessories","slug":"decor-homeaccessories-deskaccessories","subcategories":[]},{"id":"gift-accessories","name":"Gift Accessories","slug":"decor-homeaccessories-giftaccessories","subcategories":[]}]},{"id":"lighting","name":"Lighting","slug":"decor-lighting","subcategories":[{"id":"table-lamps","name":"Table Lamps","slug":"decor-lighting-tablelamps","subcategories":[]},{"id":"wall-lamps","name":"Wall Lamps","slug":"decor-lighting-walllamps","subcategories":[]},{"id":"hanging-lamps","name":"Hanging Lamps","slug":"decor-lighting-ceilinglamps","subcategories":[]},{"id":"floor-lamps","name":"Floor Lamps","slug":"decor-lighting-floorlamps","subcategories":[]},{"id":"decorative-lights","name":"Decorative Lights","slug":"decor-lighting-decorativelights","subcategories":[]},{"id":"string-lights","name":"String Lights","slug":"decor-lighting-stringlights","subcategories":[]},{"id":"bulbs","name":"Bulbs","slug":"decor-lighting-bulbs","subcategories":[]}]},{"id":"wall-decor","name":"Wall Decor","slug":"decor-wallaccent","subcategories":[{"id":"wall-accents","name":"Wall Accents","slug":"decor-wallaccent-walldecor","subcategories":[]},{"id":"decorative-mirrors","name":"Decorative Mirrors","slug":"decor-wallaccent-decorativemirrors","subcategories":[]},{"id":"photo-frames","name":"Photo Frames","slug":"decor-wallaccent-photoframes","subcategories":[]},{"id":"posters-paintings","name":"Posters & Paintings","slug":"decor-wallaccent-pictureframes","subcategories":[]}]},{"id":"home-fragrances","name":"Home Fragrances","slug":"decor-homefragrance","subcategories":[{"id":"candles","name":"Candles","slug":"decor-homefragrance-candles","subcategories":[]},{"id":"fragrances-potpourris","name":"Fragrances & Potpourris","slug":"decor-homefragrance-fragranceandpotpourri","subcategories":[]},{"id":"diffusers","name":"Diffusers","slug":"decor-homefragrance-diffusers","subcategories":[]},{"id":"aroma-oils","name":"Aroma Oils","slug":"decor-homefragrance-aromaoil","subcategories":[]},{"id":"room-car-sprays","name":"Room & Car Sprays","slug":"decor-homefragrance-roomsprays","subcategories":[]}]},{"id":"garden","name":"Garden","slug":"decor-garden","subcategories":[{"id":"artificial-plants-flowers","name":"Artificial Plants & Flowers","slug":"decor-garden-artificialplantsandflowers","subcategories":[]},{"id":"pots-planters","name":"Pots & Planters","slug":"decor-garden-potsandplanters","subcategories":[]},{"id":"fountains","name":"Fountains","slug":"decor-garden-indoorandoutdoorfountains","subcategories":[]}]}]},{"id":"kitchen","name":"Kitchen","slug":"kitchen","subcategories":[{"id":"storage-containers","name":"Storage & Containers","slug":"kitchen-storageandcontainers","subcategories":[{"id":"containers-jars","name":"Containers & Jars","slug":"kitchen-storageandcontainers-containersandjars","subcategories":[]},{"id":"bottles","name":"Bottles","slug":"kitchen-storageandcontainers-bottles","subcategories":[]},{"id":"flasks","name":"Flasks","slug":"kitchen-storageandcontainers-flask","subcategories":[]},{"id":"lunch-boxes-bags","name":"Lunch Boxes & Bags","slug":"kitchen-storageandcontainers-lunchboxandbags","subcategories":[]},{"id":"kitchen-organisers","name":"Kitchen Organisers","slug":"kitchen-storageandcontainers-organisers","subcategories":[]}]},{"id":"cookware","name":"Cookware","slug":"kitchen-cooking","subcategories":[{"id":"cookware-sets","name":"Cookware Sets","slug":"kitchen-cooking-cookwaresets","subcategories":[]},{"id":"induction-cookware","name":"Induction Cookware","slug":"kitchen-cooking-inductioncookware","subcategories":[]},{"id":"pots-pans","name":"Pots & Pans","slug":"kitchen-cooking-potsandpans","subcategories":[]},{"id":"kadhai-woks","name":"Kadhai & Woks","slug":"kitchen-cooking-kadhaiandwoks","subcategories":[]},{"id":"cooking-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-cooking-toolsandgadgets","subcategories":[]},{"id":"pressure-cookers","name":"Pressure Cookers","slug":"kitchen-cooking-pressurecookers","subcategories":[]},{"id":"tawas","name":"Tawas","slug":"kitchen-cooking-tawas","subcategories":[]}]},{"id":"kitchenware","name":"Kitchenware","slug":"kitchen-kitchenware","subcategories":[{"id":"kitchen-trolleys","name":"Kitchen Trolleys","slug":"kitchen-kitchenware-kitchentrolley","subcategories":[]},{"id":"knives-scissors","name":"Knives & Scissors","slug":"kitchen-kitchenware-knivesandscissors","subcategories":[]},{"id":"casseroles","name":"Casseroles","slug":"kitchen-kitchenware-casseroles","subcategories":[]},{"id":"oil-vinegar-servers","name":"Oil & Vinegar Servers","slug":"kitchen-kitchenware-oilandvinegarserver","subcategories":[]},{"id":"utensil-holders","name":"Utensil Holders","slug":"kitchen-kitchenware-utensilholders","subcategories":[]},{"id":"chopping-boards","name":"Chopping Boards","slug":"kitchen-kitchenware-choppingboards","subcategories":[]},{"id":"dish-racks","name":"Dish Racks","slug":"kitchen-kitchenware-dishracks","subcategories":[]},{"id":"fruit-baskets","name":"Fruit Baskets","slug":"kitchen-kitchenware-fruitstands","subcategories":[]},{"id":"strainers-colanders","name":"Strainers & Colanders","slug":"kitchen-kitchenware-strainersandcolanders","subcategories":[]},{"id":"kitchenware-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-kitchenware-toolsandgadgets","subcategories":[]}]},{"id":"kitchen-linen","name":"Kitchen Linen","slug":"kitchen-kitchenlinens","subcategories":[{"id":"aprons","name":"Aprons","slug":"kitchen-kitchenlinens-aprons","subcategories":[]},{"id":"pot-holders-mittens","name":"Pot Holders & Mittens","slug":"kitchen-kitchenlinens-potholders","subcategories":[]},{"id":"kitchen-towels","name":"Kitchen Towels","slug":"kitchen-kitchenlinens-kitchentowels","subcategories":[]}]},{"id":"bakeware","name":"Bakeware","slug":"kitchen-bakeware","subcategories":[]},{"id":"kitchen-appliances","name":"Kitchen Appliances","slug":"kitchen-appliances","subcategories":[]}]},{"id":"furnishings","name":"Furnishings","slug":"furnishing","subcategories":[{"id":"bedding","name":"Bedding","slug":"furnishing-bedding","subcategories":[{"id":"double-bedsheets","name":"Double Bedsheets","slug":"furnishing-bedding-doublebedsheets","subcategories":[]},{"id":"single-bedsheets","name":"Single Bedsheets","slug":"furnishing-bedding-singlebedsheets","subcategories":[]},{"id":"bedding-sets","name":"Bedding Sets","slug":"furnishing-bedding-beddingsets","subcategories":[]},{"id":"pillows-pillow-covers","name":"Pillows & Pillow Covers","slug":"furnishing-bedding-pillowsandpillowcovers","subcategories":[]},{"id":"blankets-quilts","name":"Blankets & Quilts","slug":"furnishing-bedding-blanketsandquilts","subcategories":[]},{"id":"comforters","name":"Comforters","slug":"furnishing-bedding-comforters","subcategories":[]},{"id":"throws","name":"Throws","slug":"furnishing-bedding-throws","subcategories":[]},{"id":"duvets-duvet-covers","name":"Duvets & Duvet Covers","slug":"furnishing-bedding-duvetandduvetcovers","subcategories":[]},{"id":"dohars","name":"Dohars","slug":"furnishing-bedding-dohars","subcategories":[]},{"id":"bed-covers","name":"Bed Covers","slug":"furnishing-bedding-bedcovers","subcategories":[]}]},{"id":"cushions","name":"Cushions","slug":"furnishing-cushions","subcategories":[{"id":"cushion-covers","name":"Cushion Covers","slug":"furnishing-cushions-cushioncovers","subcategories":[]},{"id":"filled-cushions","name":"Filled Cushions","slug":"furnishing-cushions-filledcushions","subcategories":[]},{"id":"cushion-fillers","name":"Cushion Fillers","slug":"furnishing-cushions-cushionfilling","subcategories":[]},{"id":"floor-cushions","name":"Floor Cushions","slug":"furnishing-cushions-floorcushions","subcategories":[]}]},{"id":"curtains-blinds","name":"Curtains & Blinds","slug":"furnishing-curtains","subcategories":[{"id":"door-curtains","name":"Door Curtains","slug":"furnishing-curtains-doorcurtains","subcategories":[]},{"id":"window-curtains","name":"Window Curtains","slug":"furnishing-curtains-windowcurtains","subcategories":[]},{"id":"blinds","name":"Blinds","slug":"furnishing-curtains-blinds","subcategories":[]},{"id":"rods-accessories","name":"Rods & Accessories","slug":"furnishing-curtains-rodsandaccessories","subcategories":[]}]},{"id":"accessories","name":"Accessories","slug":"furnishing-accessories","subcategories":[{"id":"bags","name":"Bags","slug":"furnishing-accessories-bags","subcategories":[]},{"id":"pads-mats","name":"Pads & Mats","slug":"furnishing-accessories-padsandmats","subcategories":[]},{"id":"sofa-covers","name":"Sofa Covers","slug":"furnishing-accessories-sofacovers","subcategories":[]}]},{"id":"floor-coverings","name":"Floor Coverings","slug":"furnishing-floorcoverings","subcategories":[{"id":"carpets-rugs","name":"Carpets & Rugs","slug":"furnishing-floorcoverings-carpets","subcategories":[]},{"id":"dhurries","name":"Dhurries","slug":"furnishing-floorcoverings-dhurries","subcategories":[]},{"id":"doormats","name":"Doormats","slug":"furnishing-floorcoverings-doormats","subcategories":[]}]}]},{"id":"tableware","name":"Tableware","slug":"dining","subcategories":[{"id":"serving","name":"Serving","slug":"dining-serving","subcategories":[{"id":"trays-platters","name":"Trays & Platters","slug":"dining-serving-traysandplatters","subcategories":[]},{"id":"glasses-jugs","name":"Glasses & Jugs","slug":"dining-serving-glassesandjugs","subcategories":[]},{"id":"bar-accessories","name":"Bar Accessories","slug":"dining-serving-baraccessories","subcategories":[]},{"id":"salt-pepper-shakers","name":"Salt & Pepper Shakers","slug":"dining-serving-saltandpeppershakers","subcategories":[]},{"id":"chip-dip","name":"Chip & Dip","slug":"dining-serving-chipanddip","subcategories":[]}]},{"id":"crockery","name":"Crockery","slug":"dining-crockery","subcategories":[{"id":"bowls","name":"Bowls","slug":"dining-crockery-bowls","subcategories":[]},{"id":"plates","name":"Plates","slug":"dining-crockery-plates","subcategories":[]},{"id":"mugs","name":"Mugs","slug":"dining-crockery-mugsandcups","subcategories":[]},{"id":"cups-saucers","name":"Cups & Saucers","slug":"dining-crockery-cupsandsaucers","subcategories":[]},{"id":"pots-kettles","name":"Pots & Kettles","slug":"dining-crockery-potsandkettles","subcategories":[]},{"id":"dinner-sets","name":"Dinner Sets","slug":"dining-crockery-dinnersets","subcategories":[]}]},{"id":"cutlery","name":"Cutlery","slug":"dining-cutlery","subcategories":[{"id":"spoons","name":"Spoons","slug":"dining-cutlery-spoons","subcategories":[]},{"id":"cutlery-sets","name":"Cutlery & Cutlery Sets","slug":"dining-cutlery-cutlerysets","subcategories":[]},{"id":"cutlery-holders","name":"Cutlery Holders","slug":"dining-cutlery-cutleryholders","subcategories":[]}]},{"id":"table-linens","name":"Table Linens","slug":"dining-tableaccessories","subcategories":[{"id":"placemats","name":"Placemats","slug":"dining-tableaccessories-placemats","subcategories":[]},{"id":"table-runners","name":"Table Runners","slug":"dining-tableaccessories-tablerunners","subcategories":[]},{"id":"table-cloths","name":"Table Cloths","slug":"dining-tableaccessories-tablecloths","subcategories":[]},{"id":"trivets-coasters","name":"Trivets & Coasters","slug":"dining-tableaccessories-trivetandcoasters","subcategories":[]},{"id":"tissue-holders","name":"Tissue Holders","slug":"dining-tableaccessories-tissueholders","subcategories":[]}]}]},{"id":"bath-laundry","name":"Bath & Laundry","slug":"bathandlaundry","subcategories":[{"id":"bath-linen","name":"Bath Linen","slug":"bathandlaundry-bath","subcategories":[{"id":"towels","name":"Towels","slug":"bathandlaundry-bath-towel","subcategories":[]},{"id":"robes","name":"Robes","slug":"bathandlaundry-bath-robes","subcategories":[]},{"id":"bathmats","name":"Bathmats","slug":"bathandlaundry-bath-bathmats","subcategories":[]}]},{"id":"bath-accessories","name":"Bath Accessories","slug":"bathandlaundry-bathaccessories","subcategories":[{"id":"holders-tumblers","name":"Holders & Tumblers","slug":"bathandlaundry-bathaccessories-holdersandtumblers","subcategories":[]},{"id":"soap-dispensers","name":"Soap Dispensers","slug":"bathandlaundry-bathaccessories-soapdispensers","subcategories":[]},{"id":"soap-dishes","name":"Soap Dishes","slug":"bathandlaundry-bathaccessories-soapdishes","subcategories":[]},{"id":"bath-sets","name":"Bath Sets","slug":"bathandlaundry-bathaccessories-accessorysets","subcategories":[]},{"id":"storage-mirrors","name":"Storage & Mirrors","slug":"bathandlaundry-bathaccessories-storageandmirrors","subcategories":[]},{"id":"towel-holders","name":"Towel Holders","slug":"bathandlaundry-bathaccessories-towelholders","subcategories":[]},{"id":"toilet-accessories","name":"Toilet Accessories","slug":"bathandlaundry-bathaccessories-toiletpaperandbrushholders","subcategories":[]},{"id":"shower-curtains","name":"Shower Curtains","slug":"bathandlaundry-bathaccessories-showercurtains","subcategories":[]},{"id":"bath-stools","name":"Bath Stools","slug":"bathandlaundry-bathaccessories-bathstools","subcategories":[]}]},{"id":"laundry","name":"Laundry","slug":"bathandlaundry-laundry","subcategories":[{"id":"laundry-storage-baskets","name":"Laundry Storage & Baskets","slug":"bathandlaundry-laundry-storage","subcategories":[]},{"id":"cleaning-accessories","name":"Cleaning Accessories","slug":"bathandlaundry-laundry-cleaningaccessories","subcategories":[]},{"id":"dustbins","name":"Dustbins","slug":"bathandlaundry-laundry-dustbins","subcategories":[]},{"id":"cloth-dryers","name":"Cloth Dryers","slug":"bathandlaundry-laundry-clothdryers","subcategories":[]},{"id":"hangers-hooks","name":"Hangers & Hooks","slug":"bathandlaundry-laundry-hangersandhooks","subcategories":[]}]}]},{"id":"gifting","name":"Gifting","slug":"gifts","subcategories":[{"id":"housewarming-gifts","name":"Housewarming Gifts","slug":"gifts-housewarminggifts","subcategories":[]},{"id":"wedding-gifts","name":"Wedding Gifts","slug":"gifts-weddinggifts","subcategories":[]},{"id":"anniversary-gifts","name":"Anniversary Gifts","slug":"gifts-anniversarygifts","subcategories":[]},{"id":"birthday-gifts","name":"Birthday Gifts","slug":"gifts-birthdaygifts","subcategories":[]},{"id":"gifts-for-him","name":"Gifts for Him","slug":"gifts-giftsforhim","subcategories":[]},{"id":"gifts-for-her","name":"Gifts for Her","slug":"gifts-giftsforher","subcategories":[]},{"id":"festive-gifts","name":"Festive Gifts","slug":"gifts-festivegifts","subcategories":[{"id":"ganesh-chaturthi","name":"Ganesh Chaturthi","slug":"gifts-festivegifts-ganeshchaturthigifts","subcategories":[]}]},{"id":"special-occasions","name":"Special Occasions","slug":"gifts-specialoccasiongifts","subcategories":[]}]}];
-const BUILD = "04 Nov 19:39";
+const BUILD = "04 Nov 20:37";
 let TAXONOMY = DEFAULT_TAX;
 const bySlug = {}; // slug -> {cat,sub,type}
 function reindex(){
@@ -350,6 +350,15 @@ const minBackdate=()=>dkey(new Date(Date.now()-BACKDATE_DAYS*864e5));
 const backdateField=(id,val)=>isAdmin()
   ?`<div><label>Date of sale <span class="mute">(admin)</span></label>
      <input id="${id}" type="date" value="${esc(val||dkey())}" min="${minBackdate()}" max="${dkey()}"></div>`:"";
+/* The date fields for a bill being moved to another day. Empty when nothing is changing, so
+   an ordinary correction never rewrites the timestamps. */
+function redatedAs(chosen,was){
+  const d=String(chosen||"").trim();
+  if(!isAdmin()||!d||d===was)return{};
+  if(d>dkey())throw new Error("That date is in the future");
+  if(d<minBackdate())throw new Error(`That is more than ${BACKDATE_DAYS} days back`);
+  return{dateKey:d,createdAt:Timestamp.fromDate(new Date(d+"T12:00:00")),redatedFrom:was||"",redatedBy:S.profile.name};
+}
 /* Returns the fields a document needs for the date the person chose. */
 function datedAs(chosen){
   const d=String(chosen||"").trim();
@@ -1186,12 +1195,7 @@ function vSell(el){
    ${S.cart.length&&onLines(S.cart).length<S.cart.length?`<p class="small" style="color:var(--warn);margin-top:6px">${S.cart.length-onLines(S.cart).length} item(s) unticked — they are not on this bill and will not be billed or taken out of stock.</p>`:""}
    <div class="f" style="margin-top:10px"><div><label>Discount on the whole bill</label><div class="row" style="flex-wrap:nowrap"><input id="c-disc" type="number" min="0" value="${S.cartDiscount||""}"><select id="c-dt" style="width:80px"><option value="amt" ${S.cartDiscType==="amt"?"selected":""}>₹</option><option value="pct" ${S.cartDiscType==="pct"?"selected":""}>%</option></select></div></div>
     ${S.pays?`<div class="full"><label>Payment — received in parts</label>
-      <table id="c-pays" class="resp"><thead><tr><th>Mode</th><th class="n">Amount received</th></tr></thead><tbody>
-      ${S.pays.map((p,ix)=>`<tr data-ix="${ix}">
-       <td data-l="Mode"><select>${withCur(S.lists.payModes,p.mode).map(m=>`<option ${p.mode===m?"selected":""}>${esc(m)}</option>`).join("")}</select></td>
-       <td data-l="Amount received" class="n"><span class="qcell"><input type="number" min="0" step="0.01" value="${esc(p.amt)}" placeholder="0">
-        ${S.pays.length>1?`<button class="btn sm sec" type="button" onclick="payRow('del',${ix})" title="Remove">✕</button>`:""}</span></td></tr>`).join("")}
-      </tbody></table>
+      ${payRowsTable("c-pays",S.pays,"payRow")}
       <div class="row" style="margin-top:6px"><button class="btn sec sm" type="button" onclick="payRow('add')">+ Another mode</button>
        <button class="btn sec sm" type="button" onclick="payRow('whole')">Paid in full, one mode</button></div>
       <p class="small mute" id="c-payhint" style="margin-top:6px"></p></div>`
@@ -1208,11 +1212,9 @@ function vSell(el){
   $("#c-disc").oninput=$("#c-disc").onchange=e=>{S.cartDiscount=num(e.target.value);keepCust();sum()};
   $("#c-dt").onchange=e=>{S.cartDiscType=e.target.value;keepCust();sum()};
   const keepCust=()=>{S.cust={name:$("#c-name").value,ph:$("#c-ph").value,pay:$("#c-pay")?$("#c-pay").value:(S.cust?.pay||"Cash")}};
-  const readPays=()=>{if(!S.pays||!$("#c-pays"))return;
-    document.querySelectorAll("#c-pays tr[data-ix]").forEach(tr=>{
-      S.pays[+tr.dataset.ix]={mode:tr.querySelector("select").value,amt:tr.querySelector("input").value}})};
+  const readPays=()=>{if(S.pays&&$("#c-pays"))readPayRows("c-pays",S.pays)};
   const payHint=()=>{const e=$("#c-payhint");if(!e||!S.pays)return;
-    const got=r2(S.pays.reduce((a,p)=>a+Math.max(0,num(p.amt)),0)),tot=cartTotals().total,left=r2(tot-got);
+    const got=payRowsTotal(S.pays),tot=cartTotals().total,left=r2(tot-got);
     e.innerHTML=got>tot
       ? `<span style="color:var(--bad)">That is ${inr(r2(got-tot))} more than the bill of ${inr(tot)}.</span>`
       : `Received <b>${inr(got)}</b> of ${inr(tot)}${left>0?` — <b style="color:var(--warn)">${inr(left)} still pending</b>, which goes on the customer's ledger`:" — nothing pending"}.`};
@@ -1220,8 +1222,7 @@ function vSell(el){
     readPays();
     if(op==="split"){keepCust();S.pays=[{mode:(S.cust?.pay)||S.lists.payModes[0]||"Cash",amt:""}]}
     else if(op==="whole"){S.pays=null}
-    else if(op==="add"){const used=(S.pays||[]).map(p=>p.mode);
-      S.pays.push({mode:S.lists.payModes.find(m=>!used.includes(m))||S.lists.payModes[0]||"Cash",amt:""})}
+    else if(op==="add")S.pays.push({mode:nextPayMode(S.pays),amt:""});
     else{S.pays.splice(ix,1);if(!S.pays.length)S.pays=null}
     render();
   };
@@ -1262,12 +1263,8 @@ async function completeSale(){
   const t=cartTotals(),cust={name:$("#c-name").value.trim(),phone:$("#c-ph").value.trim()};
   let receipts,received,pay;
   if(S.pays){
-    document.querySelectorAll("#c-pays tr[data-ix]").forEach(tr=>{
-      S.pays[+tr.dataset.ix]={mode:tr.querySelector("select").value,amt:tr.querySelector("input").value}});
-    const seen={};receipts=[];
-    S.pays.forEach(p=>{const a=r2(Math.max(0,num(p.amt)));if(!a)return;
-      if(seen[p.mode]!==undefined)receipts[seen[p.mode]].amount=r2(receipts[seen[p.mode]].amount+a);
-      else{seen[p.mode]=receipts.length;receipts.push({mode:p.mode,amount:a})}});
+    readPayRows("c-pays",S.pays);
+    receipts=payRowsReceipts(S.pays);
     received=r2(receipts.reduce((a,r)=>a+r.amount,0));
     if(received>t.total){btn.disabled=false;btn.textContent="Complete sale";
       return toast(`That is ${inr(r2(received-t.total))} more than the bill`,1)}
@@ -1449,7 +1446,7 @@ window.openSaleEdit=function(id){
   if(!s)return toast("That bill no longer exists",1);
   if(s.status==="void")return toast("This bill is void — there is nothing to correct",1);
   const linked=!!s.bookingId;
-  S.es={id,linked,items:s.items.map(i=>({...i})),disc:num(s.discount),pay:s.payment||"",q:"",
+  S.es={id,linked,items:s.items.map(i=>({...i})),disc:num(s.discount),pay:s.payment||"",q:"",date:s.dateKey||dkey(new Date(tms(s.createdAt))),
         collect:r2(num(s.balancePaid??(num(s.total)-num(s.advance))))};
   const draw=()=>{
     const E=S.es,t=sumItems(E.items,E.disc);
@@ -1474,6 +1471,9 @@ window.openSaleEdit=function(id){
       ${linked?`<div><label>Collected on this bill (₹)</label><input id="es-collect" type="number" min="0" step="0.01" value="${E.collect||""}"></div>`
         :`<div><label>Discount (₹)</label><input id="es-disc" type="number" min="0" step="0.01" value="${E.disc||""}"></div>`}
       <div><label>Payment mode</label><select id="es-pay">${withCur(S.lists.payModes,E.pay).map(m=>`<option ${E.pay===m?"selected":""}>${esc(m)}</option>`).join("")}</select></div>
+      ${isAdmin()?`<div><label>Bill date <span class="mute">(admin)</span></label>
+        <input id="es-date" type="date" value="${esc(E.date||dkey(new Date(tms(s.createdAt))))}" min="${minBackdate()}" max="${dkey()}">
+        <span class="small mute">Moves the bill into that day's takings.</span></div>`:""}
       <div class="full"><label>Reason for the correction</label><input id="es-why" placeholder="Wrong quantity billed, rate revised…" value="${esc(E.why||"")}"></div></div>
      <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">
       <div class="row" style="justify-content:space-between"><span class="mute">Subtotal</span><span>${inr(t.gross)}</span></div>
@@ -1484,8 +1484,9 @@ window.openSaleEdit=function(id){
       ${linked?`<div class="row" style="justify-content:space-between"><span class="mute">Already received before this bill</span><span>${inr(num(s.advance))}</span></div>
        <div class="row" style="justify-content:space-between"><span class="mute">Still pending after this</span><span>${inr(Math.max(0,r2(num(s.total)-num(s.advance)-num(E.collect))))}</span></div>`:""}</div>`;
     const keep=()=>{const E=S.es;const d=$("#es-disc");if(d)E.disc=num(d.value);const c=$("#es-collect");if(c)E.collect=num(c.value);
+      const dt=$("#es-date");if(dt)E.date=dt.value;
       E.pay=$("#es-pay").value;E.why=$("#es-why").value};
-    ["#es-pay","#es-why"].forEach(sel=>{const e=$(sel);if(e)e.onchange=keep});
+    ["#es-pay","#es-why","#es-date"].forEach(sel=>{const e=$(sel);if(e)e.onchange=keep});
     const d=$("#es-disc");if(d)d.onchange=()=>{keep();draw()};
     const c=$("#es-collect");if(c)c.onchange=()=>{keep();draw()};
     const qi=$("#es-q");if(qi)qi.oninput=()=>{S.es.q=qi.value;clearTimeout(draw.t);draw.t=setTimeout(()=>{draw();const n=$("#es-q");if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},180)};
@@ -1508,7 +1509,12 @@ async function saveSaleEdit(){
   const E=S.es,s=S.sales.find(x=>x.id===E.id),btn=$("#es-go");
   if(!s)return toast("That bill no longer exists",1);
   const why=($("#es-why")?.value||"").trim();
-  const stamp=w=>[...(s.editLog||[]),{t:Date.now(),by:S.profile.name,what:w,why}];
+  const wasDay=s.dateKey||dkey(new Date(tms(s.createdAt)));
+  let redate;
+  try{redate=redatedAs($("#es-date")?$("#es-date").value:"",wasDay)}catch(e){return toast(e.message,1)}
+  const dateNote=redate.dateKey?`dated ${wasDay} → ${redate.dateKey}`:"";
+  const stamp=w=>[...(s.editLog||[]),{t:Date.now(),by:S.profile.name,
+    what:[w,dateNote].filter(Boolean).join(" · ")||"Corrected",why}];
   btn.disabled=true;btn.textContent="Saving…";
   const fail=e=>{toast(emsg(e),1);btn.disabled=false;btn.textContent="Save changes"};
   try{
@@ -1517,7 +1523,7 @@ async function saveSaleEdit(){
       if(collect<0)throw new Error("That can't be a negative amount");
       if(r2(adv+collect)>num(s.total))throw new Error(`That is more than the order value — at most ${inr(r2(num(s.total)-adv))} is still due`);
       const b=writeBatch(db);
-      b.update(doc(db,"sales",E.id),{payment:$("#es-pay").value,balancePaid:collect,
+      b.update(doc(db,"sales",E.id),{payment:$("#es-pay").value,balancePaid:collect,...redate,
         editLog:stamp(`Collected on delivery changed from ${inr(num(s.balancePaid??0))} to ${inr(collect)}`),
         editedAt:serverTimestamp(),editedBy:S.profile.name,editedByUid:S.user.uid});
       if(s.bookingId)b.update(doc(db,"bookings",s.bookingId),{collectedOnDelivery:collect,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
@@ -1550,8 +1556,8 @@ async function saveSaleEdit(){
         tx.update(refs[ix],{qty:cur-x.d,locQty:map,location:primaryLoc(map)||d.location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
         tx.set(doc(collection(db,"movements")),{...mv(x.pid,d.name,d.sku,x.d>0?"sale":"return",-x.d,cur,cur-x.d,
           `${s.invoiceNo} corrected by ${S.profile.name}${why?" · "+why:""}`),fromLoc:x.d>0?(x.loc||""):"",toLoc:x.d<0?(x.loc||""):""})});
-      tx.update(sr,{items,subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,payment:$("#es-pay").value,
-        editLog:stamp(`Bill changed from ${inr(num(s.total))} to ${inr(t.total)}`),
+      tx.update(sr,{items,subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,payment:$("#es-pay").value,...redate,
+        editLog:stamp(r2(num(s.total))===r2(t.total)?(dateNote?"":"Bill corrected"):`Bill changed from ${inr(num(s.total))} to ${inr(t.total)}`),
         editedAt:serverTimestamp(),editedBy:S.profile.name,editedByUid:S.user.uid});
     });
     closeModal();toast("Invoice corrected");render();
@@ -1716,6 +1722,23 @@ function saleReceived(s){
 }
 const salePending=s=>s.status==="void"||s.bookingId?0:Math.max(0,r2(num(s.total)-saleReceived(s)));
 const payLine=rs=>rs.map(r=>`${esc(r.mode)} ${inr(num(r.amount))}`).join(" · ");
+const payRowsTable=(id,rows,fn)=>`<table id="${id}" class="resp"><thead><tr><th>Mode</th><th class="n">Amount received</th></tr></thead><tbody>
+ ${rows.map((p,ix)=>`<tr data-ix="${ix}">
+  <td data-l="Mode"><select>${withCur(S.lists.payModes,p.mode).map(m=>`<option ${p.mode===m?"selected":""}>${esc(m)}</option>`).join("")}</select></td>
+  <td data-l="Amount received" class="n"><span class="qcell"><input type="number" min="0" step="0.01" value="${esc(p.amt)}" placeholder="0">
+   ${rows.length>1?`<button class="btn sm sec" type="button" onclick="${fn}('del',${ix})" title="Remove">✕</button>`:""}</span></td></tr>`).join("")}
+ </tbody></table>`;
+const readPayRows=(id,rows)=>{document.querySelectorAll(`#${id} tr[data-ix]`).forEach(tr=>{
+  rows[+tr.dataset.ix]={mode:tr.querySelector("select").value,amt:tr.querySelector("input").value}});return rows};
+const payRowsTotal=rows=>r2((rows||[]).reduce((a,p)=>a+Math.max(0,num(p.amt)),0));
+/* Rows collapsed into one entry per mode, so paying twice in cash reads as one line. */
+const payRowsReceipts=rows=>{const at={},out=[];
+  (rows||[]).forEach(p=>{const a=r2(Math.max(0,num(p.amt)));if(!a)return;
+    if(at[p.mode]!==undefined)out[at[p.mode]].amount=r2(out[at[p.mode]].amount+a);
+    else{at[p.mode]=out.length;out.push({mode:p.mode,amount:a})}});
+  return out};
+const nextPayMode=rows=>{const used=(rows||[]).map(p=>p.mode);
+  return S.lists.payModes.find(m=>!used.includes(m))||S.lists.payModes[0]||"Cash"};
 /* A customer statement. Charges are what the shop has billed, Paid is what it has received.
    Running balance = paid - charged, so a pending amount shows as a negative number.
    Goods are charged once, when the booking is raised; the delivery invoice only records the balance paid. */
@@ -3113,9 +3136,18 @@ async function doCancelBooking(id,settle){
   }
 }
 const SETTLE_LABEL={credit:"kept as credit with the shop",refund:"refunded to the customer",forfeit:"kept by the shop as a cancellation charge"};
+let DV=null;
+window.dvPayRow=(op,ix)=>{
+  if(!DV)return;
+  readPayRows("dv-pays",DV.pays);
+  if(op==="add")DV.pays.push({mode:nextPayMode(DV.pays),amt:""});
+  else{DV.pays.splice(ix,1);if(!DV.pays.length)DV.pays=[{mode:nextPayMode([]),amt:""}]}
+  dvDraw();
+};
 window.deliverBooking=id=>{
   const b=S.bookings.find(x=>x.id===id);if(!b||b.status!=="booked")return;
   const recd=bkReceived(b),due=r2(num(b.total)-recd);
+  DV={id,pays:[{mode:S.lists.payModes[0]||"Cash",amt:due>0?String(due):""}],recd};
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:520px"><h3>Deliver ${esc(b.bookingNo)}</h3>
   <p class="mute small">${esc(b.customerName)} · ${esc(b.customerPhone)} — ${b.items.map(i=>esc(i.name)+" ×"+i.qty).join(", ")}</p>
   <div class="card" style="margin:10px 0;padding:10px 12px">
@@ -3125,23 +3157,50 @@ window.deliverBooking=id=>{
   ${b.items.map((i,ix)=>{const p=S.products.find(x=>x.id===i.pid),ent=p?locEntries(p):[];
     return ent.length>1?`<div style="margin-bottom:6px"><label>Take "${esc(i.name)}" (${i.qty}) from</label>
      <select class="dv-loc" data-ix="${ix}">${ent.map(([k,v])=>`<option value="${esc(k)}">${esc(k)} — ${v} in stock</option>`).join("")}</select></div>`:""}).join("")}
-  <div class="f"><div><label>Collecting now (₹)</label><input id="dv-amt" type="number" min="0" step="0.01" value="${due>0?due:0}"></div>
-   <div><label>Mode</label><select id="dv-mode">${S.lists.payModes.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div></div>
+  ${isAdmin()?`<div class="f"><div><label>Extra discount now (₹) <span class="mute">(admin)</span></label>
+    <input id="dv-disc" type="number" min="0" step="0.01" placeholder="0">
+    <span class="small mute">Comes off the order value, so the ledger and the bill agree.</span></div>
+   ${backdateField("dv-date","")}</div>`:""}
+  <label style="margin-top:10px">Collecting now</label>
+  <div id="dv-payrows">${payRowsTable("dv-pays",DV.pays,"dvPayRow")}</div>
+  <div class="row" style="margin-top:6px"><button class="btn sec sm" type="button" onclick="dvPayRow('add')">+ Another mode</button></div>
   <p class="small mute" id="dv-note" style="margin-top:8px"></p>
   <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="dv-go">Deliver &amp; bill</button></div></div></div>`;
-  const note=()=>{const got=num($("#dv-amt").value),left=r2(due-got);
-    $("#dv-note").innerHTML=left>0?`<span style="color:var(--warn)">${inr(left)} will stay pending in the customer's ledger.</span>`
-      :left<0?`<span style="color:var(--bad)">That is more than the balance.</span>`:"Balance settled in full.";
-    $("#dv-go").disabled=left<0};
-  $("#dv-amt").oninput=note;note();
+  window.dvDraw=()=>{
+    $("#dv-payrows").innerHTML=payRowsTable("dv-pays",DV.pays,"dvPayRow");
+    document.querySelectorAll("#dv-pays tr[data-ix] input").forEach(i=>i.oninput=()=>{readPayRows("dv-pays",DV.pays);note()});
+    document.querySelectorAll("#dv-pays tr[data-ix] select").forEach(s=>s.onchange=()=>{readPayRows("dv-pays",DV.pays);note()});
+    note();
+  };
+  const extra=()=>$("#dv-disc")?Math.max(0,num($("#dv-disc").value)):0;
+  const note=()=>{
+    const d=Math.min(r2(num(b.total)-recd),extra());          // never below what is already paid
+    const owed=r2(num(b.total)-d-recd),got=payRowsTotal(DV.pays),left=r2(owed-got);
+    $("#dv-note").innerHTML=(d?`<b>${inr(d)}</b> off brings the order to <b>${inr(r2(num(b.total)-d))}</b>, leaving ${inr(owed)} due. `:"")
+      +(left>0?`<span style="color:var(--warn)">${inr(left)} will stay pending in the customer's ledger.</span>`
+        :left<0?`<span style="color:var(--bad)">That is ${inr(-left)} more than the balance.</span>`:"Balance settled in full.");
+    $("#dv-go").disabled=left<0;
+    if(extra()>r2(num(b.total)-recd))$("#dv-note").innerHTML=`<span style="color:var(--bad)">A discount bigger than ${inr(r2(num(b.total)-recd))} would mean refunding money already received — record a cancellation instead.</span>`,$("#dv-go").disabled=true;
+  };
+  if($("#dv-disc"))$("#dv-disc").oninput=note;
+  dvDraw();
   $("#dv-go").onclick=()=>{
     const picks={};document.querySelectorAll(".dv-loc").forEach(s=>{picks[s.dataset.ix]=s.value});
-    doDeliver(id,num($("#dv-amt").value),$("#dv-mode").value,recd,picks);
+    readPayRows("dv-pays",DV.pays);
+    let dated;
+    try{dated=datedAs($("#dv-date")?$("#dv-date").value:"")}catch(e){return toast(e.message,1)}
+    doDeliver(id,payRowsReceipts(DV.pays),recd,picks,extra(),dated);
   };
 };
-async function doDeliver(id,collect,mode,recd,picks){
+async function doDeliver(id,receipts,recd,picks,extraDisc,dated){
   const b=S.bookings.find(x=>x.id===id);if(!b)return;
   const btn=$("#dv-go");if(btn){btn.disabled=true;btn.textContent="Saving…"}
+  const collect=r2(receipts.reduce((a,r)=>a+num(r.amount),0));
+  const mode=receipts.length?payLine(receipts):"Nothing collected";
+  // a discount given at the door moves the order value, or the ledger would keep charging the old one
+  const d0=sumItems(b.items,num(b.discount));
+  const newDisc=r2(num(b.discount)+Math.max(0,num(extraDisc)));
+  const t=Math.max(0,num(extraDisc))?sumItems(b.items,newDisc):d0;
   try{
     let inv="";
     await runTransaction(db,async tx=>{
@@ -3156,17 +3215,19 @@ async function doDeliver(id,collect,mode,recd,picks){
       snaps.forEach((s,ix)=>{const i=b.items[ix],d=s.data(),cur=+d.qty||0,t=takeAt(locMapOf(d),i.qty,(picks||{})[ix]);
         tx.update(refs[ix],{qty:cur-i.qty,locQty:t.map,location:primaryLoc(t.map)||d.location||"",booked:Math.max(0,(+d.booked||0)-i.qty),updatedAt:serverTimestamp(),updatedBy:S.user.uid});
         tx.set(doc(collection(db,"movements")),{...mv(i.pid,i.name,i.sku,"sale",-i.qty,cur,cur-i.qty,inv+" (booking "+b.bookingNo+") · from "+t.used.map(u=>`${u[0]} (${u[1]})`).join(", ")),fromLoc:t.used.map(u=>u[0]).join(", "),toLoc:""})});
-      tx.set(sr,{invoiceNo:inv,items:b.items,subtotal:num(b.subtotal??b.total),itemDiscount:num(b.itemDiscount),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
-        taxable:r2(num(b.total)-num(b.gstAmount)),customer:{name:b.customerName,phone:b.customerPhone},customerId:b.customerId||"",
-        payment:mode||"Booking balance",status:"completed",advance:r2(recd),balancePaid:r2(collect),bookingId:id,bookingNo:b.bookingNo,
-        soldBy:S.user.uid,soldByName:S.profile.name,dateKey:dkey(),createdAt:serverTimestamp()});
-      tx.update(br,{status:"delivered",deliveredAt:serverTimestamp(),deliveredBy:S.profile.name,saleId:sr.id,invoiceNo:inv,collectedOnDelivery:r2(collect)});
+      tx.set(sr,{invoiceNo:inv,items:b.items,subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,
+        taxable:r2(t.total-t.gst),customer:{name:b.customerName,phone:b.customerPhone},customerId:b.customerId||"",
+        payment:mode||"Booking balance",receipts,status:"completed",advance:r2(recd),balancePaid:r2(collect),bookingId:id,bookingNo:b.bookingNo,
+        soldBy:S.user.uid,soldByName:S.profile.name,...dated});
+      tx.update(br,{status:"delivered",deliveredAt:dated.createdAt,deliveredBy:S.profile.name,saleId:sr.id,invoiceNo:inv,collectedOnDelivery:r2(collect),
+        ...(Math.max(0,num(extraDisc))?{discount:newDisc,total:t.total,gstAmount:t.gst,balance:r2(t.total-recd-collect),
+          deliveryDiscount:r2(num(extraDisc)),updatedAt:serverTimestamp(),updatedBy:S.user.uid}:{})});
     });
     closeModal();
-    const left=r2(num(b.total)-recd-collect);
+    const left=r2(t.total-recd-collect);
     toast(`Delivered — invoice ${inv}${left>0?` · ${inr(left)} still pending`:""}`);
-    printReceipt({invoiceNo:inv,items:b.items,subtotal:num(b.subtotal??b.total),itemDiscount:num(b.itemDiscount),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
-      customer:{name:b.customerName,phone:b.customerPhone},payment:mode||"Booking balance",advance:r2(recd),balanceLeft:left,bookingNo:b.bookingNo,
+    printReceipt({invoiceNo:inv,items:b.items,subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,
+      customer:{name:b.customerName,phone:b.customerPhone},payment:mode||"Booking balance",receipts,advance:r2(recd),balanceLeft:left,bookingNo:b.bookingNo,
       soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
   }catch(e){toast(emsg(e),1);const g=$("#dv-go");if(g){g.disabled=false;g.textContent="Deliver & bill"}}
 }
