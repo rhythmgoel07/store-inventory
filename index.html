@@ -88,6 +88,21 @@ table td.c,table th.c{text-align:center}
 .item:hover{border-color:var(--brand2)}
 .item b{font-weight:600}
 .cartline{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.cartline.off{opacity:.55}
+.cartline.off .lineamt{text-decoration:line-through}
+.linetick{display:flex;gap:6px;align-items:center;margin:0;color:var(--ink);font-size:13px}
+.linetick input{width:auto}
+.linedisc{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:nowrap}
+.linedisc input{width:80px;padding:5px}
+.linedisc select{width:62px;padding:5px}
+/* On a phone the two cart-line columns are too narrow for a tick, a box, a unit and an
+   amount side by side, so each gets the full width and the discount row may wrap. */
+@media(max-width:620px){
+  .cartline .linetick,.cartline .linedisc{grid-column:1/-1}
+  .linedisc{justify-content:flex-start;flex-wrap:wrap}
+  .linedisc input{width:72px}
+  .linedisc select{width:58px}
+}
 .qty{display:flex;align-items:center;gap:4px}
 .qty button{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:none;cursor:pointer}
 .qty input{width:52px;text-align:center;padding:5px}
@@ -205,7 +220,7 @@ import {firebaseConfig} from "./firebase-config.js";
 
 /* ---------- Taxonomy (embedded from homecentre_taxonomy.json) ---------- */
 const DEFAULT_TAX = [{"id":"living-room","name":"Living Room","slug":"livingroom","subcategories":[{"id":"sofas","name":"Sofas","slug":"livingroom-sofas","subcategories":[{"id":"3-seater-sofas","name":"3 Seater Sofas","slug":"livingroom-sofas-3seatersofas","subcategories":[]},{"id":"2-seater-sofas","name":"2 Seater Sofas","slug":"livingroom-sofas-2seatersofas","subcategories":[]},{"id":"1-seater-sofas","name":"1 Seater Sofas","slug":"livingroom-sofas-1seatersofas","subcategories":[]},{"id":"sofa-sets","name":"Sofa Sets","slug":"livingroom-sofas-sofasets","subcategories":[]},{"id":"sofa-cum-beds","name":"Sofa Cum Beds","slug":"livingroom-sofas-sofacumbeds","subcategories":[]},{"id":"corner-sofas","name":"Corner Sofas","slug":"livingroom-sofas-cornersofa","subcategories":[]}]},{"id":"customised-furniture","name":"Customised Furniture","slug":"customizedfurniture","subcategories":[]},{"id":"recliners","name":"Recliners","slug":"livingroom-recliners","subcategories":[{"id":"3-seater-recliners","name":"3 Seater Recliners","slug":"livingroom-recliners-3seaterrecliners","subcategories":[]},{"id":"2-seater-recliners","name":"2 Seater Recliners","slug":"livingroom-recliners-2seaterrecliners","subcategories":[]},{"id":"1-seater-recliners","name":"1 Seater Recliners","slug":"livingroom-recliners-1seaterrecliners","subcategories":[]},{"id":"recliner-sets","name":"Recliner Sets","slug":"livingroom-recliners-reclinersets","subcategories":[]}]},{"id":"occasional-chairs","name":"Occasional Chairs","slug":"livingroom-occasionalchairs","subcategories":[{"id":"accent-chairs","name":"Accent Chairs","slug":"livingroom-occasionalchairs-accentchairs","subcategories":[]},{"id":"folding-chairs","name":"Folding Chairs","slug":"livingroom-occasionalchairs-foldingchairs","subcategories":[]},{"id":"cafe-chairs","name":"Cafe Chairs","slug":"livingroom-occasionalchairs-cafechairs","subcategories":[]},{"id":"plastic-chairs","name":"Plastic Chairs","slug":"livingroom-occasionalchairs-plasticchairs","subcategories":[]}]},{"id":"benches-stools","name":"Benches & Stools","slug":"livingroom-benchandstools","subcategories":[{"id":"benches","name":"Benches","slug":"livingroom-benchandstools-benches","subcategories":[]},{"id":"stools","name":"Stools","slug":"livingroom-benchandstools-stools","subcategories":[]}]},{"id":"bean-bags-pouffes","name":"Bean Bags & Pouffes","slug":"livingroom-beanbagsandpouffes","subcategories":[{"id":"pouffes","name":"Pouffes","slug":"livingroom-beanbagsandpouffes-pouffes","subcategories":[]},{"id":"bean-bags","name":"Bean Bags","slug":"livingroom-beanbagsandpouffes-beanbags","subcategories":[]}]},{"id":"tables","name":"Tables","slug":"livingroom-tables","subcategories":[{"id":"centre-tables","name":"Centre Tables","slug":"livingroom-tables-centertables","subcategories":[]},{"id":"end-tables","name":"End Tables","slug":"livingroom-tables-endtables","subcategories":[]},{"id":"console-tables","name":"Console Tables","slug":"livingroom-tables-consoletables","subcategories":[]},{"id":"nesting-tables","name":"Nesting Tables","slug":"livingroom-tables-nestingtables","subcategories":[]}]},{"id":"tv-media-units","name":"TV & Media Units","slug":"livingroom-tvandmediaunits","subcategories":[{"id":"tv-consoles","name":"TV Consoles","slug":"livingroom-tvandmediaunits-tvconsoles","subcategories":[]},{"id":"tv-units","name":"TV Units","slug":"livingroom-tvandmediaunits-tvunits","subcategories":[]}]},{"id":"shelves","name":"Shelves","slug":"livingroom-shelves","subcategories":[{"id":"wall-shelves","name":"Wall Shelves","slug":"livingroom-shelves-wallshelves","subcategories":[]},{"id":"corner-shelves","name":"Corner Shelves","slug":"livingroom-shelves-cornershelves","subcategories":[]},{"id":"home-mandir","name":"Home Mandir","slug":"livingroom-shelves-homemandir","subcategories":[]}]},{"id":"shoe-racks","name":"Shoe Racks","slug":"livingroom-shoeracks","subcategories":[{"id":"shoe-cabinets","name":"Shoe Cabinets","slug":"livingroom-shoeracks-shoecabinets","subcategories":[]},{"id":"open-shoe-racks","name":"Open Shoe Racks","slug":"livingroom-shoeracks-shoeopenshelves","subcategories":[]}]},{"id":"study-work","name":"Study & Work","slug":"livingroom-studyandwork","subcategories":[{"id":"study-office-tables","name":"Study & Office Tables","slug":"livingroom-studyandwork-studyandofficetables","subcategories":[]},{"id":"study-office-chairs","name":"Study & Office Chairs","slug":"livingroom-studyandwork-studyandofficechairs","subcategories":[]}]},{"id":"book-cases-cabinets","name":"Book Cases & Cabinets","slug":"livingroom-bookcaseandcabinets","subcategories":[{"id":"book-cabinets","name":"Book Cabinets","slug":"livingroom-bookcaseandcabinets-bookcabinets","subcategories":[]},{"id":"open-book-shelves","name":"Open Book Shelves","slug":"livingroom-bookcaseandcabinets-openbookshelves","subcategories":[]}]},{"id":"outdoor-furniture","name":"Outdoor Furniture","slug":"outdoor","subcategories":[{"id":"outdoor-seating-tables","name":"Outdoor Seating & Tables","slug":"outdoor-outdoorseatingandtables","subcategories":[]}]},{"id":"ottomans","name":"Ottomans","slug":"livingroom-ottomans","subcategories":[]},{"id":"tea-table-sets","name":"Tea Table Sets","slug":"livingroom-teasets","subcategories":[]}]},{"id":"bedroom","name":"Bedroom","slug":"bedroom","subcategories":[{"id":"beds","name":"Beds","slug":"bedroom-beds","subcategories":[{"id":"king-beds","name":"King Beds","slug":"bedroom-beds-kingbeds","subcategories":[]},{"id":"queen-beds","name":"Queen Beds","slug":"bedroom-beds-queenbeds","subcategories":[]},{"id":"single-beds","name":"Single Beds","slug":"bedroom-beds-singlebeds","subcategories":[]},{"id":"bunk-beds","name":"Bunk Beds","slug":"bedroom-beds-bunkbeds","subcategories":[]}]},{"id":"wardrobes","name":"Wardrobes","slug":"bedroom-wardrobes","subcategories":[{"id":"2-door-wardrobes","name":"2 Door Wardrobes","slug":"bedroom-wardrobes-2doorswingwardrobes","subcategories":[]},{"id":"3-door-wardrobes","name":"3 Door Wardrobes","slug":"bedroom-wardrobes-3doorswingwardrobes","subcategories":[]},{"id":"4-door-wardrobes","name":"4 Door Wardrobes","slug":"bedroom-wardrobes-4doorswingwardrobes","subcategories":[]},{"id":"sliding-wardrobes","name":"Sliding Wardrobes","slug":"bedroom-wardrobes-2doorslidingwardrobes","subcategories":[]}]},{"id":"mattresses","name":"Mattresses","slug":"bedroom-mattresses","subcategories":[{"id":"king-mattresses","name":"King Mattresses","slug":"bedroom-mattresses-kingmattresses","subcategories":[]},{"id":"queen-mattresses","name":"Queen Mattresses","slug":"bedroom-mattresses-queenmattresses","subcategories":[]},{"id":"single-mattresses","name":"Single Mattresses","slug":"bedroom-mattresses-singlemattresses","subcategories":[]}]},{"id":"bed-side-tables","name":"Bed Side Tables","slug":"bedroom-bedsidetables","subcategories":[]},{"id":"chest-of-drawers","name":"Chest of Drawers","slug":"bedroom-chestofdrawers","subcategories":[]},{"id":"dresser-mirrors","name":"Dresser Mirrors","slug":"bedroom-dressermirrors","subcategories":[]}]},{"id":"dining-room","name":"Dining Room","slug":"diningroom","subcategories":[{"id":"dining-sets","name":"Dining Sets","slug":"diningroom-diningtablesets","subcategories":[{"id":"4-seater-dining-sets","name":"4 Seater Dining Sets","slug":"diningroom-diningtablesets-4seaterdiningtablesets","subcategories":[]},{"id":"6-seater-dining-sets","name":"6 Seater Dining Sets","slug":"diningroom-diningtablesets-6seaterdiningtablesets","subcategories":[]},{"id":"8-seater-dining-sets","name":"8 Seater Dining Sets","slug":"diningroom-diningtablesets-8seaterdiningtablesets","subcategories":[]}]},{"id":"dining-tables","name":"Dining Tables","slug":"diningroom-diningtables","subcategories":[{"id":"4-seater-dining-tables","name":"4 Seater Dining Tables","slug":"diningroom-diningtables-4seatertables","subcategories":[]},{"id":"6-seater-dining-tables","name":"6 Seater Dining Tables","slug":"diningroom-diningtables-6seatertables","subcategories":[]},{"id":"8-seater-dining-tables","name":"8 Seater Dining Tables","slug":"diningroom-diningtables-8seatertables","subcategories":[]}]},{"id":"bar-furniture","name":"Bar Furniture","slug":"diningroom-bar","subcategories":[{"id":"bar-cabinet-curios","name":"Bar Cabinet-Curios","slug":"diningroom-bar-barcabinetcurios","subcategories":[]},{"id":"bar-stools-chairs","name":"Bar Stools & Chairs","slug":"diningroom-bar-barstools","subcategories":[]},{"id":"serving-trolleys","name":"Serving Trolleys","slug":"diningroom-bar-servingtrolleys","subcategories":[]}]},{"id":"dining-chairs","name":"Dining Chairs","slug":"diningroom-diningchairs","subcategories":[]},{"id":"dining-benches","name":"Dining Benches","slug":"diningroom-diningbenches","subcategories":[]},{"id":"crockery-units","name":"Crockery Units","slug":"diningroom-crockeryunits","subcategories":[]}]},{"id":"decor","name":"Decor","slug":"decor","subcategories":[{"id":"home-accessories","name":"Home Accessories","slug":"decor-homeaccessories","subcategories":[{"id":"figurines","name":"Figurines","slug":"decor-homeaccessories-figurines","subcategories":[]},{"id":"vases","name":"Vases","slug":"decor-homeaccessories-vases","subcategories":[]},{"id":"table-accents","name":"Table Accents","slug":"decor-homeaccessories-tableaccents","subcategories":[]},{"id":"candle-holders-lanterns","name":"Candle Holders & Lanterns","slug":"decor-homeaccessories-candleholdersandlanterns","subcategories":[]},{"id":"potpourri-bowls-platters","name":"Potpourri Bowls & Platters","slug":"decor-homeaccessories-bowls","subcategories":[]},{"id":"clocks","name":"Clocks","slug":"decor-homeaccessories-clocks","subcategories":[]},{"id":"desk-accessories","name":"Desk Accessories","slug":"decor-homeaccessories-deskaccessories","subcategories":[]},{"id":"gift-accessories","name":"Gift Accessories","slug":"decor-homeaccessories-giftaccessories","subcategories":[]}]},{"id":"lighting","name":"Lighting","slug":"decor-lighting","subcategories":[{"id":"table-lamps","name":"Table Lamps","slug":"decor-lighting-tablelamps","subcategories":[]},{"id":"wall-lamps","name":"Wall Lamps","slug":"decor-lighting-walllamps","subcategories":[]},{"id":"hanging-lamps","name":"Hanging Lamps","slug":"decor-lighting-ceilinglamps","subcategories":[]},{"id":"floor-lamps","name":"Floor Lamps","slug":"decor-lighting-floorlamps","subcategories":[]},{"id":"decorative-lights","name":"Decorative Lights","slug":"decor-lighting-decorativelights","subcategories":[]},{"id":"string-lights","name":"String Lights","slug":"decor-lighting-stringlights","subcategories":[]},{"id":"bulbs","name":"Bulbs","slug":"decor-lighting-bulbs","subcategories":[]}]},{"id":"wall-decor","name":"Wall Decor","slug":"decor-wallaccent","subcategories":[{"id":"wall-accents","name":"Wall Accents","slug":"decor-wallaccent-walldecor","subcategories":[]},{"id":"decorative-mirrors","name":"Decorative Mirrors","slug":"decor-wallaccent-decorativemirrors","subcategories":[]},{"id":"photo-frames","name":"Photo Frames","slug":"decor-wallaccent-photoframes","subcategories":[]},{"id":"posters-paintings","name":"Posters & Paintings","slug":"decor-wallaccent-pictureframes","subcategories":[]}]},{"id":"home-fragrances","name":"Home Fragrances","slug":"decor-homefragrance","subcategories":[{"id":"candles","name":"Candles","slug":"decor-homefragrance-candles","subcategories":[]},{"id":"fragrances-potpourris","name":"Fragrances & Potpourris","slug":"decor-homefragrance-fragranceandpotpourri","subcategories":[]},{"id":"diffusers","name":"Diffusers","slug":"decor-homefragrance-diffusers","subcategories":[]},{"id":"aroma-oils","name":"Aroma Oils","slug":"decor-homefragrance-aromaoil","subcategories":[]},{"id":"room-car-sprays","name":"Room & Car Sprays","slug":"decor-homefragrance-roomsprays","subcategories":[]}]},{"id":"garden","name":"Garden","slug":"decor-garden","subcategories":[{"id":"artificial-plants-flowers","name":"Artificial Plants & Flowers","slug":"decor-garden-artificialplantsandflowers","subcategories":[]},{"id":"pots-planters","name":"Pots & Planters","slug":"decor-garden-potsandplanters","subcategories":[]},{"id":"fountains","name":"Fountains","slug":"decor-garden-indoorandoutdoorfountains","subcategories":[]}]}]},{"id":"kitchen","name":"Kitchen","slug":"kitchen","subcategories":[{"id":"storage-containers","name":"Storage & Containers","slug":"kitchen-storageandcontainers","subcategories":[{"id":"containers-jars","name":"Containers & Jars","slug":"kitchen-storageandcontainers-containersandjars","subcategories":[]},{"id":"bottles","name":"Bottles","slug":"kitchen-storageandcontainers-bottles","subcategories":[]},{"id":"flasks","name":"Flasks","slug":"kitchen-storageandcontainers-flask","subcategories":[]},{"id":"lunch-boxes-bags","name":"Lunch Boxes & Bags","slug":"kitchen-storageandcontainers-lunchboxandbags","subcategories":[]},{"id":"kitchen-organisers","name":"Kitchen Organisers","slug":"kitchen-storageandcontainers-organisers","subcategories":[]}]},{"id":"cookware","name":"Cookware","slug":"kitchen-cooking","subcategories":[{"id":"cookware-sets","name":"Cookware Sets","slug":"kitchen-cooking-cookwaresets","subcategories":[]},{"id":"induction-cookware","name":"Induction Cookware","slug":"kitchen-cooking-inductioncookware","subcategories":[]},{"id":"pots-pans","name":"Pots & Pans","slug":"kitchen-cooking-potsandpans","subcategories":[]},{"id":"kadhai-woks","name":"Kadhai & Woks","slug":"kitchen-cooking-kadhaiandwoks","subcategories":[]},{"id":"cooking-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-cooking-toolsandgadgets","subcategories":[]},{"id":"pressure-cookers","name":"Pressure Cookers","slug":"kitchen-cooking-pressurecookers","subcategories":[]},{"id":"tawas","name":"Tawas","slug":"kitchen-cooking-tawas","subcategories":[]}]},{"id":"kitchenware","name":"Kitchenware","slug":"kitchen-kitchenware","subcategories":[{"id":"kitchen-trolleys","name":"Kitchen Trolleys","slug":"kitchen-kitchenware-kitchentrolley","subcategories":[]},{"id":"knives-scissors","name":"Knives & Scissors","slug":"kitchen-kitchenware-knivesandscissors","subcategories":[]},{"id":"casseroles","name":"Casseroles","slug":"kitchen-kitchenware-casseroles","subcategories":[]},{"id":"oil-vinegar-servers","name":"Oil & Vinegar Servers","slug":"kitchen-kitchenware-oilandvinegarserver","subcategories":[]},{"id":"utensil-holders","name":"Utensil Holders","slug":"kitchen-kitchenware-utensilholders","subcategories":[]},{"id":"chopping-boards","name":"Chopping Boards","slug":"kitchen-kitchenware-choppingboards","subcategories":[]},{"id":"dish-racks","name":"Dish Racks","slug":"kitchen-kitchenware-dishracks","subcategories":[]},{"id":"fruit-baskets","name":"Fruit Baskets","slug":"kitchen-kitchenware-fruitstands","subcategories":[]},{"id":"strainers-colanders","name":"Strainers & Colanders","slug":"kitchen-kitchenware-strainersandcolanders","subcategories":[]},{"id":"kitchenware-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-kitchenware-toolsandgadgets","subcategories":[]}]},{"id":"kitchen-linen","name":"Kitchen Linen","slug":"kitchen-kitchenlinens","subcategories":[{"id":"aprons","name":"Aprons","slug":"kitchen-kitchenlinens-aprons","subcategories":[]},{"id":"pot-holders-mittens","name":"Pot Holders & Mittens","slug":"kitchen-kitchenlinens-potholders","subcategories":[]},{"id":"kitchen-towels","name":"Kitchen Towels","slug":"kitchen-kitchenlinens-kitchentowels","subcategories":[]}]},{"id":"bakeware","name":"Bakeware","slug":"kitchen-bakeware","subcategories":[]},{"id":"kitchen-appliances","name":"Kitchen Appliances","slug":"kitchen-appliances","subcategories":[]}]},{"id":"furnishings","name":"Furnishings","slug":"furnishing","subcategories":[{"id":"bedding","name":"Bedding","slug":"furnishing-bedding","subcategories":[{"id":"double-bedsheets","name":"Double Bedsheets","slug":"furnishing-bedding-doublebedsheets","subcategories":[]},{"id":"single-bedsheets","name":"Single Bedsheets","slug":"furnishing-bedding-singlebedsheets","subcategories":[]},{"id":"bedding-sets","name":"Bedding Sets","slug":"furnishing-bedding-beddingsets","subcategories":[]},{"id":"pillows-pillow-covers","name":"Pillows & Pillow Covers","slug":"furnishing-bedding-pillowsandpillowcovers","subcategories":[]},{"id":"blankets-quilts","name":"Blankets & Quilts","slug":"furnishing-bedding-blanketsandquilts","subcategories":[]},{"id":"comforters","name":"Comforters","slug":"furnishing-bedding-comforters","subcategories":[]},{"id":"throws","name":"Throws","slug":"furnishing-bedding-throws","subcategories":[]},{"id":"duvets-duvet-covers","name":"Duvets & Duvet Covers","slug":"furnishing-bedding-duvetandduvetcovers","subcategories":[]},{"id":"dohars","name":"Dohars","slug":"furnishing-bedding-dohars","subcategories":[]},{"id":"bed-covers","name":"Bed Covers","slug":"furnishing-bedding-bedcovers","subcategories":[]}]},{"id":"cushions","name":"Cushions","slug":"furnishing-cushions","subcategories":[{"id":"cushion-covers","name":"Cushion Covers","slug":"furnishing-cushions-cushioncovers","subcategories":[]},{"id":"filled-cushions","name":"Filled Cushions","slug":"furnishing-cushions-filledcushions","subcategories":[]},{"id":"cushion-fillers","name":"Cushion Fillers","slug":"furnishing-cushions-cushionfilling","subcategories":[]},{"id":"floor-cushions","name":"Floor Cushions","slug":"furnishing-cushions-floorcushions","subcategories":[]}]},{"id":"curtains-blinds","name":"Curtains & Blinds","slug":"furnishing-curtains","subcategories":[{"id":"door-curtains","name":"Door Curtains","slug":"furnishing-curtains-doorcurtains","subcategories":[]},{"id":"window-curtains","name":"Window Curtains","slug":"furnishing-curtains-windowcurtains","subcategories":[]},{"id":"blinds","name":"Blinds","slug":"furnishing-curtains-blinds","subcategories":[]},{"id":"rods-accessories","name":"Rods & Accessories","slug":"furnishing-curtains-rodsandaccessories","subcategories":[]}]},{"id":"accessories","name":"Accessories","slug":"furnishing-accessories","subcategories":[{"id":"bags","name":"Bags","slug":"furnishing-accessories-bags","subcategories":[]},{"id":"pads-mats","name":"Pads & Mats","slug":"furnishing-accessories-padsandmats","subcategories":[]},{"id":"sofa-covers","name":"Sofa Covers","slug":"furnishing-accessories-sofacovers","subcategories":[]}]},{"id":"floor-coverings","name":"Floor Coverings","slug":"furnishing-floorcoverings","subcategories":[{"id":"carpets-rugs","name":"Carpets & Rugs","slug":"furnishing-floorcoverings-carpets","subcategories":[]},{"id":"dhurries","name":"Dhurries","slug":"furnishing-floorcoverings-dhurries","subcategories":[]},{"id":"doormats","name":"Doormats","slug":"furnishing-floorcoverings-doormats","subcategories":[]}]}]},{"id":"tableware","name":"Tableware","slug":"dining","subcategories":[{"id":"serving","name":"Serving","slug":"dining-serving","subcategories":[{"id":"trays-platters","name":"Trays & Platters","slug":"dining-serving-traysandplatters","subcategories":[]},{"id":"glasses-jugs","name":"Glasses & Jugs","slug":"dining-serving-glassesandjugs","subcategories":[]},{"id":"bar-accessories","name":"Bar Accessories","slug":"dining-serving-baraccessories","subcategories":[]},{"id":"salt-pepper-shakers","name":"Salt & Pepper Shakers","slug":"dining-serving-saltandpeppershakers","subcategories":[]},{"id":"chip-dip","name":"Chip & Dip","slug":"dining-serving-chipanddip","subcategories":[]}]},{"id":"crockery","name":"Crockery","slug":"dining-crockery","subcategories":[{"id":"bowls","name":"Bowls","slug":"dining-crockery-bowls","subcategories":[]},{"id":"plates","name":"Plates","slug":"dining-crockery-plates","subcategories":[]},{"id":"mugs","name":"Mugs","slug":"dining-crockery-mugsandcups","subcategories":[]},{"id":"cups-saucers","name":"Cups & Saucers","slug":"dining-crockery-cupsandsaucers","subcategories":[]},{"id":"pots-kettles","name":"Pots & Kettles","slug":"dining-crockery-potsandkettles","subcategories":[]},{"id":"dinner-sets","name":"Dinner Sets","slug":"dining-crockery-dinnersets","subcategories":[]}]},{"id":"cutlery","name":"Cutlery","slug":"dining-cutlery","subcategories":[{"id":"spoons","name":"Spoons","slug":"dining-cutlery-spoons","subcategories":[]},{"id":"cutlery-sets","name":"Cutlery & Cutlery Sets","slug":"dining-cutlery-cutlerysets","subcategories":[]},{"id":"cutlery-holders","name":"Cutlery Holders","slug":"dining-cutlery-cutleryholders","subcategories":[]}]},{"id":"table-linens","name":"Table Linens","slug":"dining-tableaccessories","subcategories":[{"id":"placemats","name":"Placemats","slug":"dining-tableaccessories-placemats","subcategories":[]},{"id":"table-runners","name":"Table Runners","slug":"dining-tableaccessories-tablerunners","subcategories":[]},{"id":"table-cloths","name":"Table Cloths","slug":"dining-tableaccessories-tablecloths","subcategories":[]},{"id":"trivets-coasters","name":"Trivets & Coasters","slug":"dining-tableaccessories-trivetandcoasters","subcategories":[]},{"id":"tissue-holders","name":"Tissue Holders","slug":"dining-tableaccessories-tissueholders","subcategories":[]}]}]},{"id":"bath-laundry","name":"Bath & Laundry","slug":"bathandlaundry","subcategories":[{"id":"bath-linen","name":"Bath Linen","slug":"bathandlaundry-bath","subcategories":[{"id":"towels","name":"Towels","slug":"bathandlaundry-bath-towel","subcategories":[]},{"id":"robes","name":"Robes","slug":"bathandlaundry-bath-robes","subcategories":[]},{"id":"bathmats","name":"Bathmats","slug":"bathandlaundry-bath-bathmats","subcategories":[]}]},{"id":"bath-accessories","name":"Bath Accessories","slug":"bathandlaundry-bathaccessories","subcategories":[{"id":"holders-tumblers","name":"Holders & Tumblers","slug":"bathandlaundry-bathaccessories-holdersandtumblers","subcategories":[]},{"id":"soap-dispensers","name":"Soap Dispensers","slug":"bathandlaundry-bathaccessories-soapdispensers","subcategories":[]},{"id":"soap-dishes","name":"Soap Dishes","slug":"bathandlaundry-bathaccessories-soapdishes","subcategories":[]},{"id":"bath-sets","name":"Bath Sets","slug":"bathandlaundry-bathaccessories-accessorysets","subcategories":[]},{"id":"storage-mirrors","name":"Storage & Mirrors","slug":"bathandlaundry-bathaccessories-storageandmirrors","subcategories":[]},{"id":"towel-holders","name":"Towel Holders","slug":"bathandlaundry-bathaccessories-towelholders","subcategories":[]},{"id":"toilet-accessories","name":"Toilet Accessories","slug":"bathandlaundry-bathaccessories-toiletpaperandbrushholders","subcategories":[]},{"id":"shower-curtains","name":"Shower Curtains","slug":"bathandlaundry-bathaccessories-showercurtains","subcategories":[]},{"id":"bath-stools","name":"Bath Stools","slug":"bathandlaundry-bathaccessories-bathstools","subcategories":[]}]},{"id":"laundry","name":"Laundry","slug":"bathandlaundry-laundry","subcategories":[{"id":"laundry-storage-baskets","name":"Laundry Storage & Baskets","slug":"bathandlaundry-laundry-storage","subcategories":[]},{"id":"cleaning-accessories","name":"Cleaning Accessories","slug":"bathandlaundry-laundry-cleaningaccessories","subcategories":[]},{"id":"dustbins","name":"Dustbins","slug":"bathandlaundry-laundry-dustbins","subcategories":[]},{"id":"cloth-dryers","name":"Cloth Dryers","slug":"bathandlaundry-laundry-clothdryers","subcategories":[]},{"id":"hangers-hooks","name":"Hangers & Hooks","slug":"bathandlaundry-laundry-hangersandhooks","subcategories":[]}]}]},{"id":"gifting","name":"Gifting","slug":"gifts","subcategories":[{"id":"housewarming-gifts","name":"Housewarming Gifts","slug":"gifts-housewarminggifts","subcategories":[]},{"id":"wedding-gifts","name":"Wedding Gifts","slug":"gifts-weddinggifts","subcategories":[]},{"id":"anniversary-gifts","name":"Anniversary Gifts","slug":"gifts-anniversarygifts","subcategories":[]},{"id":"birthday-gifts","name":"Birthday Gifts","slug":"gifts-birthdaygifts","subcategories":[]},{"id":"gifts-for-him","name":"Gifts for Him","slug":"gifts-giftsforhim","subcategories":[]},{"id":"gifts-for-her","name":"Gifts for Her","slug":"gifts-giftsforher","subcategories":[]},{"id":"festive-gifts","name":"Festive Gifts","slug":"gifts-festivegifts","subcategories":[{"id":"ganesh-chaturthi","name":"Ganesh Chaturthi","slug":"gifts-festivegifts-ganeshchaturthigifts","subcategories":[]}]},{"id":"special-occasions","name":"Special Occasions","slug":"gifts-specialoccasiongifts","subcategories":[]}]}];
-const BUILD = "04 Nov 00:53";
+const BUILD = "04 Nov 11:32";
 let TAXONOMY = DEFAULT_TAX;
 const bySlug = {}; // slug -> {cat,sub,type}
 function reindex(){
@@ -1107,16 +1122,11 @@ function vStock(el){
 }
 
 /* ---------- POS ---------- */
-function cartTotals(){
-  const gross=S.cart.reduce((a,i)=>a+i.price*i.qty,0);
-  let disc=S.cartDiscType==="pct"?gross*Math.min(100,S.cartDiscount)/100:Math.min(gross,S.cartDiscount);
-  disc=Math.round(disc*100)/100;const total=Math.round((gross-disc)*100)/100;
-  let gst=0;S.cart.forEach(i=>{const share=gross?i.price*i.qty/gross:0;const line=i.price*i.qty-disc*share;gst+=line-line/(1+i.gst/100)});
-  gst=Math.round(gst*100)/100;
-  return{gross,disc,total,gst,taxable:Math.round((total-gst)*100)/100};
-}
+// the bill-wide discount comes off what is left after the per-item ones
+function cartTotals(){return sumItems(S.cart,discAmt(netOf(S.cart),S.cartDiscount,S.cartDiscType))}
 const sellSum=t=>`<div class="row" style="justify-content:space-between"><span class="mute">Subtotal</span><span>${inr(t.gross)}</span></div>
-  ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount</span><span>− ${inr(t.disc)}</span></div>`:""}
+  ${t.itemDisc?`<div class="row" style="justify-content:space-between"><span class="mute">Item discounts</span><span>− ${inr(t.itemDisc)}</span></div>`:""}
+  ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount on the bill</span><span>− ${inr(t.disc)}</span></div>`:""}
   <div class="row" style="justify-content:space-between"><span class="mute">incl. GST</span><span>${inr(t.gst)}</span></div>
   <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Total</span><span>${inr(t.total)}</span></div>`;
 function vSell(el){
@@ -1128,19 +1138,21 @@ function vSell(el){
    <div class="items">${L.map(p=>`<button class="item" onclick="addCart('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""}${catLine(p)?" · "+esc(catLine(p)):""}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Cart (${S.cart.length} item${S.cart.length===1?"":"s"})</h3>
    ${S.cart.map((i,ix)=>{const p=S.products.find(x=>x.id===i.pid),ent=p?locEntries(p):[],at=ent.find(([k])=>k===i.loc),short=at?Math.max(0,i.qty-at[1]):i.qty;
-    return `<div class="cartline"><div><b>${esc(i.name)}</b><br><span class="small mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}<br>${inr(i.price)} each</span></div><div style="text-align:right"><b>${inr(i.price*i.qty)}</b></div>
+    return `<div class="cartline${i.off?" off":""}"><div><b>${esc(i.name)}</b><br><span class="small mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}<br>${inr(i.price)} each</span></div><div style="text-align:right"><b class="lineamt">${inr(lineNet(i))}</b></div>
     <div class="qty"><button onclick="cartQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="cartSet(${ix},this.value)"><button onclick="cartQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.cart.splice(${ix},1);render()">Remove</button></div>
+    ${lineControls(i,ix,"cart")}
     <div style="grid-column:1/-1"><label style="margin:0">Take from</label>
      <select onchange="cartLoc(${ix},this.value)">${(ent.length?ent:[[i.loc||UNLOC,0]]).map(([k,v])=>`<option value="${esc(k)}" ${i.loc===k?"selected":""}>${esc(k)} — ${v} in stock</option>`).join("")}</select>
      ${short>0&&ent.length?`<span class="small" style="color:var(--warn)">only ${at?at[1]:0} here — the other ${short} will come from the next place with stock</span>`:""}</div></div>`}).join("")||`<p class="mute">Tap a product to add it.</p>`}
    ${S.cart.length?`<p class="small mute" style="margin-top:6px">Keep searching to put more products on the same bill.</p>`:""}
-   <div class="f" style="margin-top:10px"><div><label>Discount</label><div class="row" style="flex-wrap:nowrap"><input id="c-disc" type="number" min="0" value="${S.cartDiscount||""}"><select id="c-dt" style="width:80px"><option value="amt" ${S.cartDiscType==="amt"?"selected":""}>₹</option><option value="pct" ${S.cartDiscType==="pct"?"selected":""}>%</option></select></div></div>
+   ${S.cart.length&&onLines(S.cart).length<S.cart.length?`<p class="small" style="color:var(--warn);margin-top:6px">${S.cart.length-onLines(S.cart).length} item(s) unticked — they are not on this bill and will not be billed or taken out of stock.</p>`:""}
+   <div class="f" style="margin-top:10px"><div><label>Discount on the whole bill</label><div class="row" style="flex-wrap:nowrap"><input id="c-disc" type="number" min="0" value="${S.cartDiscount||""}"><select id="c-dt" style="width:80px"><option value="amt" ${S.cartDiscType==="amt"?"selected":""}>₹</option><option value="pct" ${S.cartDiscType==="pct"?"selected":""}>%</option></select></div></div>
     <div><label>Payment</label><select id="c-pay">${S.lists.payModes.map(x=>`<option>${x}</option>`).join("")}</select></div>
     ${backdateField("c-date",S.saleOn)}
     <div><label>Customer phone</label><input id="c-ph" inputmode="tel" list="c-phl" placeholder="Search saved customers"><datalist id="c-phl">${S.customers.slice(0,400).map(c=>`<option value="${esc(c.phone)}">${esc(c.name)}</option>`).join("")}</datalist></div>
     <div><label>Customer name</label><input id="c-name"></div><div class="full small" id="c-cinfo"></div></div>
    <div id="c-sum" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">${sellSum(t)}</div>
-   <button class="btn" style="width:100%;margin-top:12px;padding:12px" id="c-done" ${S.cart.length?"":"disabled"}>Complete sale</button></div></div>`;
+   <button class="btn" style="width:100%;margin-top:12px;padding:12px" id="c-done" ${onLines(S.cart).length?"":"disabled"}>Complete sale</button></div></div>`;
   const q2=$("#pos-q");q2.oninput=()=>{S.posQ=q2.value;clearTimeout(vSell.t);vSell.t=setTimeout(()=>{render();const n=$("#pos-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},150)};
   q2.onkeydown=e=>{if(e.key==="Enter"){const v=q2.value.trim().toLowerCase();const p=S.products.find(x=>(x.barcode&&x.barcode.toLowerCase()===v)||x.sku.toLowerCase()===v);if(p){addCart(p.id);S.posQ="";render();$("#pos-q").focus()}}};
   const sum=()=>{const el=$("#c-sum");if(el)el.innerHTML=sellSum(cartTotals())};
@@ -1166,12 +1178,19 @@ window.addCart=id=>{const p=S.products.find(x=>x.id===id);if(!p)return;
   if(e)e.qty++;else S.cart.push({pid:id,name:p.name,sku:p.sku,price:p.price,gst:p.gst||0,qty:1,cost:p.cost||0,loc:(locEntries(p)[0]||[])[0]||p.location||""});render()};
 window.cartQty=(ix,d)=>{const i=S.cart[ix],p=S.products.find(x=>x.id===i.pid);const n=i.qty+d;if(n<1){S.cart.splice(ix,1)}else if(n>avail(p)&&!S.settings.allowNegative)return toast(bk(p)?`Only ${avail(p)} available (${bk(p)} booked)`:`Only ${avail(p)} in stock`,1);else i.qty=n;render()};
 window.cartLoc=(ix,v)=>{S.cart[ix].loc=v;render()};
+window.cartOff=(ix,off)=>{S.cart[ix].off=!!off;render()};
+window.cartDisc=(ix,v)=>{S.cart[ix].disc=v===""?"":Math.max(0,num(v));render()};
+window.cartDiscType=(ix,v)=>{S.cart[ix].dt=v;render()};
+window.bkOff=(ix,off)=>{S.bcart[ix].off=!!off;render()};
+window.bkDisc=(ix,v)=>{S.bcart[ix].disc=v===""?"":Math.max(0,num(v));render()};
+window.bkDiscType=(ix,v)=>{S.bcart[ix].dt=v;render()};
 window.cartSet=(ix,v)=>{const i=S.cart[ix],p=S.products.find(x=>x.id===i.pid);let n=Math.max(1,Math.floor(num(v)));if(n>avail(p)&&!S.settings.allowNegative){n=avail(p);toast(bk(p)?`Only ${avail(p)} available (${bk(p)} booked)`:`Only ${avail(p)} in stock`,1)}i.qty=n;render()};
 
 async function completeSale(){
   const btn=$("#c-done");btn.disabled=true;btn.textContent="Saving…";
   const t=cartTotals(),cust={name:$("#c-name").value.trim(),phone:$("#c-ph").value.trim()},pay=$("#c-pay").value;
-  const cart=S.cart.map(i=>({...i}));
+  const cart=onLines(S.cart).map(i=>({...i}));
+  if(!cart.length){btn.disabled=false;btn.textContent="Complete sale";return toast("Tick at least one item to bill",1)}
   let dated;
   try{dated=datedAs($("#c-date")?$("#c-date").value:"")}
   catch(e){btn.disabled=false;btn.textContent="Complete sale";return toast(e.message,1)}
@@ -1192,13 +1211,13 @@ async function completeSale(){
       snaps.forEach((s,ix)=>{const c=cart[ix],cur=s.data().qty,t=takeAt(locMapOf(s.data()),c.qty,c.loc);
         tx.update(refs[ix],{qty:cur-c.qty,locQty:t.map,location:primaryLoc(t.map)||s.data().location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
         tx.set(doc(collection(db,"movements")),{...mv(c.pid,c.name,c.sku,"sale",-c.qty,cur,cur-c.qty,inv+" · from "+t.used.map(u=>`${u[0]} (${u[1]})`).join(", ")),fromLoc:t.used.map(u=>u[0]).join(", "),toLoc:""})});
-      tx.set(sr,{invoiceNo:inv,items:cart.map(i=>({pid:i.pid,sku:i.sku,name:i.name,price:i.price,qty:i.qty,gst:i.gst,cost:i.cost,takenFrom:i.loc||"",lineTotal:Math.round(i.price*i.qty*100)/100})),
-        subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,customer:cust,customerId,payment:pay,status:"completed",
+      tx.set(sr,{invoiceNo:inv,items:cart.map(savedLine),
+        subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,customer:cust,customerId,payment:pay,status:"completed",
         soldBy:S.user.uid,soldByName:S.profile.name,...dated});
     });
     S.cart=[];S.cartDiscount=0;S.cust=null;S.posQ="";S.saleOn="";
     toast("Sale "+inv+" saved");render();
-    printReceipt({invoiceNo:inv,items:cart,subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,customer:cust,payment:pay,soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
+    printReceipt({invoiceNo:inv,items:cart.map(savedLine),subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,customer:cust,payment:pay,soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
   }catch(e){toast(e.message||"Couldn't save — are you online?",1);btn.disabled=false;btn.textContent="Complete sale"}
 }
 window.printReceipt=function(s){
@@ -1206,8 +1225,8 @@ window.printReceipt=function(s){
   w.document.write(`<html><head><title>${esc(s.invoiceNo)}</title><style>body{font:13px monospace;width:300px;margin:8px auto}h2{text-align:center;margin:0}.c{text-align:center}.r{display:flex;justify-content:space-between}.m{font-size:11px;color:#444}hr{border:0;border-top:1px dashed #000}</style></head><body>
   <h2>${esc(st.storeName)}</h2><div class="c">${esc(st.address||"")}<br>${st.phone?"Ph: "+esc(st.phone):""}${st.gstin?"<br>GSTIN: "+esc(st.gstin):""}</div><hr>
   <div class="r"><span>${esc(s.invoiceNo)}</span><span>${fdt(tms(s.createdAt))}</span></div>${s.customer?.name?`<div>Customer: ${esc(s.customer.name)} ${esc(s.customer.phone||"")}</div>`:""}<hr>
-  ${s.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${i.qty} × ${inr(i.price)}</span><span>${inr(i.price*i.qty)}</span></div>`).join("")}<hr>
-  <div class="r"><span>Subtotal</span><span>${inr(s.subtotal)}</span></div>${s.discount?`<div class="r"><span>Discount</span><span>-${inr(s.discount)}</span></div>`:""}
+  ${s.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${i.qty} × ${inr(i.price)}${num(i.disc)?" less "+inr(num(i.disc)):""}</span><span>${inr(i.lineTotal??lineNet(i))}</span></div>`).join("")}<hr>
+  <div class="r"><span>Subtotal</span><span>${inr(s.subtotal)}</span></div>${num(s.itemDiscount)?`<div class="r"><span>Item discounts</span><span>-${inr(s.itemDiscount)}</span></div>`:""}${s.discount?`<div class="r"><span>Discount</span><span>-${inr(s.discount)}</span></div>`:""}
   <div class="r"><span>GST included</span><span>${inr(s.gstAmount)}</span></div><div class="r"><b>TOTAL</b><b>${inr(s.total)}</b></div>${s.advance?`<div class="r"><span>Already received${s.bookingNo?" ("+esc(s.bookingNo)+")":""}</span><span>-${inr(s.advance)}</span></div><div class="r"><b>PAID NOW</b><b>${inr(s.balancePaid??(s.total-s.advance))}</b></div>`:""}${s.balanceLeft>0?`<div class="r"><b>STILL PENDING</b><b>${inr(s.balanceLeft)}</b></div>`:""}<div>Paid by: ${esc(s.payment)}</div><hr>
   <div class="c">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),300)<\/script></body></html>`);w.document.close();
 };
@@ -1218,7 +1237,7 @@ function vSales(el){
   const day=S.salesDay||dkey(),mon=S.salesMonth||dkey().slice(0,7);
   const L=byMonth?S.sales.filter(s=>String(s.dateKey||"").startsWith(mon)):S.sales.filter(s=>!day||s.dateKey===day);
   const ok=L.filter(s=>s.status!=="void");const tot=ok.reduce((a,s)=>a+s.total,0);
-  const prof=ok.reduce((a,s)=>a+s.items.reduce((b,i)=>b+(i.price*i.qty-(i.cost||0)*i.qty),0)-s.discount,0);
+  const prof=ok.reduce((a,s)=>a+s.items.reduce((b,i)=>b+(num(i.lineTotal??lineNet(i))-num(i.cost)*num(i.qty)),0)-num(s.discount),0);
   el.innerHTML=`<div class="top"><h2>Sales</h2><div class="row">
    <select id="srange" style="width:auto"><option value="day" ${byMonth?"":"selected"}>A day</option><option value="month" ${byMonth?"selected":""}>A month</option></select>
    ${byMonth?`<input type="month" id="sm" value="${esc(mon)}" style="width:auto">`:`<input type="date" id="sd" value="${day}" style="width:auto">`}
@@ -1256,14 +1275,36 @@ async function doVoidSale(id){
 /* ---------- One invoice, in full ----------
    Totals work exactly like the counter does: the discount is spread across the lines in
    proportion to their value, and GST is taken as already included in the price. */
+const lineGross=i=>r2(num(i.price)*num(i.qty));
+const lineDisc=i=>{const g=lineGross(i);
+  return r2(i.dt==="pct"?g*Math.min(100,Math.max(0,num(i.disc)))/100:Math.min(g,Math.max(0,num(i.disc))))};
+const lineNet=i=>r2(lineGross(i)-lineDisc(i));
+const onLines=items=>(items||[]).filter(i=>!i.off);           // an unticked line is not on the bill
+const netOf=items=>r2(onLines(items).reduce((a,i)=>a+lineNet(i),0));
 function sumItems(items,disc){
-  const gross=r2(items.reduce((a,i)=>a+num(i.price)*num(i.qty),0));
-  const d=Math.min(gross,Math.max(0,r2(disc)));
-  const total=r2(gross-d);
-  let gst=0;items.forEach(i=>{const share=gross?num(i.price)*num(i.qty)/gross:0;const line=num(i.price)*num(i.qty)-d*share;gst+=line-line/(1+num(i.gst)/100)});
+  const L=onLines(items);
+  const gross=r2(L.reduce((a,i)=>a+lineGross(i),0));
+  const itemDisc=r2(L.reduce((a,i)=>a+lineDisc(i),0));
+  const net=r2(gross-itemDisc);
+  const d=Math.min(net,Math.max(0,r2(disc)));
+  const total=r2(net-d);
+  let gst=0;L.forEach(i=>{const n=lineNet(i);const share=net?n/net:0;const line=n-d*share;gst+=line-line/(1+num(i.gst)/100)});
   gst=r2(gst);
-  return{gross,disc:d,total,gst,taxable:r2(total-gst)};
+  return{gross,itemDisc,net,disc:d,total,gst,taxable:r2(total-gst)};
 }
+/* The line as it is written into a sale or booking: the discount resolved to rupees and the
+   amount actually charged, so every screen and print can read lineTotal and be right. */
+const savedLine=i=>{const d=lineDisc(i);return{pid:i.pid,sku:i.sku,name:i.name,price:i.price,qty:i.qty,
+  gst:i.gst,cost:i.cost,...(i.loc!==undefined?{takenFrom:i.loc||""}:{}),
+  ...(d?{disc:d}:{}),lineTotal:lineNet(i)}};
+/* The pair of controls on a cart line: tick it on or off, and discount it on its own. */
+const lineControls=(i,ix,fn)=>`<label class="linetick" title="Untick to leave this item off the bill">
+   <input type="checkbox" ${i.off?"":"checked"} onchange="${fn}Off(${ix},!this.checked)"> <span>On the bill</span></label>
+  <div class="linedisc"><span class="small mute">Less</span>
+   <input type="number" min="0" step="0.01" value="${i.disc??""}" placeholder="0" onchange="${fn}Disc(${ix},this.value)" onclick="event.stopPropagation()">
+   <select onchange="${fn}DiscType(${ix},this.value)"><option value="amt" ${i.dt==="pct"?"":"selected"}>₹</option><option value="pct" ${i.dt==="pct"?"selected":""}>%</option></select>
+   ${lineDisc(i)?`<span class="small" style="color:var(--ok)">− ${inr(lineDisc(i))}</span>`:""}</div>`;
+const dline=i=>num(i.disc)?` <span class="mute">(less ${inr(num(i.disc))})</span>`:"";   // the line's own discount, where there is one
 const histRows=log=>(log||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0)).map(x=>
   `<div style="padding:7px 0;border-bottom:1px solid var(--line)">${esc(x.what||"Changed")}<br><span class="small mute">${x.t?fdt(x.t):""} · ${esc(x.by||"")}${x.why?" · "+esc(x.why):""}</span></div>`).join("");
 function vSale(el){
@@ -1278,7 +1319,8 @@ function vSale(el){
    ...(bg?[["Against booking",`<a href="#booking/${bg.id}">${esc(bg.bookingNo)}</a> <span class="small mute">· goods were charged when the booking was taken</span>`]]:[]),
    ["Status",dead?`<span class="tag out">void</span>${s.voidedBy?` <span class="small mute">by ${esc(s.voidedBy)}</span>`:""}`:`<span class="tag ok">completed</span>`],
    ...(s.editedBy?[["Last corrected",`${esc(s.editedBy)} · ${fdt(tms(s.editedAt))}`]]:[])];
-  const T=[["Subtotal",inr(s.subtotal)],...(num(s.discount)?[["Discount","− "+inr(s.discount)]]:[]),
+  const T=[["Subtotal",inr(s.subtotal)],...(num(s.itemDiscount)?[["Item discounts","− "+inr(s.itemDiscount)]]:[]),
+   ...(num(s.discount)?[["Discount on the bill","− "+inr(s.discount)]]:[]),
    ["GST included",inr(s.gstAmount)],["Bill total",`<b style="font-size:18px">${inr(s.total)}</b>`],
    ...(adv?[["Already received before this bill",inr(adv)],["Collected on this bill",inr(got)]]:[]),
    ...(left>0?[["Still pending",`<span style="color:var(--bad)">${inr(left)}</span>`]]:[])];
@@ -1296,7 +1338,7 @@ function vSale(el){
      return `<tr><td data-l="Item"><span class="row" style="flex-wrap:nowrap">${p?thumb(p,38):""}<span>${plink(i.pid,i.name)}<br><span class="small mute">${esc(i.sku)}${p&&dimText(p)?" · 📐 "+esc(dimText(p)):""}${lineCat(i)?" · "+esc(lineCat(i)):""}</span></span></span></td>
     <td data-l="Qty" class="n">${qtyText(i.qty,p?p.unit:"pcs")}</td><td data-l="Rate" class="n">${inr(i.price)}</td>
     <td data-l="GST" class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td data-l="Taken from" class="small">${esc(i.takenFrom||"—")}</td>
-    <td data-l="Amount" class="n">${inr(i.lineTotal??num(i.price)*num(i.qty))}</td></tr>`}).join("")
+    <td data-l="Amount" class="n">${dline(i)}${inr(i.lineTotal??lineNet(i))}</td></tr>`}).join("")
     ||`<tr><td colspan="6" class="mute">No items on this bill.</td></tr>`}
    </tbody><tfoot><tr><th colspan="5" data-l="">Bill total</th><th data-l="Bill total" class="n">${inr(s.total)}</th></tr></tfoot></table></div>
   ${log.length?`<div class="card" style="margin-top:12px"><h3 style="margin-bottom:6px">Corrections (${log.length})</h3>${histRows(log)}</div>`:""}`;
@@ -1319,13 +1361,14 @@ window.openSaleEdit=function(id){
     $("#es-body").innerHTML=`
      ${linked?`<div class="card" style="padding:10px 12px;margin-bottom:10px"><b>This bill came from booking ${esc(s.bookingNo||"")}.</b>
        <span class="mute small">The items and the order value belong to the booking, so they stay as they are. Correct what was collected on delivery here.</span></div>`:""}
-     <table class="resp"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate (₹)</th><th class="n">Amount</th>${linked?"":"<th></th>"}</tr></thead><tbody>
+     <table class="resp"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate (₹)</th><th class="n">Less (₹)</th><th class="n">Amount</th>${linked?"":"<th></th>"}</tr></thead><tbody>
      ${E.items.map((i,ix)=>`<tr><td data-l="Item"><div style="text-align:left">${esc(i.name)}<br><span class="small mute">${esc(i.sku)}${i.takenFrom?" · from "+esc(i.takenFrom):""}</span></div></td>
        <td data-l="Qty" class="n">${linked?i.qty:`<input type="number" min="0" step="1" value="${i.qty}" style="width:70px" onchange="esSet(${ix},'qty',this.value)">`}</td>
        <td data-l="Rate" class="n">${linked?inr(i.price):`<input type="number" min="0" step="0.01" value="${i.price}" style="width:95px" onchange="esSet(${ix},'price',this.value)">`}</td>
-       <td data-l="Amount" class="n">${inr(num(i.price)*num(i.qty))}</td>
+       <td data-l="Less" class="n">${linked?(num(i.disc)?inr(num(i.disc)):"—"):`<input type="number" min="0" step="0.01" value="${num(i.disc)||""}" placeholder="0" style="width:85px" onchange="esSet(${ix},'disc',this.value)">`}</td>
+       <td data-l="Amount" class="n">${inr(lineNet(i))}</td>
        ${linked?"":`<td><button class="btn sm sec" onclick="S.es.items.splice(${ix},1);esDraw()">✕</button></td>`}</tr>`).join("")
-      ||`<tr><td colspan="5" class="mute">Every item removed — a bill needs at least one, or void it instead.</td></tr>`}
+      ||`<tr><td colspan="6" class="mute">Every item removed — a bill needs at least one, or void it instead.</td></tr>`}
      </tbody></table>
      ${linked?"":`<label style="margin-top:10px">Add an item to this bill</label>
      <input id="es-q" placeholder="Search a product by name, SKU or size…" value="${esc(E.q)}">
@@ -1337,7 +1380,8 @@ window.openSaleEdit=function(id){
       <div class="full"><label>Reason for the correction</label><input id="es-why" placeholder="Wrong quantity billed, rate revised…" value="${esc(E.why||"")}"></div></div>
      <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">
       <div class="row" style="justify-content:space-between"><span class="mute">Subtotal</span><span>${inr(t.gross)}</span></div>
-      ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount</span><span>− ${inr(t.disc)}</span></div>`:""}
+      ${t.itemDisc?`<div class="row" style="justify-content:space-between"><span class="mute">Item discounts</span><span>− ${inr(t.itemDisc)}</span></div>`:""}
+      ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount on the bill</span><span>− ${inr(t.disc)}</span></div>`:""}
       <div class="row" style="justify-content:space-between"><span class="mute">incl. GST</span><span>${inr(t.gst)}</span></div>
       <div class="row" style="justify-content:space-between;font-size:19px;font-weight:700"><span>Bill total</span><span>${inr(linked?num(s.total):t.total)}</span></div>
       ${linked?`<div class="row" style="justify-content:space-between"><span class="mute">Already received before this bill</span><span>${inr(num(s.advance))}</span></div>
@@ -1383,8 +1427,11 @@ async function saveSaleEdit(){
       await b.commit();
       closeModal();toast("Invoice corrected");render();return;
     }
-    const items=E.items.filter(i=>Math.floor(num(i.qty))>0).map(i=>({...i,qty:Math.floor(num(i.qty)),price:r2(num(i.price)),
-      lineTotal:r2(Math.floor(num(i.qty))*r2(num(i.price)))}));
+    const items=E.items.filter(i=>Math.floor(num(i.qty))>0).map(i=>{
+      const row={...i,qty:Math.floor(num(i.qty)),price:r2(num(i.price)),disc:r2(num(i.disc))};
+      if(row.disc>r2(row.price*row.qty))throw new Error(`The discount on ${row.name} is more than the line is worth`);
+      if(!row.disc)delete row.disc;
+      return{...row,lineTotal:lineNet(row)}});
     if(!items.length)throw new Error("A bill needs at least one item — void it instead of emptying it");
     const t=sumItems(items,num($("#es-disc").value));
     if(t.total<=0)throw new Error("The bill total has to be more than zero");
@@ -1406,7 +1453,7 @@ async function saveSaleEdit(){
         tx.update(refs[ix],{qty:cur-x.d,locQty:map,location:primaryLoc(map)||d.location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
         tx.set(doc(collection(db,"movements")),{...mv(x.pid,d.name,d.sku,x.d>0?"sale":"return",-x.d,cur,cur-x.d,
           `${s.invoiceNo} corrected by ${S.profile.name}${why?" · "+why:""}`),fromLoc:x.d>0?(x.loc||""):"",toLoc:x.d<0?(x.loc||""):""})});
-      tx.update(sr,{items,subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,payment:$("#es-pay").value,
+      tx.update(sr,{items,subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,payment:$("#es-pay").value,
         editLog:stamp(`Bill changed from ${inr(num(s.total))} to ${inr(t.total)}`),
         editedAt:serverTimestamp(),editedBy:S.profile.name,editedByUid:S.user.uid});
     });
@@ -1431,10 +1478,11 @@ window.printInvoice=id=>{
    ${fdt(tms(s.createdAt))} · ${esc(s.payment||"")}${s.bookingNo?" · against booking "+esc(s.bookingNo):""} · billed by ${esc(s.soldByName||"")}</div>
   <table><thead><tr><th>#</th><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">GST</th><th class="n">Amount</th></tr></thead><tbody>
   ${s.items.map((i,ix)=>`<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span></td><td class="n">${i.qty}</td>
-   <td class="n">${inr(i.price)}</td><td class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td class="n">${inr(i.lineTotal??num(i.price)*num(i.qty))}</td></tr>`).join("")}
+   <td class="n">${inr(i.price)}${num(i.disc)?`<br><span class="m">less ${inr(num(i.disc))}</span>`:""}</td><td class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td class="n">${inr(i.lineTotal??lineNet(i))}</td></tr>`).join("")}
   </tbody><tfoot>
    <tr><th colspan="5">Subtotal</th><th class="n">${inr(s.subtotal)}</th></tr>
-   ${num(s.discount)?`<tr><th colspan="5">Discount</th><th class="n">− ${inr(s.discount)}</th></tr>`:""}
+   ${num(s.itemDiscount)?`<tr><th colspan="5">Item discounts</th><th class="n">− ${inr(s.itemDiscount)}</th></tr>`:""}
+   ${num(s.discount)?`<tr><th colspan="5">Discount on the bill</th><th class="n">− ${inr(s.discount)}</th></tr>`:""}
    <tr><th colspan="5">GST included</th><th class="n">${inr(s.gstAmount)}</th></tr>
    <tr><th colspan="5">Total</th><th class="n">${inr(s.total)}</th></tr>
    ${adv?`<tr><th colspan="5">Already received</th><th class="n">${inr(adv)}</th></tr><tr><th colspan="5">Paid on this bill</th><th class="n">${inr(got)}</th></tr>`:""}
@@ -1486,7 +1534,7 @@ function custLedger(c){
     const adv=num(b.advance),items=b.items.map(i=>`${i.name} ×${i.qty}`).join(", ");
     ev.push({ms:tms(b.createdAt),kind:"booking",ref:b.bookingNo,link:`#booking/${b.id}`,status:b.status,
       what:`Booking ${b.bookingNo}`,
-      detail:items+(num(b.discount)?` · ${inr(b.discount)} discount`:"")+(b.status==="booked"&&b.deliveryDate?` · delivery ${b.deliveryDate}`:"")+(adv?` · booking amount ${inr(adv)} received`:""),
+      detail:items+(num(b.itemDiscount)?` · ${inr(b.itemDiscount)} item discounts`:"")+(num(b.discount)?` · ${inr(b.discount)} discount`:"")+(b.status==="booked"&&b.deliveryDate?` · delivery ${b.deliveryDate}`:"")+(adv?` · booking amount ${inr(adv)} received`:""),
       charge:num(b.total),paid:adv});
     if(b.status==="cancelled"){
       const sm=b.settleMode||"credit",sa=settleAmt(b);
@@ -2350,10 +2398,11 @@ function vApprovals(el){
 window.bookFor=id=>{const c=S.customers.find(x=>x.id===id);S.bcart=[];S.badv=0;S.bdisc=0;S.bdiscType="amt";S.bnotes="";S.bq="";S.bdate="";
   S.bcustId=id||"";S.bphone=c?.phone||"";S.bname=c?.name||"";setView("newbooking")};
 const discAmt=(gross,v,type)=>r2(type==="pct"?gross*Math.min(100,Math.max(0,num(v)))/100:Math.min(gross,Math.max(0,num(v))));
-const bkTotals=(cart,disc,type)=>sumItems(cart,discAmt(r2(cart.reduce((a,i)=>a+num(i.price)*num(i.qty),0)),disc,type));
+const bkTotals=(cart,disc,type)=>sumItems(cart,discAmt(netOf(cart),disc,type));
 const bkSum=(t,adv)=>`<div class="row" style="justify-content:space-between"><span class="mute">Items</span><span>${inr(t.gross)}</span></div>
-  ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount</span><span>− ${inr(t.disc)}</span></div>
-  <div class="row" style="justify-content:space-between"><span class="mute">Order value</span><span>${inr(t.total)}</span></div>`:""}
+  ${t.itemDisc?`<div class="row" style="justify-content:space-between"><span class="mute">Item discounts</span><span>− ${inr(t.itemDisc)}</span></div>`:""}
+  ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount on the order</span><span>− ${inr(t.disc)}</span></div>`:""}
+  ${t.disc||t.itemDisc?`<div class="row" style="justify-content:space-between"><span class="mute">Order value</span><span>${inr(t.total)}</span></div>`:""}
   <div class="row" style="justify-content:space-between"><span class="mute">incl. GST</span><span>${inr(t.gst)}</span></div>
   <div class="row" style="justify-content:space-between"><span class="mute">Booking amount</span><span>− ${inr(adv)}</span></div>
   <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Balance due</span><span>${inr(Math.max(0,r2(t.total-num(adv))))}</span></div>`;
@@ -2366,11 +2415,13 @@ function vNewBooking(el){
   <div class="pos"><div><input id="bk-q" placeholder="Scan barcode or search products…" value="${esc(S.bq)}" style="margin-bottom:10px">
    <div class="items">${L.map(p=>`<button class="item" onclick="addBk('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""}${catLine(p)?" · "+esc(catLine(p)):""}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Booking (${S.bcart.length} item${S.bcart.length===1?"":"s"})</h3>
-   ${S.bcart.map((i,ix)=>`<div class="cartline"><div><b>${esc(i.name)}</b><br><span class="small mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}<br>${inr(i.price)} each</span></div><div style="text-align:right"><b>${inr(i.price*i.qty)}</b></div>
-    <div class="qty"><button onclick="bkQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="bkSet(${ix},this.value)"><button onclick="bkQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.bcart.splice(${ix},1);render()">Remove</button></div></div>`).join("")||`<p class="mute">Tap a product to add it.</p>`}
+   ${S.bcart.map((i,ix)=>`<div class="cartline${i.off?" off":""}"><div><b>${esc(i.name)}</b><br><span class="small mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}<br>${inr(i.price)} each</span></div><div style="text-align:right"><b class="lineamt">${inr(lineNet(i))}</b></div>
+    <div class="qty"><button onclick="bkQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="bkSet(${ix},this.value)"><button onclick="bkQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.bcart.splice(${ix},1);render()">Remove</button></div>
+    ${lineControls(i,ix,"bk")}</div>`).join("")||`<p class="mute">Tap a product to add it.</p>`}
+   ${S.bcart.length&&onLines(S.bcart).length<S.bcart.length?`<p class="small" style="color:var(--warn);margin-top:6px">${S.bcart.length-onLines(S.bcart).length} item(s) unticked — they are not in this booking and will not be reserved.</p>`:""}
    ${S.bcart.length?`<p class="small mute" style="margin-top:6px">Keep searching to put more products in the same booking.</p>`:""}
    <div class="f" style="margin-top:10px">
-    <div><label>Discount</label><div class="row" style="flex-wrap:nowrap"><input id="bk-disc" type="number" min="0" step="0.01" value="${S.bdisc||""}"><select id="bk-dt" style="width:80px"><option value="amt" ${S.bdiscType==="amt"?"selected":""}>₹</option><option value="pct" ${S.bdiscType==="pct"?"selected":""}>%</option></select></div></div>
+    <div><label>Discount on the whole order</label><div class="row" style="flex-wrap:nowrap"><input id="bk-disc" type="number" min="0" step="0.01" value="${S.bdisc||""}"><select id="bk-dt" style="width:80px"><option value="amt" ${S.bdiscType==="amt"?"selected":""}>₹</option><option value="pct" ${S.bdiscType==="pct"?"selected":""}>%</option></select></div></div>
     <div><label>Customer phone *</label><input id="bk-ph" inputmode="tel" list="bk-phl" value="${esc(S.bphone)}"><datalist id="bk-phl">${S.customers.slice(0,400).map(c=>`<option value="${esc(c.phone)}">${esc(c.name)}</option>`).join("")}</datalist></div>
     <div><label>Customer name *</label><input id="bk-name" value="${esc(S.bname)}"></div>
     <div class="full small" id="bk-cinfo"></div>
@@ -2380,7 +2431,7 @@ function vNewBooking(el){
     <div class="full"><label>Notes</label><input id="bk-notes" value="${esc(S.bnotes)}" placeholder="Fabric choice, floor, delivery instructions…"></div></div>
    <div id="bk-sum" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">${bkSum(t,num(S.badv))}</div>
    <p class="small mute" style="margin-top:8px">Booked items stay in stock but are reserved, so they can't be sold twice.</p>
-   <button class="btn" style="width:100%;margin-top:8px;padding:12px" id="bk-done" ${S.bcart.length?"":"disabled"}>Confirm booking</button></div></div>`;
+   <button class="btn" style="width:100%;margin-top:8px;padding:12px" id="bk-done" ${onLines(S.bcart).length?"":"disabled"}>Confirm booking</button></div></div>`;
   const q2=$("#bk-q");q2.oninput=()=>{S.bq=q2.value;clearTimeout(vNewBooking.t);vNewBooking.t=setTimeout(()=>{render();const n=$("#bk-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},150)};
   q2.onkeydown=e=>{if(e.key==="Enter"){const v=q2.value.trim().toLowerCase();const p=S.products.find(x=>(x.barcode&&x.barcode.toLowerCase()===v)||x.sku.toLowerCase()===v);if(p){addBk(p.id);S.bq="";render();$("#bk-q").focus()}}};
   const keep=()=>{S.bphone=$("#bk-ph").value;S.bname=$("#bk-name").value;S.badv=num($("#bk-adv").value);S.bdate=$("#bk-date").value;S.bnotes=$("#bk-notes").value;
@@ -2417,7 +2468,8 @@ async function createBooking(){
   let dated;
   try{dated=datedAs($("#bk-on")?$("#bk-on").value:"")}catch(e){return toast(e.message,1)}
   btn.disabled=true;btn.textContent="Saving…";
-  const cart=S.bcart.map(i=>({...i}));
+  const cart=onLines(S.bcart).map(i=>({...i}));
+  if(!cart.length){btn.disabled=false;btn.textContent="Confirm booking";return toast("Tick at least one item to book",1)}
   try{
     let customerId=S.bcustId||findCustByPhone(phone)?.id||"";
     if(!customerId){const r=doc(collection(db,"customers"));await setDoc(r,{name,phone,email:"",address:"",notes:"",createdAt:serverTimestamp(),createdBy:S.user.uid});customerId=r.id}
@@ -2432,8 +2484,8 @@ async function createBooking(){
       const n=(cs.exists()?cs.data().n:0)+1;bno="BK-"+String(n).padStart(5,"0");tx.set(cr,{n});
       snaps.forEach((s,ix)=>tx.update(refs[ix],{booked:Math.max(0,+s.data().booked||0)+cart[ix].qty,updatedAt:serverTimestamp(),updatedBy:S.user.uid}));
       tx.set(doc(collection(db,"bookings")),{bookingNo:bno,customerId,customerName:name,customerPhone:phone,
-        items:cart.map(i=>({pid:i.pid,sku:i.sku,name:i.name,price:i.price,qty:i.qty,gst:i.gst,cost:i.cost,lineTotal:Math.round(i.price*i.qty*100)/100})),
-        subtotal:t.gross,discount:t.disc,total:t.total,gstAmount:t.gst,advance:adv,balance:r2(t.total-adv),deliveryDate:date||"",notes,status:"booked",
+        items:cart.map(savedLine),
+        subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,advance:adv,balance:r2(t.total-adv),deliveryDate:date||"",notes,status:"booked",
         createdBy:S.user.uid,createdByName:S.profile.name,...dated});
     });
     S.bcart=[];S.badv=0;S.bdisc=0;S.bdiscType="amt";S.bnotes="";S.bdate="";S.bphone="";S.bname="";S.bcustId="";S.bookedOn="";
@@ -2461,8 +2513,8 @@ function vBookings(el){
   <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Booking</th><th>Customer</th><th>Items</th><th class="n">Amounts</th><th>Delivery</th><th></th></tr></thead><tbody>
   ${L.slice(0,200).map(b=>`<tr><td data-l="Booking"><a href="#booking/${b.id}"><b>${esc(b.bookingNo)}</b></a>${backTag(b)} <span class="tag ${b.status==="booked"?"low":b.status==="delivered"?"ok":"out"}">${esc(b.status)}</span><br><span class="small mute">${fdt(tms(b.createdAt))} · ${esc(b.createdByName||"")}</span></td>
    <td data-l="Customer">${esc(b.customerName)}<br><a class="small" href="tel:${esc(b.customerPhone)}">${esc(b.customerPhone)}</a></td>
-   <td data-l="Items" class="small">${b.items.slice(0,4).map(i=>`<div style="padding:2px 0">${plink(i.pid,i.name)}<br><span class="mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span><br><span class="mute">${i.qty} × ${inr(i.price)} = <b style="color:var(--ink)">${inr(i.lineTotal??i.price*i.qty)}</b></span></div>`).join("")}${b.items.length>4?`<div class="mute">+ ${b.items.length-4} more item(s)</div>`:""}</td>
-   <td data-l="Amounts" class="n small">${num(b.discount)?`<div class="mute">Items ${inr(b.subtotal??b.total)}</div><div class="mute">Discount − ${inr(b.discount)}</div>`:""}
+   <td data-l="Items" class="small">${b.items.slice(0,4).map(i=>`<div style="padding:2px 0">${plink(i.pid,i.name)}<br><span class="mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span><br><span class="mute">${i.qty} × ${inr(i.price)}${num(i.disc)?" less "+inr(num(i.disc)):""} = <b style="color:var(--ink)">${inr(i.lineTotal??lineNet(i))}</b></span></div>`).join("")}${b.items.length>4?`<div class="mute">+ ${b.items.length-4} more item(s)</div>`:""}</td>
+   <td data-l="Amounts" class="n small">${num(b.discount)||num(b.itemDiscount)?`<div class="mute">Items ${inr(b.subtotal??b.total)}</div>${num(b.itemDiscount)?`<div class="mute">Item discounts − ${inr(b.itemDiscount)}</div>`:""}${num(b.discount)?`<div class="mute">Discount − ${inr(b.discount)}</div>`:""}`:""}
     <div><b style="font-size:14px">${inr(b.total)}</b> <span class="mute">order value</span></div>
     <div class="mute">received ${inr(bkReceived(b))}</div>
     ${b.status==="cancelled"
@@ -2481,7 +2533,9 @@ function vBooking(el){
   const R=[["Booking no.",esc(b.bookingNo)+backTag(b)],
    ...(b.backdated?[["Entered",`${b.enteredAt?fdt(tms(b.enteredAt)):"later"}${b.enteredBy?" by "+esc(b.enteredBy):""} — the booking is dated ${esc(b.dateKey||"")}`]]:[]),["Status",`<span class="tag ${b.status==="booked"?"low":b.status==="delivered"?"ok":"out"}">${esc(b.status)}</span>`],
    ["Customer",`${esc(b.customerName)} · <a href="tel:${esc(b.customerPhone)}">${esc(b.customerPhone)}</a>${b.customerId?` · <a href="#customer/${b.customerId}">open customer</a>`:""}`],
-   ...(num(b.discount)?[["Items",inr(b.subtotal??b.total)],["Discount","− "+inr(b.discount)]]:[]),
+   ...(num(b.discount)||num(b.itemDiscount)?[["Items",inr(b.subtotal??b.total)],
+     ...(num(b.itemDiscount)?[["Item discounts","− "+inr(b.itemDiscount)]]:[]),
+     ...(num(b.discount)?[["Discount on the order","− "+inr(b.discount)]]:[])]:[]),
    ["Order value",inr(b.total)],["GST included",inr(b.gstAmount)],["Booking amount at booking",inr(b.advance)],
    ["Received so far",`${inr(recd)}${pays.length?` <span class="small mute">(${pays.length} later payment${pays.length===1?"":"s"})</span>`:""}`],
    ...(b.status==="delivered"&&num(b.collectedOnDelivery)?[["Collected on delivery",inr(b.collectedOnDelivery)]]:[]),
@@ -2506,7 +2560,7 @@ function vBooking(el){
     <div class="row" style="justify-content:space-between;padding:9px 0;font-weight:700"><span>${b.status==="cancelled"?"Order reversed":"Balance due"}</span><span style="color:${b.status==="cancelled"?"var(--mute)":bal>0?"var(--bad)":"var(--ok)"}">${b.status==="cancelled"?(settleAmt(b)?inr(settleAmt(b))+" "+esc(SETTLE_LABEL[b.settleMode||"credit"]||""):"—"):inr(bal)}</span></div>
     ${b.status!=="cancelled"&&bal>0?`<button class="btn" style="width:100%" onclick="openPayment('${b.customerId}','${b.id}')">+ Record payment</button>`:""}</div>
    <div class="card"><h3 style="margin-bottom:8px">Items</h3>
-    ${b.items.map(i=>{const p=S.products.find(x=>x.id===i.pid);return `<div class="row" style="flex-wrap:nowrap;align-items:flex-start;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)"><span class="row" style="flex-wrap:nowrap;align-items:flex-start">${p?thumb(p,38):""}<span>${plink(i.pid,i.name)}<br><span class="small mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}<br>${i.qty} × ${inr(i.price)}</span></span></span><b style="white-space:nowrap">${inr(i.lineTotal??i.price*i.qty)}</b></div>`}).join("")}</div></div>`;
+    ${b.items.map(i=>{const p=S.products.find(x=>x.id===i.pid);return `<div class="row" style="flex-wrap:nowrap;align-items:flex-start;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)"><span class="row" style="flex-wrap:nowrap;align-items:flex-start">${p?thumb(p,38):""}<span>${plink(i.pid,i.name)}<br><span class="small mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}<br>${i.qty} × ${inr(i.price)}${num(i.disc)?" less "+inr(num(i.disc)):""}</span></span></span><b style="white-space:nowrap">${inr(i.lineTotal??lineNet(i))}</b></div>`}).join("")}</div></div>`;
 }
 window.settleCancelled=id=>{
   if(!isAdmin())return toast("Only an admin can settle a cancelled booking",1);
@@ -2542,10 +2596,10 @@ window.settleCancelled=id=>{
 window.editBooking=id=>{
   if(!can("editBooking"))return toast("You don't have permission to change a saved booking",1);
   const b=S.bookings.find(x=>x.id===id);if(!b)return;
-  const gross=r2(num(b.subtotal??b.total));
+  const t0=sumItems(b.items,0),gross=t0.gross;
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:480px"><h3>Edit ${esc(b.bookingNo)}</h3>
-  <div class="grid">${isAdmin()?`<div><label>Discount (₹)</label><input id="eb-disc" type="number" min="0" step="0.01" value="${num(b.discount)||""}">
-    <span class="small mute">Items come to ${inr(gross)}. The order value is what is left after the discount.</span></div>`:""}
+  <div class="grid">${isAdmin()?`<div><label>Discount on the whole order (₹)</label><input id="eb-disc" type="number" min="0" step="0.01" value="${num(b.discount)||""}">
+    <span class="small mute">Items come to ${inr(gross)}${t0.itemDisc?`, less ${inr(t0.itemDisc)} already given on individual items — ${inr(t0.net)}`:""}. The order value is what is left after this discount.</span></div>`:""}
    <div><label>Booking amount received (₹)</label><input id="eb-adv" type="number" min="0" step="0.01" value="${b.advance||""}"></div>
    <div><label>Tentative delivery date</label><input id="eb-date" type="date" value="${esc(b.deliveryDate||"")}"></div>
    <div><label>Notes</label><textarea id="eb-no" rows="2">${esc(b.notes||"")}</textarea></div></div>
@@ -2555,11 +2609,11 @@ window.editBooking=id=>{
     const d={deliveryDate:$("#eb-date").value,notes:$("#eb-no").value.trim(),updatedAt:serverTimestamp(),updatedBy:S.user.uid};
     let total=num(b.total);
     if($("#eb-disc")){                       // admin only — it moves the order value
-      const disc=Math.min(gross,Math.max(0,num($("#eb-disc").value)));
-      total=r2(gross-disc);
-      if(total<=0)return toast("That discount leaves nothing to charge",1);
+      const disc=Math.min(t0.net,Math.max(0,num($("#eb-disc").value)));
       const t=sumItems(b.items,disc);
-      Object.assign(d,{subtotal:gross,discount:disc,total:t.total,gstAmount:t.gst});
+      total=t.total;
+      if(total<=0)return toast("That discount leaves nothing to charge",1);
+      Object.assign(d,{subtotal:t.gross,itemDiscount:t.itemDisc,discount:disc,total:t.total,gstAmount:t.gst});
     }
     if(adv>total)return toast(`Booking amount is more than the order value (${inr(total)})`,1);
     Object.assign(d,{advance:adv,balance:r2(total-adv)});
@@ -2657,7 +2711,7 @@ async function doDeliver(id,collect,mode,recd,picks){
       snaps.forEach((s,ix)=>{const i=b.items[ix],d=s.data(),cur=+d.qty||0,t=takeAt(locMapOf(d),i.qty,(picks||{})[ix]);
         tx.update(refs[ix],{qty:cur-i.qty,locQty:t.map,location:primaryLoc(t.map)||d.location||"",booked:Math.max(0,(+d.booked||0)-i.qty),updatedAt:serverTimestamp(),updatedBy:S.user.uid});
         tx.set(doc(collection(db,"movements")),{...mv(i.pid,i.name,i.sku,"sale",-i.qty,cur,cur-i.qty,inv+" (booking "+b.bookingNo+") · from "+t.used.map(u=>`${u[0]} (${u[1]})`).join(", ")),fromLoc:t.used.map(u=>u[0]).join(", "),toLoc:""})});
-      tx.set(sr,{invoiceNo:inv,items:b.items,subtotal:num(b.subtotal??b.total),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
+      tx.set(sr,{invoiceNo:inv,items:b.items,subtotal:num(b.subtotal??b.total),itemDiscount:num(b.itemDiscount),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
         taxable:r2(num(b.total)-num(b.gstAmount)),customer:{name:b.customerName,phone:b.customerPhone},customerId:b.customerId||"",
         payment:mode||"Booking balance",status:"completed",advance:r2(recd),balancePaid:r2(collect),bookingId:id,bookingNo:b.bookingNo,
         soldBy:S.user.uid,soldByName:S.profile.name,dateKey:dkey(),createdAt:serverTimestamp()});
@@ -2666,7 +2720,7 @@ async function doDeliver(id,collect,mode,recd,picks){
     closeModal();
     const left=r2(num(b.total)-recd-collect);
     toast(`Delivered — invoice ${inv}${left>0?` · ${inr(left)} still pending`:""}`);
-    printReceipt({invoiceNo:inv,items:b.items,subtotal:num(b.subtotal??b.total),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
+    printReceipt({invoiceNo:inv,items:b.items,subtotal:num(b.subtotal??b.total),itemDiscount:num(b.itemDiscount),discount:num(b.discount),total:num(b.total),gstAmount:num(b.gstAmount),
       customer:{name:b.customerName,phone:b.customerPhone},payment:mode||"Booking balance",advance:r2(recd),balanceLeft:left,bookingNo:b.bookingNo,
       soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
   }catch(e){toast(emsg(e),1);const g=$("#dv-go");if(g){g.disabled=false;g.textContent="Deliver & bill"}}
@@ -2680,8 +2734,8 @@ window.printBooking=id=>{
   <div class="c"><b>BOOKING SLIP</b></div>
   <div class="r"><span>${esc(b.bookingNo)}</span><span>${fdt(tms(b.createdAt))}</span></div>
   <div>${esc(b.customerName)} · ${esc(b.customerPhone)}</div><hr>
-  ${b.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${i.qty} × ${inr(i.price)}</span><span>${inr(i.lineTotal??i.price*i.qty)}</span></div>`).join("")}<hr>
-  ${num(b.discount)?`<div class="r"><span>Items</span><span>${inr(b.subtotal??b.total)}</span></div><div class="r"><span>Discount</span><span>-${inr(b.discount)}</span></div>`:""}
+  ${b.items.map(i=>`<div>${esc(i.name)}</div>${lineCat(i)?`<div class="m">${esc(lineCat(i))}</div>`:""}<div class="r"><span>${i.qty} × ${inr(i.price)}${num(i.disc)?" less "+inr(num(i.disc)):""}</span><span>${inr(i.lineTotal??lineNet(i))}</span></div>`).join("")}<hr>
+  ${num(b.discount)||num(b.itemDiscount)?`<div class="r"><span>Items</span><span>${inr(b.subtotal??b.total)}</span></div>${num(b.itemDiscount)?`<div class="r"><span>Item discounts</span><span>-${inr(b.itemDiscount)}</span></div>`:""}${num(b.discount)?`<div class="r"><span>Discount</span><span>-${inr(b.discount)}</span></div>`:""}`:""}
   <div class="r"><span>Order value</span><span>${inr(b.total)}</span></div>
   <div class="r"><span>Booking amount paid</span><span>${inr(b.advance)}</span></div>
   <div class="r"><b>BALANCE DUE</b><b>${inr(bal)}</b></div>
@@ -3221,13 +3275,13 @@ window.exportSales=async()=>{
         ["subtotal",12,MONEY],["discount",12,MONEY],["gst_included",13,MONEY],["advance",12,MONEY],["total",12,MONEY],["booking",14],["sold_by",18]],
        rows:L.map(s=>({invoice:s.invoiceNo,date:s.dateKey,time:new Date(tms(s.createdAt)).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}),
         customer:s.customer?.name||"Walk-in",phone:String(s.customer?.phone||""),payment:s.payment,status:s.status||"completed",
-        items:s.items.map(i=>`${i.name} x${i.qty}`).join("; "),subtotal:num(s.subtotal),discount:num(s.discount),gst_included:num(s.gstAmount),
+        items:s.items.map(i=>`${i.name} x${i.qty}`).join("; "),subtotal:num(s.subtotal),item_discounts:num(s.itemDiscount),discount:num(s.discount),gst_included:num(s.gstAmount),
         advance:num(s.advance),total:num(s.total),booking:s.bookingNo||"",sold_by:s.soldByName||""}))},
       {name:"Sale items",freeze:3,images,cols:[["photo",11],["invoice",16],["date",12],["sku",14,"@"],["name",34],["dimension",14],["category",28],["qty",7],
         ["price",12,MONEY],["line_total",13,MONEY],["gst",7],["taken_from",18],["customer",22],["phone",16,"@"]],
        rows:lines.map(({s,i})=>{const p=prodOf(i.pid);return{invoice:s.invoiceNo,date:s.dateKey,sku:i.sku,name:i.name,dimension:p?dimText(p):"",
         category:p?[p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" > "):"",qty:i.qty,price:num(i.price),
-        line_total:num(i.lineTotal??i.price*i.qty),gst:num(i.gst),taken_from:i.takenFrom||"",customer:s.customer?.name||"Walk-in",phone:String(s.customer?.phone||"")}})}
+        line_discount:num(i.disc),line_total:num(i.lineTotal??lineNet(i)),gst:num(i.gst),taken_from:i.takenFrom||"",customer:s.customer?.name||"Walk-in",phone:String(s.customer?.phone||"")}})}
     ]));
     toast(`Exported ${L.length} bill(s)`);
   }catch(e){toast(emsg(e),1)}
@@ -3268,13 +3322,13 @@ window.exportBookings=async()=>{
       {name:"Bookings",freeze:1,cols:[["booking_no",14],["status",12],["booked_on",12],["customer",24],["phone",16,"@"],["items",44],
         ["items_value",13,MONEY],["discount",12,MONEY],["order_value",13,MONEY],["gst_included",13,MONEY],["booking_amount",15,MONEY],["received",13,MONEY],["balance_due",13,MONEY],["delivery_date",14],["invoice",16],["notes",30],["taken_by",18]],
        rows:L.map(b=>({booking_no:b.bookingNo,status:b.status,booked_on:b.dateKey||dkey(new Date(tms(b.createdAt))),customer:b.customerName,phone:String(b.customerPhone||""),
-        items:b.items.map(i=>`${i.name} x${i.qty}`).join("; "),items_value:num(b.subtotal??b.total),discount:num(b.discount),
+        items:b.items.map(i=>`${i.name} x${i.qty}`).join("; "),items_value:num(b.subtotal??b.total),item_discounts:num(b.itemDiscount),discount:num(b.discount),
         order_value:num(b.total),gst_included:num(b.gstAmount),booking_amount:num(b.advance),
         received:bkReceived(b),balance_due:bkDue(b),delivery_date:b.deliveryDate||"",invoice:b.invoiceNo||"",notes:b.notes||"",taken_by:b.createdByName||""}))},
       {name:"Booking items",freeze:3,images,cols:[["photo",11],["booking_no",14],["status",12],["sku",14,"@"],["name",34],["qty",7],["price",12,MONEY],["line_total",13,MONEY],
         ["customer",22],["phone",16,"@"],["delivery_date",14]],
        rows:lines.map(({b,i})=>({booking_no:b.bookingNo,status:b.status,sku:i.sku,name:i.name,qty:i.qty,price:num(i.price),
-        line_total:num(i.lineTotal??i.price*i.qty),customer:b.customerName,phone:String(b.customerPhone||""),delivery_date:b.deliveryDate||""}))},
+        line_discount:num(i.disc),line_total:num(i.lineTotal??lineNet(i)),customer:b.customerName,phone:String(b.customerPhone||""),delivery_date:b.deliveryDate||""}))},
       {name:"Payments",freeze:2,cols:[["date",12],["type",14],["booking_no",14],["customer",24],["phone",16,"@"],["amount",14,MONEY],["mode",14],["note",30],["entered_by",18]],
        rows:S.payments.slice().sort((x,y)=>dayMs(x.date)-dayMs(y.date)).map(p=>({date:p.date||"",
         type:p.kind==="adjustment"?(p.adjust==="charge"?"adjustment (charge)":"adjustment (credit)"):"payment",
