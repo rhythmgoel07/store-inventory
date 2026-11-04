@@ -126,6 +126,24 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Enquiries: what a customer asked about, before anything is promised. Staff record them
+    // and may close them as won or lost. Nothing here can move stock — an enquiry write only
+    // ever touches this collection, and changing a product still needs the stock permissions.
+    match /enquiries/{id} {
+      allow read: if isStaff();
+      allow create: if isStaff() && autoId(id) && byMe('createdBy')
+        && nd().status == 'open' && amount('total') && amount('subtotal')
+        && nd().total <= nd().subtotal;
+      allow update: if isAdmin()
+        // closing an open enquiry, either way
+        || (isStaff() && resource.data.status == 'open' && nd().status in ['won','lost']
+            && changed().hasOnly(['status','wonAs','lostReason','closedAt','closedBy']))
+        // putting a closed one back in play
+        || (isStaff() && resource.data.status in ['won','lost'] && nd().status == 'open'
+            && changed().hasOnly(['status','wonAs','lostReason','reopenedAt','reopenedBy']));
+      allow delete: if isAdmin();
+    }
+
     // Payments a customer deposits. Staff record ordinary payments; adjustments and
     // corrections are admin-only; removing one is a permission.
     match /payments/{id} {

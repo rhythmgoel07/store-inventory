@@ -225,7 +225,7 @@ import {firebaseConfig} from "./firebase-config.js";
 
 /* ---------- Taxonomy (embedded from homecentre_taxonomy.json) ---------- */
 const DEFAULT_TAX = [{"id":"living-room","name":"Living Room","slug":"livingroom","subcategories":[{"id":"sofas","name":"Sofas","slug":"livingroom-sofas","subcategories":[{"id":"3-seater-sofas","name":"3 Seater Sofas","slug":"livingroom-sofas-3seatersofas","subcategories":[]},{"id":"2-seater-sofas","name":"2 Seater Sofas","slug":"livingroom-sofas-2seatersofas","subcategories":[]},{"id":"1-seater-sofas","name":"1 Seater Sofas","slug":"livingroom-sofas-1seatersofas","subcategories":[]},{"id":"sofa-sets","name":"Sofa Sets","slug":"livingroom-sofas-sofasets","subcategories":[]},{"id":"sofa-cum-beds","name":"Sofa Cum Beds","slug":"livingroom-sofas-sofacumbeds","subcategories":[]},{"id":"corner-sofas","name":"Corner Sofas","slug":"livingroom-sofas-cornersofa","subcategories":[]}]},{"id":"customised-furniture","name":"Customised Furniture","slug":"customizedfurniture","subcategories":[]},{"id":"recliners","name":"Recliners","slug":"livingroom-recliners","subcategories":[{"id":"3-seater-recliners","name":"3 Seater Recliners","slug":"livingroom-recliners-3seaterrecliners","subcategories":[]},{"id":"2-seater-recliners","name":"2 Seater Recliners","slug":"livingroom-recliners-2seaterrecliners","subcategories":[]},{"id":"1-seater-recliners","name":"1 Seater Recliners","slug":"livingroom-recliners-1seaterrecliners","subcategories":[]},{"id":"recliner-sets","name":"Recliner Sets","slug":"livingroom-recliners-reclinersets","subcategories":[]}]},{"id":"occasional-chairs","name":"Occasional Chairs","slug":"livingroom-occasionalchairs","subcategories":[{"id":"accent-chairs","name":"Accent Chairs","slug":"livingroom-occasionalchairs-accentchairs","subcategories":[]},{"id":"folding-chairs","name":"Folding Chairs","slug":"livingroom-occasionalchairs-foldingchairs","subcategories":[]},{"id":"cafe-chairs","name":"Cafe Chairs","slug":"livingroom-occasionalchairs-cafechairs","subcategories":[]},{"id":"plastic-chairs","name":"Plastic Chairs","slug":"livingroom-occasionalchairs-plasticchairs","subcategories":[]}]},{"id":"benches-stools","name":"Benches & Stools","slug":"livingroom-benchandstools","subcategories":[{"id":"benches","name":"Benches","slug":"livingroom-benchandstools-benches","subcategories":[]},{"id":"stools","name":"Stools","slug":"livingroom-benchandstools-stools","subcategories":[]}]},{"id":"bean-bags-pouffes","name":"Bean Bags & Pouffes","slug":"livingroom-beanbagsandpouffes","subcategories":[{"id":"pouffes","name":"Pouffes","slug":"livingroom-beanbagsandpouffes-pouffes","subcategories":[]},{"id":"bean-bags","name":"Bean Bags","slug":"livingroom-beanbagsandpouffes-beanbags","subcategories":[]}]},{"id":"tables","name":"Tables","slug":"livingroom-tables","subcategories":[{"id":"centre-tables","name":"Centre Tables","slug":"livingroom-tables-centertables","subcategories":[]},{"id":"end-tables","name":"End Tables","slug":"livingroom-tables-endtables","subcategories":[]},{"id":"console-tables","name":"Console Tables","slug":"livingroom-tables-consoletables","subcategories":[]},{"id":"nesting-tables","name":"Nesting Tables","slug":"livingroom-tables-nestingtables","subcategories":[]}]},{"id":"tv-media-units","name":"TV & Media Units","slug":"livingroom-tvandmediaunits","subcategories":[{"id":"tv-consoles","name":"TV Consoles","slug":"livingroom-tvandmediaunits-tvconsoles","subcategories":[]},{"id":"tv-units","name":"TV Units","slug":"livingroom-tvandmediaunits-tvunits","subcategories":[]}]},{"id":"shelves","name":"Shelves","slug":"livingroom-shelves","subcategories":[{"id":"wall-shelves","name":"Wall Shelves","slug":"livingroom-shelves-wallshelves","subcategories":[]},{"id":"corner-shelves","name":"Corner Shelves","slug":"livingroom-shelves-cornershelves","subcategories":[]},{"id":"home-mandir","name":"Home Mandir","slug":"livingroom-shelves-homemandir","subcategories":[]}]},{"id":"shoe-racks","name":"Shoe Racks","slug":"livingroom-shoeracks","subcategories":[{"id":"shoe-cabinets","name":"Shoe Cabinets","slug":"livingroom-shoeracks-shoecabinets","subcategories":[]},{"id":"open-shoe-racks","name":"Open Shoe Racks","slug":"livingroom-shoeracks-shoeopenshelves","subcategories":[]}]},{"id":"study-work","name":"Study & Work","slug":"livingroom-studyandwork","subcategories":[{"id":"study-office-tables","name":"Study & Office Tables","slug":"livingroom-studyandwork-studyandofficetables","subcategories":[]},{"id":"study-office-chairs","name":"Study & Office Chairs","slug":"livingroom-studyandwork-studyandofficechairs","subcategories":[]}]},{"id":"book-cases-cabinets","name":"Book Cases & Cabinets","slug":"livingroom-bookcaseandcabinets","subcategories":[{"id":"book-cabinets","name":"Book Cabinets","slug":"livingroom-bookcaseandcabinets-bookcabinets","subcategories":[]},{"id":"open-book-shelves","name":"Open Book Shelves","slug":"livingroom-bookcaseandcabinets-openbookshelves","subcategories":[]}]},{"id":"outdoor-furniture","name":"Outdoor Furniture","slug":"outdoor","subcategories":[{"id":"outdoor-seating-tables","name":"Outdoor Seating & Tables","slug":"outdoor-outdoorseatingandtables","subcategories":[]}]},{"id":"ottomans","name":"Ottomans","slug":"livingroom-ottomans","subcategories":[]},{"id":"tea-table-sets","name":"Tea Table Sets","slug":"livingroom-teasets","subcategories":[]}]},{"id":"bedroom","name":"Bedroom","slug":"bedroom","subcategories":[{"id":"beds","name":"Beds","slug":"bedroom-beds","subcategories":[{"id":"king-beds","name":"King Beds","slug":"bedroom-beds-kingbeds","subcategories":[]},{"id":"queen-beds","name":"Queen Beds","slug":"bedroom-beds-queenbeds","subcategories":[]},{"id":"single-beds","name":"Single Beds","slug":"bedroom-beds-singlebeds","subcategories":[]},{"id":"bunk-beds","name":"Bunk Beds","slug":"bedroom-beds-bunkbeds","subcategories":[]}]},{"id":"wardrobes","name":"Wardrobes","slug":"bedroom-wardrobes","subcategories":[{"id":"2-door-wardrobes","name":"2 Door Wardrobes","slug":"bedroom-wardrobes-2doorswingwardrobes","subcategories":[]},{"id":"3-door-wardrobes","name":"3 Door Wardrobes","slug":"bedroom-wardrobes-3doorswingwardrobes","subcategories":[]},{"id":"4-door-wardrobes","name":"4 Door Wardrobes","slug":"bedroom-wardrobes-4doorswingwardrobes","subcategories":[]},{"id":"sliding-wardrobes","name":"Sliding Wardrobes","slug":"bedroom-wardrobes-2doorslidingwardrobes","subcategories":[]}]},{"id":"mattresses","name":"Mattresses","slug":"bedroom-mattresses","subcategories":[{"id":"king-mattresses","name":"King Mattresses","slug":"bedroom-mattresses-kingmattresses","subcategories":[]},{"id":"queen-mattresses","name":"Queen Mattresses","slug":"bedroom-mattresses-queenmattresses","subcategories":[]},{"id":"single-mattresses","name":"Single Mattresses","slug":"bedroom-mattresses-singlemattresses","subcategories":[]}]},{"id":"bed-side-tables","name":"Bed Side Tables","slug":"bedroom-bedsidetables","subcategories":[]},{"id":"chest-of-drawers","name":"Chest of Drawers","slug":"bedroom-chestofdrawers","subcategories":[]},{"id":"dresser-mirrors","name":"Dresser Mirrors","slug":"bedroom-dressermirrors","subcategories":[]}]},{"id":"dining-room","name":"Dining Room","slug":"diningroom","subcategories":[{"id":"dining-sets","name":"Dining Sets","slug":"diningroom-diningtablesets","subcategories":[{"id":"4-seater-dining-sets","name":"4 Seater Dining Sets","slug":"diningroom-diningtablesets-4seaterdiningtablesets","subcategories":[]},{"id":"6-seater-dining-sets","name":"6 Seater Dining Sets","slug":"diningroom-diningtablesets-6seaterdiningtablesets","subcategories":[]},{"id":"8-seater-dining-sets","name":"8 Seater Dining Sets","slug":"diningroom-diningtablesets-8seaterdiningtablesets","subcategories":[]}]},{"id":"dining-tables","name":"Dining Tables","slug":"diningroom-diningtables","subcategories":[{"id":"4-seater-dining-tables","name":"4 Seater Dining Tables","slug":"diningroom-diningtables-4seatertables","subcategories":[]},{"id":"6-seater-dining-tables","name":"6 Seater Dining Tables","slug":"diningroom-diningtables-6seatertables","subcategories":[]},{"id":"8-seater-dining-tables","name":"8 Seater Dining Tables","slug":"diningroom-diningtables-8seatertables","subcategories":[]}]},{"id":"bar-furniture","name":"Bar Furniture","slug":"diningroom-bar","subcategories":[{"id":"bar-cabinet-curios","name":"Bar Cabinet-Curios","slug":"diningroom-bar-barcabinetcurios","subcategories":[]},{"id":"bar-stools-chairs","name":"Bar Stools & Chairs","slug":"diningroom-bar-barstools","subcategories":[]},{"id":"serving-trolleys","name":"Serving Trolleys","slug":"diningroom-bar-servingtrolleys","subcategories":[]}]},{"id":"dining-chairs","name":"Dining Chairs","slug":"diningroom-diningchairs","subcategories":[]},{"id":"dining-benches","name":"Dining Benches","slug":"diningroom-diningbenches","subcategories":[]},{"id":"crockery-units","name":"Crockery Units","slug":"diningroom-crockeryunits","subcategories":[]}]},{"id":"decor","name":"Decor","slug":"decor","subcategories":[{"id":"home-accessories","name":"Home Accessories","slug":"decor-homeaccessories","subcategories":[{"id":"figurines","name":"Figurines","slug":"decor-homeaccessories-figurines","subcategories":[]},{"id":"vases","name":"Vases","slug":"decor-homeaccessories-vases","subcategories":[]},{"id":"table-accents","name":"Table Accents","slug":"decor-homeaccessories-tableaccents","subcategories":[]},{"id":"candle-holders-lanterns","name":"Candle Holders & Lanterns","slug":"decor-homeaccessories-candleholdersandlanterns","subcategories":[]},{"id":"potpourri-bowls-platters","name":"Potpourri Bowls & Platters","slug":"decor-homeaccessories-bowls","subcategories":[]},{"id":"clocks","name":"Clocks","slug":"decor-homeaccessories-clocks","subcategories":[]},{"id":"desk-accessories","name":"Desk Accessories","slug":"decor-homeaccessories-deskaccessories","subcategories":[]},{"id":"gift-accessories","name":"Gift Accessories","slug":"decor-homeaccessories-giftaccessories","subcategories":[]}]},{"id":"lighting","name":"Lighting","slug":"decor-lighting","subcategories":[{"id":"table-lamps","name":"Table Lamps","slug":"decor-lighting-tablelamps","subcategories":[]},{"id":"wall-lamps","name":"Wall Lamps","slug":"decor-lighting-walllamps","subcategories":[]},{"id":"hanging-lamps","name":"Hanging Lamps","slug":"decor-lighting-ceilinglamps","subcategories":[]},{"id":"floor-lamps","name":"Floor Lamps","slug":"decor-lighting-floorlamps","subcategories":[]},{"id":"decorative-lights","name":"Decorative Lights","slug":"decor-lighting-decorativelights","subcategories":[]},{"id":"string-lights","name":"String Lights","slug":"decor-lighting-stringlights","subcategories":[]},{"id":"bulbs","name":"Bulbs","slug":"decor-lighting-bulbs","subcategories":[]}]},{"id":"wall-decor","name":"Wall Decor","slug":"decor-wallaccent","subcategories":[{"id":"wall-accents","name":"Wall Accents","slug":"decor-wallaccent-walldecor","subcategories":[]},{"id":"decorative-mirrors","name":"Decorative Mirrors","slug":"decor-wallaccent-decorativemirrors","subcategories":[]},{"id":"photo-frames","name":"Photo Frames","slug":"decor-wallaccent-photoframes","subcategories":[]},{"id":"posters-paintings","name":"Posters & Paintings","slug":"decor-wallaccent-pictureframes","subcategories":[]}]},{"id":"home-fragrances","name":"Home Fragrances","slug":"decor-homefragrance","subcategories":[{"id":"candles","name":"Candles","slug":"decor-homefragrance-candles","subcategories":[]},{"id":"fragrances-potpourris","name":"Fragrances & Potpourris","slug":"decor-homefragrance-fragranceandpotpourri","subcategories":[]},{"id":"diffusers","name":"Diffusers","slug":"decor-homefragrance-diffusers","subcategories":[]},{"id":"aroma-oils","name":"Aroma Oils","slug":"decor-homefragrance-aromaoil","subcategories":[]},{"id":"room-car-sprays","name":"Room & Car Sprays","slug":"decor-homefragrance-roomsprays","subcategories":[]}]},{"id":"garden","name":"Garden","slug":"decor-garden","subcategories":[{"id":"artificial-plants-flowers","name":"Artificial Plants & Flowers","slug":"decor-garden-artificialplantsandflowers","subcategories":[]},{"id":"pots-planters","name":"Pots & Planters","slug":"decor-garden-potsandplanters","subcategories":[]},{"id":"fountains","name":"Fountains","slug":"decor-garden-indoorandoutdoorfountains","subcategories":[]}]}]},{"id":"kitchen","name":"Kitchen","slug":"kitchen","subcategories":[{"id":"storage-containers","name":"Storage & Containers","slug":"kitchen-storageandcontainers","subcategories":[{"id":"containers-jars","name":"Containers & Jars","slug":"kitchen-storageandcontainers-containersandjars","subcategories":[]},{"id":"bottles","name":"Bottles","slug":"kitchen-storageandcontainers-bottles","subcategories":[]},{"id":"flasks","name":"Flasks","slug":"kitchen-storageandcontainers-flask","subcategories":[]},{"id":"lunch-boxes-bags","name":"Lunch Boxes & Bags","slug":"kitchen-storageandcontainers-lunchboxandbags","subcategories":[]},{"id":"kitchen-organisers","name":"Kitchen Organisers","slug":"kitchen-storageandcontainers-organisers","subcategories":[]}]},{"id":"cookware","name":"Cookware","slug":"kitchen-cooking","subcategories":[{"id":"cookware-sets","name":"Cookware Sets","slug":"kitchen-cooking-cookwaresets","subcategories":[]},{"id":"induction-cookware","name":"Induction Cookware","slug":"kitchen-cooking-inductioncookware","subcategories":[]},{"id":"pots-pans","name":"Pots & Pans","slug":"kitchen-cooking-potsandpans","subcategories":[]},{"id":"kadhai-woks","name":"Kadhai & Woks","slug":"kitchen-cooking-kadhaiandwoks","subcategories":[]},{"id":"cooking-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-cooking-toolsandgadgets","subcategories":[]},{"id":"pressure-cookers","name":"Pressure Cookers","slug":"kitchen-cooking-pressurecookers","subcategories":[]},{"id":"tawas","name":"Tawas","slug":"kitchen-cooking-tawas","subcategories":[]}]},{"id":"kitchenware","name":"Kitchenware","slug":"kitchen-kitchenware","subcategories":[{"id":"kitchen-trolleys","name":"Kitchen Trolleys","slug":"kitchen-kitchenware-kitchentrolley","subcategories":[]},{"id":"knives-scissors","name":"Knives & Scissors","slug":"kitchen-kitchenware-knivesandscissors","subcategories":[]},{"id":"casseroles","name":"Casseroles","slug":"kitchen-kitchenware-casseroles","subcategories":[]},{"id":"oil-vinegar-servers","name":"Oil & Vinegar Servers","slug":"kitchen-kitchenware-oilandvinegarserver","subcategories":[]},{"id":"utensil-holders","name":"Utensil Holders","slug":"kitchen-kitchenware-utensilholders","subcategories":[]},{"id":"chopping-boards","name":"Chopping Boards","slug":"kitchen-kitchenware-choppingboards","subcategories":[]},{"id":"dish-racks","name":"Dish Racks","slug":"kitchen-kitchenware-dishracks","subcategories":[]},{"id":"fruit-baskets","name":"Fruit Baskets","slug":"kitchen-kitchenware-fruitstands","subcategories":[]},{"id":"strainers-colanders","name":"Strainers & Colanders","slug":"kitchen-kitchenware-strainersandcolanders","subcategories":[]},{"id":"kitchenware-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-kitchenware-toolsandgadgets","subcategories":[]}]},{"id":"kitchen-linen","name":"Kitchen Linen","slug":"kitchen-kitchenlinens","subcategories":[{"id":"aprons","name":"Aprons","slug":"kitchen-kitchenlinens-aprons","subcategories":[]},{"id":"pot-holders-mittens","name":"Pot Holders & Mittens","slug":"kitchen-kitchenlinens-potholders","subcategories":[]},{"id":"kitchen-towels","name":"Kitchen Towels","slug":"kitchen-kitchenlinens-kitchentowels","subcategories":[]}]},{"id":"bakeware","name":"Bakeware","slug":"kitchen-bakeware","subcategories":[]},{"id":"kitchen-appliances","name":"Kitchen Appliances","slug":"kitchen-appliances","subcategories":[]}]},{"id":"furnishings","name":"Furnishings","slug":"furnishing","subcategories":[{"id":"bedding","name":"Bedding","slug":"furnishing-bedding","subcategories":[{"id":"double-bedsheets","name":"Double Bedsheets","slug":"furnishing-bedding-doublebedsheets","subcategories":[]},{"id":"single-bedsheets","name":"Single Bedsheets","slug":"furnishing-bedding-singlebedsheets","subcategories":[]},{"id":"bedding-sets","name":"Bedding Sets","slug":"furnishing-bedding-beddingsets","subcategories":[]},{"id":"pillows-pillow-covers","name":"Pillows & Pillow Covers","slug":"furnishing-bedding-pillowsandpillowcovers","subcategories":[]},{"id":"blankets-quilts","name":"Blankets & Quilts","slug":"furnishing-bedding-blanketsandquilts","subcategories":[]},{"id":"comforters","name":"Comforters","slug":"furnishing-bedding-comforters","subcategories":[]},{"id":"throws","name":"Throws","slug":"furnishing-bedding-throws","subcategories":[]},{"id":"duvets-duvet-covers","name":"Duvets & Duvet Covers","slug":"furnishing-bedding-duvetandduvetcovers","subcategories":[]},{"id":"dohars","name":"Dohars","slug":"furnishing-bedding-dohars","subcategories":[]},{"id":"bed-covers","name":"Bed Covers","slug":"furnishing-bedding-bedcovers","subcategories":[]}]},{"id":"cushions","name":"Cushions","slug":"furnishing-cushions","subcategories":[{"id":"cushion-covers","name":"Cushion Covers","slug":"furnishing-cushions-cushioncovers","subcategories":[]},{"id":"filled-cushions","name":"Filled Cushions","slug":"furnishing-cushions-filledcushions","subcategories":[]},{"id":"cushion-fillers","name":"Cushion Fillers","slug":"furnishing-cushions-cushionfilling","subcategories":[]},{"id":"floor-cushions","name":"Floor Cushions","slug":"furnishing-cushions-floorcushions","subcategories":[]}]},{"id":"curtains-blinds","name":"Curtains & Blinds","slug":"furnishing-curtains","subcategories":[{"id":"door-curtains","name":"Door Curtains","slug":"furnishing-curtains-doorcurtains","subcategories":[]},{"id":"window-curtains","name":"Window Curtains","slug":"furnishing-curtains-windowcurtains","subcategories":[]},{"id":"blinds","name":"Blinds","slug":"furnishing-curtains-blinds","subcategories":[]},{"id":"rods-accessories","name":"Rods & Accessories","slug":"furnishing-curtains-rodsandaccessories","subcategories":[]}]},{"id":"accessories","name":"Accessories","slug":"furnishing-accessories","subcategories":[{"id":"bags","name":"Bags","slug":"furnishing-accessories-bags","subcategories":[]},{"id":"pads-mats","name":"Pads & Mats","slug":"furnishing-accessories-padsandmats","subcategories":[]},{"id":"sofa-covers","name":"Sofa Covers","slug":"furnishing-accessories-sofacovers","subcategories":[]}]},{"id":"floor-coverings","name":"Floor Coverings","slug":"furnishing-floorcoverings","subcategories":[{"id":"carpets-rugs","name":"Carpets & Rugs","slug":"furnishing-floorcoverings-carpets","subcategories":[]},{"id":"dhurries","name":"Dhurries","slug":"furnishing-floorcoverings-dhurries","subcategories":[]},{"id":"doormats","name":"Doormats","slug":"furnishing-floorcoverings-doormats","subcategories":[]}]}]},{"id":"tableware","name":"Tableware","slug":"dining","subcategories":[{"id":"serving","name":"Serving","slug":"dining-serving","subcategories":[{"id":"trays-platters","name":"Trays & Platters","slug":"dining-serving-traysandplatters","subcategories":[]},{"id":"glasses-jugs","name":"Glasses & Jugs","slug":"dining-serving-glassesandjugs","subcategories":[]},{"id":"bar-accessories","name":"Bar Accessories","slug":"dining-serving-baraccessories","subcategories":[]},{"id":"salt-pepper-shakers","name":"Salt & Pepper Shakers","slug":"dining-serving-saltandpeppershakers","subcategories":[]},{"id":"chip-dip","name":"Chip & Dip","slug":"dining-serving-chipanddip","subcategories":[]}]},{"id":"crockery","name":"Crockery","slug":"dining-crockery","subcategories":[{"id":"bowls","name":"Bowls","slug":"dining-crockery-bowls","subcategories":[]},{"id":"plates","name":"Plates","slug":"dining-crockery-plates","subcategories":[]},{"id":"mugs","name":"Mugs","slug":"dining-crockery-mugsandcups","subcategories":[]},{"id":"cups-saucers","name":"Cups & Saucers","slug":"dining-crockery-cupsandsaucers","subcategories":[]},{"id":"pots-kettles","name":"Pots & Kettles","slug":"dining-crockery-potsandkettles","subcategories":[]},{"id":"dinner-sets","name":"Dinner Sets","slug":"dining-crockery-dinnersets","subcategories":[]}]},{"id":"cutlery","name":"Cutlery","slug":"dining-cutlery","subcategories":[{"id":"spoons","name":"Spoons","slug":"dining-cutlery-spoons","subcategories":[]},{"id":"cutlery-sets","name":"Cutlery & Cutlery Sets","slug":"dining-cutlery-cutlerysets","subcategories":[]},{"id":"cutlery-holders","name":"Cutlery Holders","slug":"dining-cutlery-cutleryholders","subcategories":[]}]},{"id":"table-linens","name":"Table Linens","slug":"dining-tableaccessories","subcategories":[{"id":"placemats","name":"Placemats","slug":"dining-tableaccessories-placemats","subcategories":[]},{"id":"table-runners","name":"Table Runners","slug":"dining-tableaccessories-tablerunners","subcategories":[]},{"id":"table-cloths","name":"Table Cloths","slug":"dining-tableaccessories-tablecloths","subcategories":[]},{"id":"trivets-coasters","name":"Trivets & Coasters","slug":"dining-tableaccessories-trivetandcoasters","subcategories":[]},{"id":"tissue-holders","name":"Tissue Holders","slug":"dining-tableaccessories-tissueholders","subcategories":[]}]}]},{"id":"bath-laundry","name":"Bath & Laundry","slug":"bathandlaundry","subcategories":[{"id":"bath-linen","name":"Bath Linen","slug":"bathandlaundry-bath","subcategories":[{"id":"towels","name":"Towels","slug":"bathandlaundry-bath-towel","subcategories":[]},{"id":"robes","name":"Robes","slug":"bathandlaundry-bath-robes","subcategories":[]},{"id":"bathmats","name":"Bathmats","slug":"bathandlaundry-bath-bathmats","subcategories":[]}]},{"id":"bath-accessories","name":"Bath Accessories","slug":"bathandlaundry-bathaccessories","subcategories":[{"id":"holders-tumblers","name":"Holders & Tumblers","slug":"bathandlaundry-bathaccessories-holdersandtumblers","subcategories":[]},{"id":"soap-dispensers","name":"Soap Dispensers","slug":"bathandlaundry-bathaccessories-soapdispensers","subcategories":[]},{"id":"soap-dishes","name":"Soap Dishes","slug":"bathandlaundry-bathaccessories-soapdishes","subcategories":[]},{"id":"bath-sets","name":"Bath Sets","slug":"bathandlaundry-bathaccessories-accessorysets","subcategories":[]},{"id":"storage-mirrors","name":"Storage & Mirrors","slug":"bathandlaundry-bathaccessories-storageandmirrors","subcategories":[]},{"id":"towel-holders","name":"Towel Holders","slug":"bathandlaundry-bathaccessories-towelholders","subcategories":[]},{"id":"toilet-accessories","name":"Toilet Accessories","slug":"bathandlaundry-bathaccessories-toiletpaperandbrushholders","subcategories":[]},{"id":"shower-curtains","name":"Shower Curtains","slug":"bathandlaundry-bathaccessories-showercurtains","subcategories":[]},{"id":"bath-stools","name":"Bath Stools","slug":"bathandlaundry-bathaccessories-bathstools","subcategories":[]}]},{"id":"laundry","name":"Laundry","slug":"bathandlaundry-laundry","subcategories":[{"id":"laundry-storage-baskets","name":"Laundry Storage & Baskets","slug":"bathandlaundry-laundry-storage","subcategories":[]},{"id":"cleaning-accessories","name":"Cleaning Accessories","slug":"bathandlaundry-laundry-cleaningaccessories","subcategories":[]},{"id":"dustbins","name":"Dustbins","slug":"bathandlaundry-laundry-dustbins","subcategories":[]},{"id":"cloth-dryers","name":"Cloth Dryers","slug":"bathandlaundry-laundry-clothdryers","subcategories":[]},{"id":"hangers-hooks","name":"Hangers & Hooks","slug":"bathandlaundry-laundry-hangersandhooks","subcategories":[]}]}]},{"id":"gifting","name":"Gifting","slug":"gifts","subcategories":[{"id":"housewarming-gifts","name":"Housewarming Gifts","slug":"gifts-housewarminggifts","subcategories":[]},{"id":"wedding-gifts","name":"Wedding Gifts","slug":"gifts-weddinggifts","subcategories":[]},{"id":"anniversary-gifts","name":"Anniversary Gifts","slug":"gifts-anniversarygifts","subcategories":[]},{"id":"birthday-gifts","name":"Birthday Gifts","slug":"gifts-birthdaygifts","subcategories":[]},{"id":"gifts-for-him","name":"Gifts for Him","slug":"gifts-giftsforhim","subcategories":[]},{"id":"gifts-for-her","name":"Gifts for Her","slug":"gifts-giftsforher","subcategories":[]},{"id":"festive-gifts","name":"Festive Gifts","slug":"gifts-festivegifts","subcategories":[{"id":"ganesh-chaturthi","name":"Ganesh Chaturthi","slug":"gifts-festivegifts-ganeshchaturthigifts","subcategories":[]}]},{"id":"special-occasions","name":"Special Occasions","slug":"gifts-specialoccasiongifts","subcategories":[]}]}];
-const BUILD = "04 Nov 15:59";
+const BUILD = "04 Nov 16:29";
 let TAXONOMY = DEFAULT_TAX;
 const bySlug = {}; // slug -> {cat,sub,type}
 function reindex(){
@@ -310,6 +310,24 @@ function thumb(p,size=48){
   if(p.hasImage){const c=IMG.cache.get(p.id);return `<img data-pid="${p.id}" ${c?`src="${c}"`:""} style="${st}">`}
   return `<div style="${st};display:grid;place-items:center;color:var(--mute);font-size:${Math.round(size/2.4)}px">▣</div>`;
 }
+/* A print window cannot wait for lazy images, so the data has to be in hand before it opens. */
+async function coverSrc(pid){
+  const p=S.products.find(x=>x.id===pid);
+  if(!p)return "";
+  if(p.imageUrl)return p.imageUrl;
+  if(!p.hasImage)return "";
+  let c=IMG.cache.get(pid);
+  if(!c){try{const s=await getDoc(doc(db,"productImages",pid));if(s.exists()){c=s.data().data;IMG.cache.set(pid,c)}}catch(e){}}
+  return c||"";
+}
+async function coversFor(items){
+  const out={};
+  for(const i of items||[])if(out[i.pid]===undefined)out[i.pid]=await coverSrc(i.pid);
+  return out;
+}
+const picCell=(src,w=112,hh=78)=>src
+  ?`<img src="${esc(src)}" style="width:${w}px;height:${hh}px;object-fit:cover;border:1px solid #ddd">`
+  :`<span class="m">no photo</span>`;
 function hydrateImages(){
   document.querySelectorAll("img[data-pid]:not([src])").forEach(async im=>{
     const id=im.dataset.pid;
@@ -441,6 +459,8 @@ const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",inv
   products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",dim:"",loc:"",vendor:"",stock:"all",sort:"name",limit:100},sel:null,
   lists:{...DEFAULT_LISTS},vendors:[],purchases:[],vpays:[],pcart:[],pchg:[],pq:"",vf:{q:"",cat:""},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:""},bf:{q:"",status:"booked"},detailCust:null,detailBk:null,
   bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bdisc:0,bdiscType:"amt",bdate:"",bnotes:"",bq:"",saleOn:"",bookedOn:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",
+  enquiries:[],ecart:[],ecustId:"",ephone:"",ename:"",edisc:0,ediscType:"amt",enote:"",eq:"",efollow:"",esrc:"",
+  ef:{q:"",status:"open"},detailEnq:null,fromEnq:"",
   detailSale:null,detailPur:null,es:null,puEdit:"",unsub:[]};
 
 if(configured){
@@ -561,6 +581,7 @@ function startListeners(){
   on(query(collection(db,"purchases"),orderBy("createdAt","desc"),limit(1000)),s=>{S.purchases=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"vendorPayments"),orderBy("createdAt","desc"),limit(1000)),s=>{S.vpays=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"bookings"),orderBy("createdAt","desc"),limit(500)),s=>{S.bookings=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  on(query(collection(db,"enquiries"),orderBy("createdAt","desc"),limit(500)),s=>{S.enquiries=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"payments"),orderBy("createdAt","desc"),limit(1000)),s=>{S.payments=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"requests"),orderBy("createdAt","desc"),limit(300)),s=>{S.requests=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"movements"),orderBy("createdAt","desc"),limit(200)),s=>{S.moves=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
@@ -580,19 +601,19 @@ else onAuthStateChanged(auth,async u=>{
 });
 
 /* ---------- Shell ---------- */
-const NAV=[["dashboard","Dashboard","▦"],["products","Products","▤"],["sell","Sell","₹",true],["bookings","Bookings","🔖",true],["customers","Customers","👤",true],["stock","Stock","⇅"],["sales","Sales","☰",true],["categories","Categories","⌗"],["vendors","Vendors","🏭",false,false,"vendorsTab"],["approvals","Approvals","✓"],["team","Staff","👥",false,true],["settings","Settings","⚙"]];
-const SALES_VIEWS=["sell","sales","bookings","customers","newbooking","booking","customer","sale"];
+const NAV=[["dashboard","Dashboard","▦"],["products","Products","▤"],["sell","Sell","₹",true],["enquiries","Enquiries","💬",true],["bookings","Bookings","🔖",true],["customers","Customers","👤",true],["stock","Stock","⇅"],["sales","Sales","☰",true],["categories","Categories","⌗"],["vendors","Vendors","🏭",false,false,"vendorsTab"],["approvals","Approvals","✓"],["team","Staff","👥",false,true],["settings","Settings","⚙"]];
+const SALES_VIEWS=["sell","sales","bookings","customers","newbooking","booking","customer","sale","enquiries","newenquiry","enquiry"];
 function navItems(){return NAV.filter(n=>(!n[3]||fullMode())&&(!n[4]||isAdmin())&&(!n[5]||can(n[5])))}
-const DETAIL={product:"products",customer:"customers",booking:"bookings",vendor:"vendors",sale:"sales",purchase:"vendors"};
+const DETAIL={product:"products",customer:"customers",booking:"bookings",vendor:"vendors",sale:"sales",purchase:"vendors",enquiry:"enquiries"};
 function setView(v){if(v!=="products")S.sel=null;S.view=v;if(!DETAIL[v]&&location.hash)history.replaceState(null,"",location.pathname+location.search);window.scrollTo(0,0);render()}
-const navOn=k=>S.view===k||DETAIL[S.view]===k||(S.view==="newbooking"&&k==="bookings");
+const navOn=k=>S.view===k||DETAIL[S.view]===k||(S.view==="newbooking"&&k==="bookings")||(S.view==="newenquiry"&&k==="enquiries");
 function routeFromHash(){
-  const m=location.hash.match(/^#(product|customer|booking|vendor|sale|purchase)\/(.+)$/);
+  const m=location.hash.match(/^#(product|customer|booking|vendor|sale|purchase|enquiry)\/(.+)$/);
   if(m&&S.profile){
     const id=decodeURIComponent(m[2]);
     S.view=m[1];
     if(m[1]==="product")S.detailId=id;else if(m[1]==="customer")S.detailCust=id;else if(m[1]==="vendor")S.detailVendor=id;
-    else if(m[1]==="sale")S.detailSale=id;else if(m[1]==="purchase")S.detailPur=id;else S.detailBk=id;
+    else if(m[1]==="sale")S.detailSale=id;else if(m[1]==="purchase")S.detailPur=id;else if(m[1]==="enquiry")S.detailEnq=id;else S.detailBk=id;
   }
   else if(DETAIL[S.view])S.view=DETAIL[S.view];
 }
@@ -614,7 +635,8 @@ function render(soft){
    <div class="bottom">${items.slice(0,4).map(n=>`<button class="${navOn(n[0])?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}${items.length>4?`<button class="${items.slice(4).some(n=>navOn(n[0]))?"on":""}" onclick="openMore()"><span>⋯</span>More</button>`:""}</div>`;
   const v={dashboard:vDash,products:vProducts,product:vProduct,sell:vSell,stock:vStock,sales:vSales,categories:vCats,settings:vSettings,
     customers:vCustomers,customer:vCustomer,bookings:vBookings,booking:vBooking,newbooking:vNewBooking,team:vTeam,approvals:vApprovals,
-    vendors:vVendors,vendor:vVendor,sale:vSale,purchase:vPurchase}[S.view]||vDash;
+    vendors:vVendors,vendor:vVendor,sale:vSale,purchase:vPurchase,
+    enquiries:vEnquiries,newenquiry:vNewEnquiry,enquiry:vEnquiry}[S.view]||vDash;
   v($("#main"));
   hydrateImages();
 }
@@ -623,6 +645,7 @@ window.dashTo=what=>{
   if(what==="products"){S.pf={...S.pf,q:"",cat:"",sub:"",dim:"",loc:"",vendor:"",stock:"all",limit:100};return setView("products")}
   if(what==="out"){S.pf={...S.pf,q:"",cat:"",sub:"",dim:"",loc:"",vendor:"",stock:"out",limit:100};return setView("products")}
   if(what==="bookings"){S.bf={q:"",status:"booked"};return setView("bookings")}
+  if(what==="enquiries"){S.ef={q:"",status:"open"};return setView("enquiries")}
   if(what==="today"){S.salesRange="day";S.salesDay=dkey();return setView("sales")}
   if(what==="month"){S.salesRange="month";S.salesMonth=dkey().slice(0,7);return setView("sales")}
 };
@@ -647,6 +670,7 @@ function vDash(el){
    <div class="card stat clk" onclick="dashTo('products')"><div class="k">Products</div><div class="v">${P.length}</div><div class="s">${units} units in stock</div></div>
    ${can("seeCost")?`<div class="card stat clk" onclick="dashTo('products')"><div class="k">Stock value (cost)</div><div class="v">${inr(cost)}</div></div>`:""}
    ${fullMode()?`<div class="card stat clk" onclick="dashTo('bookings')"><div class="k">Open bookings</div><div class="v">${openBk.length}</div><div class="s">${inr(openBk.reduce((a,b)=>a+num(b.advance),0))} advance held${due.length?` · ${due.length} due`:""}</div></div>`:""}
+  ${fullMode()?`<div class="card stat clk" onclick="dashTo('enquiries')"><div class="k">Open enquiries</div><div class="v">${S.enquiries.filter(e=>e.status==="open").length}</div><div class="s">${S.enquiries.filter(e=>e.status==="open"&&e.followUp&&e.followUp<=tk).length} to follow up</div></div>`:""}
   ${fullMode()?`<div class="card stat clk" onclick="dashTo('today')"><div class="k">Today's sales</div><div class="v">${inr(today.reduce((a,s)=>a+s.total,0))}</div><div class="s">${today.length} bill${today.length===1?"":"s"}</div></div>`:""}
   ${fullMode()?`<div class="card stat clk" onclick="dashTo('month')"><div class="k">This month's sales</div><div class="v">${inr(month.reduce((a,s)=>a+s.total,0))}</div><div class="s">${month.length} bill${month.length===1?"":"s"} since ${esc(mk)}-01</div></div>`:""}
   </div>
@@ -1147,7 +1171,7 @@ function vSell(el){
   const q=S.posQ.toLowerCase();
   const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${vendQ(p)} ${locKeys(p).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
   const t=cartTotals();
-  el.innerHTML=`<div class="top"><h2>New sale</h2><button class="btn sec" onclick="S.cart=[];S.cartDiscount=0;render()">Clear</button></div>
+  el.innerHTML=`<div class="top"><h2>New sale</h2><div class="row"><button class="btn sec" onclick="printEstimate('cart')" ${onLines(S.cart).length?"":"disabled"}>Print estimate</button><button class="btn sec" onclick="S.cart=[];S.cartDiscount=0;S.fromEnq='';render()">Clear</button></div></div>
   <div class="pos"><div><input id="pos-q" placeholder="Scan barcode or search…" value="${esc(S.posQ)}" style="margin-bottom:10px">
    <div class="items">${L.map(p=>`<button class="item" onclick="addCart('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""}${catLine(p)?" · "+esc(catLine(p)):""}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Cart (${S.cart.length} item${S.cart.length===1?"":"s"})</h3>
@@ -1225,10 +1249,11 @@ async function completeSale(){
       snaps.forEach((s,ix)=>{const c=cart[ix],cur=s.data().qty,t=takeAt(locMapOf(s.data()),c.qty,c.loc);
         tx.update(refs[ix],{qty:cur-c.qty,locQty:t.map,location:primaryLoc(t.map)||s.data().location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
         tx.set(doc(collection(db,"movements")),{...mv(c.pid,c.name,c.sku,"sale",-c.qty,cur,cur-c.qty,inv+" · from "+t.used.map(u=>`${u[0]} (${u[1]})`).join(", ")),fromLoc:t.used.map(u=>u[0]).join(", "),toLoc:""})});
-      tx.set(sr,{invoiceNo:inv,items:cart.map(savedLine),
+      tx.set(sr,{invoiceNo:inv,...(S.fromEnq?{enquiryId:S.fromEnq}:{}),items:cart.map(savedLine),
         subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,taxable:t.taxable,customer:cust,customerId,payment:pay,status:"completed",
         soldBy:S.user.uid,soldByName:S.profile.name,...dated});
     });
+    await closeEnquiryAsWon(inv);
     S.cart=[];S.cartDiscount=0;S.cust=null;S.posQ="";S.saleOn="";
     toast("Sale "+inv+" saved");render();
     printReceipt({invoiceNo:inv,items:cart.map(savedLine),subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,customer:cust,payment:pay,soldByName:S.profile.name,createdAt:{seconds:Date.now()/1000}});
@@ -1474,6 +1499,78 @@ async function saveSaleEdit(){
     closeModal();toast("Invoice corrected");render();
   }catch(e){fail(e)}
 }
+/* ---------- Estimate ----------
+   The sheet a customer takes away: a photo on every line, laid out like the quotations
+   furniture suppliers send. It carries the store's details, the customer's and the date, which
+   a bare price list does not, and it says in print that it is not a tax invoice — a page full
+   of amounts with a GSTIN on it is otherwise taken for one. */
+function estimateFrom(src,id){
+  if(src==="cart")return{items:onLines(S.cart),t:cartTotals(),ref:"",held:false,
+    cust:{name:($("#c-name")?.value||"").trim(),phone:($("#c-ph")?.value||"").trim()}};
+  if(src==="bcart")return{items:onLines(S.bcart),t:bkTotals(S.bcart,S.bdisc,S.bdiscType),ref:"",held:false,
+    cust:{name:($("#bk-name")?.value||"").trim(),phone:($("#bk-ph")?.value||"").trim()}};
+  if(src==="ecart")return{items:onLines(S.ecart),t:enqTotals(S.ecart),ref:"",held:false,
+    cust:{name:($("#en-name")?.value||"").trim(),phone:($("#en-ph")?.value||"").trim()}};
+  if(src==="enquiry"){const e=S.enquiries.find(x=>x.id===id);if(!e)return null;
+    return{items:e.items,t:sumItems(e.items,num(e.discount)),ref:e.enquiryNo,held:false,
+      cust:{name:e.customerName||"",phone:e.customerPhone||""},when:tms(e.createdAt)}}
+  const b=S.bookings.find(x=>x.id===id);
+  if(!b)return null;
+  return{items:b.items,t:sumItems(b.items,num(b.discount)),ref:b.bookingNo,held:b.status==="booked",
+    adv:num(b.advance),cust:{name:b.customerName||"",phone:b.customerPhone||""},when:tms(b.createdAt)};
+}
+window.printEstimate=async(src,id)=>{
+  const E=estimateFrom(src,id);
+  if(!E||!E.items.length)return toast("Add some products first",1);
+  toast("Fetching the photos…");
+  const pics=await coversFor(E.items);
+  const st=S.settings,t=E.t;
+  const w=window.open("","_blank","width=1040,height=820");if(!w)return toast("Allow pop-ups to print",1);
+  const rows=E.items.map((i,ix)=>{
+    const p=S.products.find(x=>x.id===i.pid);
+    return `<tr><td class="c">${ix+1}</td><td class="c">${picCell(pics[i.pid])}</td>
+     <td class="c">${esc(lineCat(i)||p?.categoryName||"—")}</td>
+     <td class="c"><b>${esc(i.name)}</b><br><span class="m">${esc(i.sku)}${p&&dimText(p)?" · "+esc(dimText(p)):""}</span></td>
+     <td class="c">${i.qty}</td><td class="n">${inr(i.price)}</td>
+     <td class="n">${lineDisc(i)?`<span class="m">less ${inr(lineDisc(i))}</span><br>`:""}${inr(i.lineTotal??lineNet(i))}</td></tr>`}).join("");
+  const foot=(label,val,bold)=>`<tr><td colspan="4" class="e"></td><td class="e"></td><th class="n">${label}</th><th class="n"${bold?' style="font-size:14px"':""}>${val}</th></tr>`;
+  w.document.write(`<html><head><title>Estimate${E.ref?" "+esc(E.ref):""}</title><style>
+  @page{size:A4 landscape;margin:9mm}
+  body{font:12px Arial,Helvetica,sans-serif;color:#000;margin:0}
+  h2,h3{margin:0}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border:1px solid #000;padding:6px 7px;vertical-align:middle}
+  thead th{background:#efebe0;text-align:center;text-transform:uppercase;letter-spacing:.03em}
+  td.e{border-left:1px solid #000;border-right:1px solid #000}
+  .n{text-align:right;white-space:nowrap}.c{text-align:center}
+  .m{color:#555;font-size:11px;font-weight:400}
+  .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .note{margin-top:10px;font-size:11px;color:#333}
+  tr{page-break-inside:avoid}thead{display:table-header-group}</style></head><body>
+  <div class="hd">
+   <div><h2>${esc(st.storeName||"")}</h2>
+    <div class="m">${esc(st.address||"")}${st.phone?" · Ph "+esc(st.phone):""}${st.gstin?" · GSTIN "+esc(st.gstin):""}</div></div>
+   <div style="text-align:right"><h3>ESTIMATE${E.ref?" · "+esc(E.ref):""}</h3>
+    <div class="m">${fdt(E.when||new Date())}<br><b>${esc(E.cust.name||"—")}</b>${E.cust.phone?" · "+esc(E.cust.phone):""}</div></div>
+  </div>
+  <table>
+   <thead><tr><th style="width:40px">S.No</th><th style="width:130px">Image</th><th style="width:150px">Category</th>
+    <th>Description</th><th style="width:52px">Qty</th><th style="width:96px">Price</th><th style="width:112px">Amount</th></tr></thead>
+   <tbody>${rows}</tbody>
+   <tfoot>
+    ${foot("Total",inr(t.gross))}
+    ${t.itemDisc?foot("Item discounts","− "+inr(t.itemDisc)):""}
+    ${t.disc?foot(S.ediscType==="pct"&&src==="ecart"?`Discount ${num(S.edisc)}%`:"Discount","− "+inr(t.disc)):""}
+    ${foot("Net amount",inr(t.total),true)}
+    ${num(E.adv)?foot("Received","− "+inr(num(E.adv)))+foot("Balance",inr(Math.max(0,r2(t.total-num(E.adv))))):""}
+   </tfoot></table>
+  <p class="note"><b>This is an estimate, not a tax invoice.</b> ${E.held
+    ?"The pieces listed are reserved against "+esc(E.ref)+"."
+    :"Nothing is reserved against it, and prices may change until an order is placed."}${num(t.gst)?" Prices include GST where it applies.":""}</p>
+  <div class="c m" style="margin-top:14px">${esc(st.footer||"")}</div>
+  <script>setTimeout(()=>print(),600)<\/script></body></html>`);
+  w.document.close();
+};
 /* A full-page bill, for the ones customers take home. The thermal receipt is still there. */
 window.printInvoice=id=>{
   const s=S.sales.find(x=>x.id===id);if(!s)return;
@@ -1508,6 +1605,7 @@ window.printInvoice=id=>{
 /* ---------- Customers ---------- */
 const custKey=ph=>String(ph||"").replace(/\D/g,"");
 const findCustByPhone=ph=>{const k=custKey(ph);return k.length>=6?S.customers.find(c=>custKey(c.phone)===k):null};
+const custEnquiries=c=>S.enquiries.filter(e=>e.customerId===c.id||(custKey(c.phone)&&custKey(e.customerPhone)===custKey(c.phone)));
 function custStats(c){
   const k=custKey(c.phone);
   const match=o=>o.customerId===c.id||(k&&custKey(o.customerPhone||o.customer?.phone)===k);
@@ -1591,7 +1689,7 @@ function vCustomer(el){
   if(!c){el.innerHTML=`<div class="top"><h2>Customer not found</h2><button class="btn sec" onclick="go('customers')">← Back</button></div>`;return}
   const st=custStats(c),L=custLedger(c);
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('customers')">← Back</button><h2>${esc(c.name)}</h2></div>
-   <div class="row"><button class="btn" onclick="openPayment('${c.id}')">+ Record payment</button>${isAdmin()?`<button class="btn sec" onclick="openAdjust('${c.id}')">+ Adjustment</button>`:""}<button class="btn sec" onclick="bookFor('${c.id}')">New booking</button><button class="btn sec" onclick="printStatement('${c.id}')">Print statement</button><button class="btn sec" onclick="exportLedger('${c.id}')">Export ledger</button>${can("editCustomer")?`<button class="btn" onclick="openCustomer('${c.id}')">Edit</button>`:""}</div></div>
+   <div class="row"><button class="btn" onclick="openPayment('${c.id}')">+ Record payment</button>${isAdmin()?`<button class="btn sec" onclick="openAdjust('${c.id}')">+ Adjustment</button>`:""}${fullMode()?`<button class="btn sec" onclick="enquireFor('${c.id}')">New enquiry</button>`:""}<button class="btn sec" onclick="bookFor('${c.id}')">New booking</button><button class="btn sec" onclick="printStatement('${c.id}')">Print statement</button><button class="btn sec" onclick="exportLedger('${c.id}')">Export ledger</button>${can("editCustomer")?`<button class="btn" onclick="openCustomer('${c.id}')">Edit</button>`:""}</div></div>
   <div class="grid stats" style="margin-bottom:12px">
    <div class="card stat"><div class="k">Phone</div><div class="v" style="font-size:19px"><a href="tel:${esc(c.phone)}">${esc(c.phone)}</a></div><div class="s">${esc(c.email||"")}${c.address?" · "+esc(c.address):""}</div></div>
    <div class="card stat"><div class="k">Billed</div><div class="v">${inr(L.billed)}</div><div class="s">${st.sales.length} bill(s) · ${st.bookings.length} booking(s)</div></div>
@@ -1599,6 +1697,17 @@ function vCustomer(el){
    <div class="card stat"><div class="k">${L.balance<0?"Pending from customer":L.balance>0?"Credit with shop":"Balance"}</div>
     <div class="v" style="color:${L.balance<0?"var(--bad)":L.balance>0?"var(--ok)":"inherit"}">${L.balance?inr(L.balance):"₹0.00"}</div>
     <div class="s">${L.balance<0?"booked / unpaid amount":L.balance>0?"advance held or refund due":"nothing outstanding"}</div></div></div>
+  ${(()=>{const E=custEnquiries(c);if(!E.length)return "";
+    return `<div class="card" style="padding:6px 12px;margin-bottom:12px">
+     <div class="row" style="justify-content:space-between;padding:10px 2px 4px"><h3>Enquiries (${E.length})</h3>
+      <span class="small mute">What they have asked about. No stock is held against these.</span></div>
+     <table class="resp"><thead><tr><th>Enquiry</th><th>Asked about</th><th class="n">Estimate</th><th></th></tr></thead><tbody>
+     ${E.map(e=>`<tr><td data-l="Enquiry"><a href="#enquiry/${e.id}"><b>${esc(e.enquiryNo)}</b></a> ${enqTag(e)}<br>
+       <span class="small mute">${fdt(tms(e.createdAt))}${e.followUp?` · follow up ${esc(e.followUp)}`:""}</span></td>
+      <td data-l="Asked about" class="small">${(e.items||[]).map(i=>esc(i.name)+" ×"+i.qty).join(", ")}${e.notes?`<br><span class="mute">“${esc(e.notes)}”</span>`:""}</td>
+      <td data-l="Estimate" class="n">${inr(e.total)}</td>
+      <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="printEstimate('enquiry','${e.id}')">Estimate</button></div></td></tr>`).join("")}
+     </tbody></table></div>`})()}
   <div class="card" style="padding:6px 12px">
    <div class="row" style="justify-content:space-between;padding:10px 2px 4px"><h3>Ledger</h3><span class="small mute">Charges are billed amounts · Paid is money received · a negative balance is pending from the customer</span></div>
    <table class="resp"><thead><tr><th>Date</th><th>Particulars</th><th class="n">Charges</th><th class="n">Paid</th><th class="n">Balance</th><th></th></tr></thead><tbody>
@@ -2420,12 +2529,252 @@ const bkSum=(t,adv)=>`<div class="row" style="justify-content:space-between"><sp
   <div class="row" style="justify-content:space-between"><span class="mute">incl. GST</span><span>${inr(t.gst)}</span></div>
   <div class="row" style="justify-content:space-between"><span class="mute">Booking amount</span><span>− ${inr(adv)}</span></div>
   <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Balance due</span><span>${inr(Math.max(0,r2(t.total-num(adv))))}</span></div>`;
+const ENQ_STATUS={open:["open","Open","low"],won:["won","Won","ok"],lost:["lost","Lost","out"]};
+const enqTotals=cart=>sumItems(cart,discAmt(netOf(cart),S.edisc,S.ediscType));
+const enqSum=t=>`<div class="row" style="justify-content:space-between"><span class="mute">Items</span><span>${inr(t.gross)}</span></div>
+  ${t.itemDisc?`<div class="row" style="justify-content:space-between"><span class="mute">Item discounts</span><span>− ${inr(t.itemDisc)}</span></div>`:""}
+  ${t.disc?`<div class="row" style="justify-content:space-between"><span class="mute">Discount on the estimate</span><span>− ${inr(t.disc)}</span></div>`:""}
+  <div class="row" style="justify-content:space-between"><span class="mute">incl. GST</span><span>${inr(t.gst)}</span></div>
+  <div class="row" style="justify-content:space-between;font-size:20px;font-weight:700;margin-top:4px"><span>Estimate value</span><span>${inr(t.total)}</span></div>`;
+const ENQ_SOURCES=["Walk-in","Phone","WhatsApp","Reference","Instagram","Exhibition","Other"];
+
+const enqTag=e=>{const s=ENQ_STATUS[e.status]||ENQ_STATUS.open;return `<span class="tag ${s[2]}">${s[1]}</span>`};
+const enqOverdue=e=>e.status==="open"&&e.followUp&&e.followUp<=dkey();
+function vEnquiries(el){
+  const f=S.ef,q=f.q.trim().toLowerCase(),qk=custKey(f.q);
+  let L=S.enquiries.filter(e=>{
+    if(f.status!=="all"&&e.status!==f.status)return false;
+    if(!q)return true;
+    return (qk&&custKey(e.customerPhone).includes(qk))||`${e.enquiryNo} ${e.customerName} ${e.notes||""}`.toLowerCase().includes(q)
+      ||(e.items||[]).some(i=>`${i.name} ${i.sku}`.toLowerCase().includes(q));
+  });
+  const open=S.enquiries.filter(e=>e.status==="open"),due=open.filter(enqOverdue);
+  el.innerHTML=`<div class="top"><h2>Enquiries <span class="mute small">(${open.length} open)</span></h2>
+   <div class="row"><button class="btn" onclick="newEnquiry()">+ New enquiry</button><button class="btn sec" onclick="exportEnquiries()">Export</button></div></div>
+  <div class="grid stats" style="margin-bottom:12px">
+   <div class="card stat"><div class="k">Open enquiries</div><div class="v">${open.length}</div><div class="s">${inr(open.reduce((a,e)=>a+num(e.total),0))} being asked about</div></div>
+   <div class="card stat"><div class="k">To follow up</div><div class="v" style="color:${due.length?"var(--warn)":"inherit"}">${due.length}</div><div class="s">due today or earlier</div></div>
+   <div class="card stat"><div class="k">Won</div><div class="v">${S.enquiries.filter(e=>e.status==="won").length}</div><div class="s">of ${S.enquiries.length} recorded</div></div></div>
+  <div class="card" style="margin-bottom:12px"><div class="f filters">
+   <div class="full"><input id="ef-q" placeholder="Search enquiry no., customer, phone, product or note…" value="${esc(f.q)}"></div>
+   <div><select id="ef-s">${[["open","Open"],["won","Won"],["lost","Lost"],["all","All"]].map(([v,t])=>`<option value="${v}" ${f.status===v?"selected":""}>${t}</option>`).join("")}</select></div></div></div>
+  <div class="card" style="padding:6px 12px"><table class="resp"><thead><tr><th>Enquiry</th><th>Customer</th><th>Items</th><th class="n">Value</th><th></th></tr></thead><tbody>
+  ${L.map(e=>`<tr><td data-l="Enquiry"><a href="#enquiry/${e.id}"><b>${esc(e.enquiryNo)}</b></a>${backTag(e)} ${enqTag(e)}
+    <br><span class="small mute">${fdt(tms(e.createdAt))} · ${esc(e.createdByName||"")}${e.source?" · "+esc(e.source):""}</span>
+    ${e.followUp?`<br><span class="small" style="color:${enqOverdue(e)?"var(--warn)":"var(--mute)"}">follow up ${esc(e.followUp)}</span>`:""}</td>
+   <td data-l="Customer">${e.customerId?`<a href="#customer/${e.customerId}">${esc(e.customerName||"—")}</a>`:esc(e.customerName||"—")}
+    <br><span class="small mute">${esc(e.customerPhone||"no phone")}</span></td>
+   <td data-l="Items" class="small">${(e.items||[]).slice(0,4).map(i=>`<div style="padding:2px 0">${plink(i.pid,i.name)}<br><span class="mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span><br><span class="mute">${i.qty} × ${inr(i.price)}${num(i.disc)?" less "+inr(num(i.disc)):""} = <b style="color:var(--ink)">${inr(i.lineTotal??lineNet(i))}</b></span></div>`).join("")}${(e.items||[]).length>4?`<div class="mute">+ ${e.items.length-4} more item(s)</div>`:""}
+    ${e.notes?`<div class="mute" style="margin-top:4px">“${esc(e.notes)}”</div>`:""}</td>
+   <td data-l="Value" class="n">${num(e.itemDiscount)||num(e.discount)?`<div class="mute small">Items ${inr(e.subtotal??e.total)}</div>`:""}<b>${inr(e.total)}</b></td>
+   <td data-l=""><div class="row" style="justify-content:flex-end"><button class="btn sm sec" onclick="location.hash='enquiry/${e.id}'">Open</button><button class="btn sm sec" onclick="printEstimate('enquiry','${e.id}')">Estimate</button></div></td></tr>`).join("")
+   ||`<tr><td colspan="5" class="mute">No enquiries ${f.status==="all"?"yet":"with this status"}.</td></tr>`}
+  </tbody></table></div>`;
+  const qi=$("#ef-q");qi.oninput=()=>{S.ef={...S.ef,q:qi.value};clearTimeout(vEnquiries.t);
+    vEnquiries.t=setTimeout(()=>{render();const n=$("#ef-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},160)};
+  $("#ef-s").onchange=e=>{S.ef={...S.ef,status:e.target.value};render()};
+}
+window.newEnquiry=()=>{clearEnqDraft();setView("newenquiry")};
+window.enquireFor=id=>{clearEnqDraft();
+  const c=S.customers.find(x=>x.id===id);
+  if(c){S.ecustId=c.id;S.ename=c.name||"";S.ephone=c.phone||""}
+  setView("newenquiry")};
+
+function vEnquiry(el){
+  const e=S.enquiries.find(x=>x.id===S.detailEnq);
+  if(!e)return el.innerHTML=`<div class="top"><h2>Enquiry</h2></div><p class="mute">That enquiry no longer exists. <a href="javascript:void(0)" onclick="go('enquiries')">Back to enquiries</a></p>`;
+  const t=sumItems(e.items||[],num(e.discount));
+  const R=[["Enquiry no.",`<b>${esc(e.enquiryNo)}</b>`+backTag(e)],["Status",enqTag(e)+(e.wonAs?` <span class="mute small">${esc(e.wonAs)}</span>`:"")+(e.lostReason?` <span class="mute small">${esc(e.lostReason)}</span>`:"")],
+   ["Recorded",`${fdt(tms(e.createdAt))} by ${esc(e.createdByName||"")}`],
+   ...(e.source?[["Came from",esc(e.source)]]:[]),
+   ...(e.followUp?[["Follow up on",`${esc(e.followUp)}${enqOverdue(e)?` <span class="tag low">due</span>`:""}`]]:[]),
+   ["Customer",(e.customerId?`<a href="#customer/${e.customerId}">${esc(e.customerName||"—")}</a>`:esc(e.customerName||"—"))+(e.customerPhone?` · ${esc(e.customerPhone)}`:" · no phone")],
+   ...(e.notes?[["They asked for",esc(e.notes)]]:[]),
+   ["Items",inr(e.subtotal??t.gross)],
+   ...(num(e.itemDiscount)?[["Item discounts","− "+inr(e.itemDiscount)]]:[]),
+   ...(num(e.discount)?[["Discount on the estimate","− "+inr(e.discount)]]:[]),
+   ["Estimate value",`<b style="font-size:18px">${inr(e.total)}</b>`]];
+  el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('enquiries')">← Back</button><h2>${esc(e.enquiryNo)}</h2></div>
+   <div class="row"><button class="btn" onclick="printEstimate('enquiry','${e.id}')">Print estimate</button>
+    ${e.status==="open"?`${fullMode()?`<button class="btn sec" onclick="enqToBooking('${e.id}')">Make it a booking</button><button class="btn sec" onclick="enqToSale('${e.id}')">Bill it now</button>`:""}
+     <button class="btn sec" onclick="enqLost('${e.id}')">Mark lost</button>`:
+     `<button class="btn sec" onclick="enqReopen('${e.id}')">Reopen</button>`}</div></div>
+  <div class="detail">
+   <div class="card"><h3 style="margin-bottom:8px">Enquiry</h3><table>${R.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join("")}</table>
+    <p class="small mute" style="margin-top:10px">No stock is held against an enquiry. The pieces stay on sale to anyone until a booking or a bill is made.</p></div>
+   <div class="card"><h3 style="margin-bottom:8px">What they asked about</h3>
+    ${(e.items||[]).map(i=>{const p=S.products.find(x=>x.id===i.pid);
+      return `<div class="row" style="flex-wrap:nowrap;align-items:flex-start;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)">
+       <span class="row" style="flex-wrap:nowrap;align-items:flex-start">${p?thumb(p,38):""}<span>${plink(i.pid,i.name)}<br>
+        <span class="small mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}<br>${i.qty} × ${inr(i.price)}${num(i.disc)?" less "+inr(num(i.disc)):""}
+        ${p?` · <span style="color:${avail(p)>=i.qty?"var(--mute)":"var(--warn)"}">${avail(p)} in stock now</span>`:" · product removed"}</span></span></span>
+       <b style="white-space:nowrap">${inr(i.lineTotal??lineNet(i))}</b></div>`}).join("")}</div></div>`;
+}
+window.enqLost=async id=>{
+  const e=S.enquiries.find(x=>x.id===id);if(!e)return;
+  const why=(prompt("Why was it lost? (optional — price, bought elsewhere, changed their mind…)")||"").trim();
+  try{await updateDoc(doc(db,"enquiries",id),{status:"lost",lostReason:why,
+    closedAt:serverTimestamp(),closedBy:S.profile.name});toast("Marked lost")}catch(err){toast(emsg(err),1)}
+};
+window.enqReopen=async id=>{
+  try{await updateDoc(doc(db,"enquiries",id),{status:"open",lostReason:"",wonAs:"",
+    reopenedAt:serverTimestamp(),reopenedBy:S.profile.name});toast("Reopened")}catch(err){toast(emsg(err),1)}
+};
+/* Carrying an enquiry over fills the cart and remembers where it came from, so saving the
+   booking or the bill closes the enquiry as won without anyone having to remember to. */
+const shortOf=i=>{const p=S.products.find(x=>x.id===i.pid);
+  return !p?`${i.name} no longer exists`:(num(i.qty)>avail(p)&&!S.settings.allowNegative)?`${i.name} — only ${avail(p)} free`:""};
+const carryLine=i=>{const p=S.products.find(x=>x.id===i.pid),short=!!shortOf(i);
+  return{pid:i.pid,name:i.name,sku:i.sku,price:num(i.price),gst:num(i.gst),qty:num(i.qty),cost:num(i.cost),
+    disc:num(i.disc)||"",dt:"amt",...(short?{off:true}:{}),
+    ...(p?{loc:(locEntries(p)[0]||[])[0]||p.location||""}:{})}};
+function carryToast(e,items){
+  const shorts=items.map(shortOf).filter(Boolean);
+  toast(shorts.length
+    ?`Carried over from ${e.enquiryNo} · ${shorts.length} item(s) unticked: ${shorts.join(" · ")}`
+    :`Carried over from ${e.enquiryNo}`,shorts.length?1:0);
+}
+window.enqToBooking=id=>{
+  const e=S.enquiries.find(x=>x.id===id);if(!e)return;
+  S.bcart=(e.items||[]).map(carryLine);
+  S.bdisc=num(e.discount);S.bdiscType="amt";S.bphone=e.customerPhone||"";S.bname=e.customerName||"";S.bcustId=e.customerId||"";
+  S.bnotes=e.notes||"";S.badv=0;S.bdate="";S.fromEnq=id;
+  setView("newbooking");
+  carryToast(e,e.items||[]);
+};
+window.enqToSale=id=>{
+  const e=S.enquiries.find(x=>x.id===id);if(!e)return;
+  S.cart=(e.items||[]).map(carryLine);
+  S.cartDiscount=num(e.discount);S.cartDiscType="amt";
+  S.cust={name:e.customerName||"",ph:e.customerPhone||"",pay:"Cash"};S.fromEnq=id;
+  setView("sell");
+  carryToast(e,e.items||[]);
+};
+/* Called once a booking or a bill has been saved from a carried-over enquiry. */
+async function closeEnquiryAsWon(ref){
+  const id=S.fromEnq;S.fromEnq="";
+  if(!id||!S.enquiries.some(x=>x.id===id))return;
+  try{await updateDoc(doc(db,"enquiries",id),{status:"won",wonAs:ref,closedAt:serverTimestamp(),closedBy:S.profile.name})}catch(e){}
+}
+window.exportEnquiries=async()=>{
+  const L=S.enquiries;if(!L.length)return toast("No enquiries to export",1);
+  toast("Building Excel with photos…");
+  try{
+    const lines=[];L.forEach(e=>(e.items||[]).forEach(i=>lines.push({e,i})));
+    const{images,EJ}=await photoMap(lines.map(({i})=>prodOf(i.pid)));
+    dlx("enquiries-"+dkey()+".xlsx",await buildWorkbook(EJ,[
+      {name:"Enquiries",freeze:1,cols:[["enquiry_no",14],["status",10],["asked_on",12],["source",14],["customer",24],["phone",16,"@"],
+        ["follow_up",12],["items",44],["items_value",13,MONEY],["item_discounts",14,MONEY],["discount",12,MONEY],["estimate_value",14,MONEY],
+        ["note",34],["outcome",22],["recorded_by",18]],
+       rows:L.map(e=>({enquiry_no:e.enquiryNo,status:e.status,asked_on:e.dateKey||dkey(new Date(tms(e.createdAt))),source:e.source||"",
+        customer:e.customerName||"",phone:String(e.customerPhone||""),follow_up:e.followUp||"",
+        items:(e.items||[]).map(i=>`${i.name} x${i.qty}`).join("; "),items_value:num(e.subtotal??e.total),
+        item_discounts:num(e.itemDiscount),discount:num(e.discount),estimate_value:num(e.total),
+        note:e.notes||"",outcome:e.wonAs||e.lostReason||"",recorded_by:e.createdByName||""}))},
+      {name:"Enquiry items",freeze:3,images,cols:[["photo",11],["enquiry_no",14],["status",10],["sku",14,"@"],["name",34],["qty",7],
+        ["price",12,MONEY],["line_discount",13,MONEY],["line_total",13,MONEY],["in_stock_now",12],["customer",22],["phone",16,"@"]],
+       rows:lines.map(({e,i})=>{const p=prodOf(i.pid);
+        return{enquiry_no:e.enquiryNo,status:e.status,sku:i.sku,name:i.name,qty:num(i.qty),price:num(i.price),
+         line_discount:num(i.disc),line_total:num(i.lineTotal??lineNet(i)),in_stock_now:p?avail(p):"",
+         customer:e.customerName||"",phone:String(e.customerPhone||"")}})}]));
+    toast("Enquiries exported");
+  }catch(e){toast(emsg(e),1)}
+};
+function vNewEnquiry(el){
+  const q=S.eq.toLowerCase();
+  const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${vendQ(p)} ${locKeys(p).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
+  const t=enqTotals(S.ecart);
+  el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('enquiries')">← Back</button><h2>New enquiry</h2></div>
+   <div class="row"><button class="btn sec" onclick="printEstimate('ecart')" ${onLines(S.ecart).length?"":"disabled"}>Print estimate</button>
+    <button class="btn sec" onclick="S.ecart=[];S.edisc=0;render()">Clear items</button></div></div>
+  <div class="pos"><div><input id="en-q" placeholder="Scan barcode or search products…" value="${esc(S.eq)}" style="margin-bottom:10px">
+   <div class="items">${L.map(p=>`<button class="item" onclick="addEnq('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""}${catLine(p)?" · "+esc(catLine(p)):""}</span><span class="small mute">${avail(p)} available${outStock(p)?" · out of stock, can still be enquired about":""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
+  <div class="card"><h3 style="margin-bottom:6px">Enquiry (${S.ecart.length} item${S.ecart.length===1?"":"s"})</h3>
+   ${S.ecart.map((i,ix)=>{const p=S.products.find(x=>x.id===i.pid);
+    return `<div class="cartline${i.off?" off":""}"><div><b>${esc(i.name)}</b><br><span class="small mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}<br>${inr(i.price)} each${p&&i.qty>avail(p)?` · <span style="color:var(--warn)">only ${avail(p)} in stock</span>`:""}</span></div><div style="text-align:right"><b class="lineamt">${inr(lineNet(i))}</b></div>
+    <div class="qty"><button onclick="enqQty(${ix},-1)">−</button><input type="number" value="${i.qty}" min="1" onchange="enqSet(${ix},this.value)"><button onclick="enqQty(${ix},1)">+</button></div><div style="text-align:right"><button class="btn sm sec" onclick="S.ecart.splice(${ix},1);render()">Remove</button></div>
+    ${lineControls(i,ix,"enq")}</div>`}).join("")||`<p class="mute">Tap a product to add it. An enquiry can include things you do not have in stock.</p>`}
+   ${S.ecart.length&&onLines(S.ecart).length<S.ecart.length?`<p class="small" style="color:var(--warn);margin-top:6px">${S.ecart.length-onLines(S.ecart).length} item(s) unticked — they are left off the estimate.</p>`:""}
+   <div class="f" style="margin-top:10px">
+    <div><label>Discount on the whole estimate</label><div class="row" style="flex-wrap:nowrap"><input id="en-disc" type="number" min="0" step="0.01" value="${S.edisc||""}"><select id="en-dt" style="width:80px"><option value="amt" ${S.ediscType==="amt"?"selected":""}>₹</option><option value="pct" ${S.ediscType==="pct"?"selected":""}>%</option></select></div></div>
+    <div><label>Customer name *</label><input id="en-name" value="${esc(S.ename)}"></div>
+    <div><label>Customer phone</label><input id="en-ph" inputmode="tel" list="en-phl" value="${esc(S.ephone)}" placeholder="Needed to save them in Customers"><datalist id="en-phl">${S.customers.slice(0,400).map(c=>`<option value="${esc(c.phone)}">${esc(c.name)}</option>`).join("")}</datalist></div>
+    <div class="full small" id="en-cinfo"></div>
+    <div><label>Came from</label><select id="en-src">${ENQ_SOURCES.map(x=>`<option ${S.esrc===x?"selected":""}>${x}</option>`).join("")}</select></div>
+    <div><label>Follow up on</label><input id="en-follow" type="date" value="${esc(S.efollow)}"></div>
+    <div class="full"><label>What they asked for</label><input id="en-note" value="${esc(S.enote)}" placeholder="Wants a 3-seater in beige, budget around 40k, measuring the room first…"></div></div>
+   <div id="en-sum" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">${enqSum(t)}</div>
+   <p class="small mute" style="margin-top:8px">An enquiry changes no stock at all — nothing is reserved and nothing comes off the shelf. Turn it into a booking when the customer commits.</p>
+   <button class="btn" style="width:100%;margin-top:8px;padding:12px" id="en-done" ${onLines(S.ecart).length?"":"disabled"}>Save enquiry</button></div></div>`;
+  const q2=$("#en-q");q2.oninput=()=>{S.eq=q2.value;clearTimeout(vNewEnquiry.t);vNewEnquiry.t=setTimeout(()=>{render();const n=$("#en-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},150)};
+  q2.onkeydown=e=>{if(e.key==="Enter"){const v=q2.value.trim().toLowerCase();const p=S.products.find(x=>(x.barcode&&x.barcode.toLowerCase()===v)||x.sku.toLowerCase()===v);if(p){addEnq(p.id);S.eq="";render();$("#en-q").focus()}}};
+  const keep=()=>{S.ephone=$("#en-ph").value;S.ename=$("#en-name").value;S.enote=$("#en-note").value;
+    S.efollow=$("#en-follow").value;S.esrc=$("#en-src").value;S.edisc=num($("#en-disc").value);S.ediscType=$("#en-dt").value};
+  const esum=()=>{const e=$("#en-sum");if(e)e.innerHTML=enqSum(enqTotals(S.ecart))};
+  const info=()=>{const ex=findCustByPhone($("#en-ph").value);const box=$("#en-cinfo");
+    if(ex){S.ecustId=ex.id;if(!$("#en-name").value.trim()){$("#en-name").value=ex.name;S.ename=ex.name}
+      const st=custStats(ex),led=custLedger(ex);
+      box.innerHTML=`<span class="tag ok">Saved customer</span> ${st.sales.length} bill(s) · ${inr(st.spend)} spent ${led.balance?balTag(led.balance):""} <a href="#customer/${ex.id}">ledger</a>`}
+    else{S.ecustId="";box.innerHTML=custKey($("#en-ph").value).length>=6
+      ?`<span class="mute">New customer — saved in Customers with this enquiry</span>`
+      :`<span class="mute">Without a phone number the enquiry is saved, but there is nobody to add to Customers and nobody to follow up with.</span>`}};
+  $("#en-ph").oninput=()=>{keep();info()};info();
+  ["#en-name","#en-note","#en-follow","#en-src"].forEach(i=>{const e=$(i);if(e){e.onchange=keep;e.oninput=keep}});
+  $("#en-disc").oninput=$("#en-disc").onchange=()=>{keep();esum()};
+  $("#en-dt").onchange=()=>{keep();esum()};
+  $("#en-done").onclick=createEnquiry;
+}
+/* No availability check anywhere here — that is the point of an enquiry. */
+window.addEnq=id=>{const p=S.products.find(x=>x.id===id);if(!p)return;
+  const e=S.ecart.find(i=>i.pid===id);
+  if(e)e.qty++;else S.ecart.push({pid:id,name:p.name,sku:p.sku,price:p.price,gst:p.gst||0,qty:1,cost:p.cost||0});render()};
+window.enqQty=(ix,d)=>{const i=S.ecart[ix],n=i.qty+d;if(n<1)S.ecart.splice(ix,1);else i.qty=n;render()};
+window.enqSet=(ix,v)=>{S.ecart[ix].qty=Math.max(1,Math.floor(num(v)));render()};
+window.enqOff=(ix,off)=>{S.ecart[ix].off=!!off;render()};
+window.enqDisc=(ix,v)=>{S.ecart[ix].disc=v===""?"":Math.max(0,num(v));render()};
+window.enqDiscType=(ix,v)=>{S.ecart[ix].dt=v;render()};
+const clearEnqDraft=()=>{S.ecart=[];S.edisc=0;S.ediscType="amt";S.enote="";S.efollow="";S.esrc="";S.ephone="";S.ename="";S.ecustId="";S.eq=""};
+
+async function createEnquiry(){
+  const btn=$("#en-done"),name=$("#en-name").value.trim(),phone=$("#en-ph").value.trim();
+  if(!name)return toast("A customer name is needed",1);
+  const cart=onLines(S.ecart).map(i=>({...i}));
+  if(!cart.length)return toast("Tick at least one item",1);
+  const t=enqTotals(S.ecart);
+  const note=$("#en-note").value.trim(),follow=$("#en-follow").value,src=$("#en-src").value;
+  let dated;
+  try{dated=datedAs("")}catch(e){return toast(e.message,1)}
+  btn.disabled=true;btn.textContent="Saving…";
+  try{
+    // A phone number is what makes a customer findable later, so one is only created with it.
+    let customerId=S.ecustId||findCustByPhone(phone)?.id||"";
+    if(!customerId&&custKey(phone).length>=6){
+      const r=doc(collection(db,"customers"));
+      await setDoc(r,{name,phone,email:"",address:"",notes:"",createdAt:serverTimestamp(),createdBy:S.user.uid});
+      customerId=r.id;
+    }
+    else if(customerId&&isAdmin()){const ex=S.customers.find(c=>c.id===customerId);
+      if(ex&&name&&name!==ex.name)await updateDoc(doc(db,"customers",customerId),{name,updatedAt:serverTimestamp()}).catch(()=>{})}
+    let eno="";
+    await runTransaction(db,async tx=>{
+      const cr=doc(db,"counters","enquiry"),cs=await tx.get(cr);
+      const n=(cs.exists()?cs.data().n:0)+1;eno="ENQ-"+String(n).padStart(5,"0");tx.set(cr,{n});
+      tx.set(doc(collection(db,"enquiries")),{enquiryNo:eno,customerId,customerName:name,customerPhone:phone,
+        items:cart.map(savedLine),subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,
+        notes:note,followUp:follow||"",source:src||"",status:"open",
+        createdBy:S.user.uid,createdByName:S.profile.name,...dated});
+    });
+    clearEnqDraft();
+    toast("Enquiry "+eno+" saved");
+    setView("enquiries");
+  }catch(e){toast(emsg(e),1);btn.disabled=false;btn.textContent="Save enquiry"}
+}
 function vNewBooking(el){
   const q=S.bq.toLowerCase();
   const L=S.products.filter(p=>!q||`${p.name} ${p.sku} ${p.barcode||""} ${vendQ(p)} ${locKeys(p).join(" ")}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,60);
   const t=bkTotals(S.bcart,S.bdisc,S.bdiscType);
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="go('bookings')">← Back</button><h2>New booking</h2></div>
-   <button class="btn sec" onclick="S.bcart=[];S.badv=0;S.bdisc=0;render()">Clear items</button></div>
+   <div class="row"><button class="btn sec" onclick="printEstimate('bcart')" ${onLines(S.bcart).length?"":"disabled"}>Print estimate</button><button class="btn sec" onclick="S.bcart=[];S.badv=0;S.bdisc=0;S.fromEnq='';render()">Clear items</button></div></div>
   <div class="pos"><div><input id="bk-q" placeholder="Scan barcode or search products…" value="${esc(S.bq)}" style="margin-bottom:10px">
    <div class="items">${L.map(p=>`<button class="item" onclick="addBk('${p.id}')"><span class="row" style="flex-wrap:nowrap">${thumb(p,38)}<b>${esc(p.name)}</b></span><b>${inr(p.price)}</b><span class="small mute">${esc(p.sku)}${dimText(p)?" · 📐 "+esc(dimText(p)):""}${catLine(p)?" · "+esc(catLine(p)):""}</span><span class="small ${avail(p)<=0?"":"mute"}" style="${avail(p)<=0?"color:var(--bad)":""}">${avail(p)} available${bk(p)?` · ${bk(p)} booked`:""}</span></button>`).join("")||`<p class="mute">No matches.</p>`}</div></div>
   <div class="card"><h3 style="margin-bottom:6px">Booking (${S.bcart.length} item${S.bcart.length===1?"":"s"})</h3>
@@ -2497,11 +2846,12 @@ async function createBooking(){
         if(av<cart[ix].qty&&!S.settings.allowNegative)throw new Error(`Only ${av} of ${cart[ix].name} available`)});
       const n=(cs.exists()?cs.data().n:0)+1;bno="BK-"+String(n).padStart(5,"0");tx.set(cr,{n});
       snaps.forEach((s,ix)=>tx.update(refs[ix],{booked:Math.max(0,+s.data().booked||0)+cart[ix].qty,updatedAt:serverTimestamp(),updatedBy:S.user.uid}));
-      tx.set(doc(collection(db,"bookings")),{bookingNo:bno,customerId,customerName:name,customerPhone:phone,
+      tx.set(doc(collection(db,"bookings")),{bookingNo:bno,...(S.fromEnq?{enquiryId:S.fromEnq}:{}),customerId,customerName:name,customerPhone:phone,
         items:cart.map(savedLine),
         subtotal:t.gross,itemDiscount:t.itemDisc,discount:t.disc,total:t.total,gstAmount:t.gst,advance:adv,balance:r2(t.total-adv),deliveryDate:date||"",notes,status:"booked",
         createdBy:S.user.uid,createdByName:S.profile.name,...dated});
     });
+    await closeEnquiryAsWon(bno);
     S.bcart=[];S.badv=0;S.bdisc=0;S.bdiscType="amt";S.bnotes="";S.bdate="";S.bphone="";S.bname="";S.bcustId="";S.bookedOn="";
     toast("Booking "+bno+" saved");setView("bookings");
   }catch(e){toast(e.message||"Couldn't save — are you online?",1);btn.disabled=false;btn.textContent="Confirm booking"}

@@ -210,6 +210,21 @@ Every invoice and every purchase bill has a page of its own, and an admin can co
 - You can still add a product that doesn't exist from inside a correction, exactly as when recording a new bill. A product created that way starts at **zero opening stock**, because the bill itself is about to add the pieces.
 - **Print bill** gives an A4 copy of the purchase for your file.
 
+## Enquiries and estimates
+- **Enquiries → + New enquiry** records what a customer asked about before anything is promised. The cart is the same one as Sell and New booking: search or scan to add products, a quantity per line, a **Less** box in ₹ or % per line, an **On the bill** tick to take a line out of the total, and a discount on the whole estimate underneath. Numbers run ENQ-00001 upward.
+- **Nothing here touches stock.** No reservation, no deduction, no movement-log entry. A product with zero stock can be put on an enquiry — that is usually why the customer is asking — and the cart says what is in stock beside each line as information, not as a limit. The enquiry page repeats it: the pieces stay on sale to anyone until a booking or a bill is made.
+- Each one records **who asked** (name required; phone optional), **where they came from** (walk-in, phone, WhatsApp, reference, Instagram, exhibition, other), a **follow-up date**, and a free-text note of what they wanted. The list counts open enquiries, how many are due for follow-up today or earlier, and how many were won; the dashboard has a tile for the same.
+- **The customer goes into Customers** exactly as a sale or booking does — matched on the phone number, or created if new. Without a phone the enquiry is still saved, but there is nobody to add and nobody to follow up with, and the screen says so. A customer's own page gets an **Enquiries** card listing theirs, and a **New enquiry** button. Enquiries never appear in the ledger: an estimate is not money owed.
+- **Make it a booking** / **Bill it now** carry the whole cart over — items, per-line discounts, the overall discount and the customer. Lines the shop cannot currently meet are **carried over unticked**, with a message naming them, because bookings and bills do enforce stock and would otherwise fail on save. When the booking or bill saves, the enquiry closes itself as **won** and records which number it became; the booking and the invoice carry the enquiry's id back.
+- **Mark lost** asks for a reason and keeps it. **Reopen** puts a closed one back in play. Deleting one is admin-only (rules); recording and closing are open to all staff, since that is the job.
+- **Export** gives an .xlsx with one sheet of enquiries and one of their lines, with embedded photos, the discount per line and what each item's free stock is now.
+
+### The estimate print
+- **Print estimate** produces a landscape A4 sheet in the layout furniture suppliers use: a bordered grid of **S.No · Image · Category · Description · Qty · Price · Amount**, with the product's photo on every line, then footer rows for the total, item discounts, the discount (named with its percentage when it was given as one) and the net amount.
+- It carries the **store's name, address, phone and GSTIN, the customer's name and phone, and the date** — a bare price list with amounts on it gets taken for a bill, so it also says in print: *this is an estimate, not a tax invoice*, and whether anything is reserved against it.
+- The same sheet prints from **three places**: an enquiry (saved or still being typed), the **Sell** cart and the **New booking** cart. From a booking it names the booking, says the pieces are reserved, and adds the received and balance rows.
+- Photos are fetched before the print window opens, so none come out blank; a product with no photo prints "no photo" rather than an empty box.
+
 ## Bookings
 - **Bookings → + New booking**: pick products like a bill, enter the customer's phone and name, the **booking amount received**, a **tentative delivery date** and any notes. Booking numbers run BK-00001 upward.
 - Booked pieces stay in stock but are **reserved**: the product list shows "🔖 2 booked · 2 free", and Sell and New booking only allow what is free, so the same last piece can't be sold twice.
