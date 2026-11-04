@@ -195,6 +195,13 @@ Products → Export gives an .xlsx with a **photo** column (pictures embedded, 2
 - An unticked line is **not billed, not reserved and not taken out of stock**: it is left out of the saved invoice or booking entirely. A note above the totals says how many lines are unticked, and **Complete sale** / **Confirm booking** is greyed out if nothing is ticked.
 - The cart is still cleared completely once the sale or booking is saved — unticked lines are not carried over to the next customer.
 
+## Part payment on a bill
+- The Sell screen's **Payment** dropdown has **Received in parts…** beside it. That opens a row per mode — Cash ₹10,000, Bank transfer ₹20,000 — with **+ Another mode** to add more and **Paid in full, one mode** to go back. A line underneath says what has been received of the bill total and what is still pending as you type.
+- **Anything left unpaid goes on the customer's ledger.** The bill charges the full amount, the receipts are what was paid, and the difference shows as pending against that customer. Later instalments are recorded as usual with **+ Record payment** on the customer page, and the balance clears to zero.
+- A bill cannot be saved for **more than it is worth**, and a bill with something pending **requires a phone number** — otherwise there is nobody to collect from.
+- Each receipt is kept with its own mode, so the invoice page, the A4 bill and the thermal slip all list them line by line and then the amount still pending. The Sales list tags a bill that still owes something.
+- The quick path is unchanged: pick one mode and the whole total is treated as received, exactly as before. Bills saved before this existed are read the old way — the full total unless the mode was *Credit* — so no history changes.
+
 ## Opening a bill
 Every invoice and every purchase bill has a page of its own, and an admin can correct either one.
 
