@@ -160,6 +160,13 @@ Until that secret exists the workflow fails on purpose with a message pointing h
 
 `firebase.json` and `.firebaserc` in the repo just tell the CLI which file holds the rules and which project to send them to. `firebase.json` deliberately has no `hosting` section — hosting is GitHub Pages, not Firebase.
 
+## Keeping devices up to date
+- The app is a PWA: **Add to Home screen** in Chrome on Android, **Share → Add to Home Screen** in Safari on iPhone (it has to be Safari), or the install icon in the address bar on desktop. It then opens in its own window with no browser bar.
+- **A new build arrives on its own.** Each deploy gets its own cache and the previous one is deleted when the new service worker activates, so a device cannot keep serving yesterday's files. The sidebar shows the build stamp of whatever that device is actually running.
+- **If the app is left open when a build goes out**, it notices — it polls `version.txt` (which holds nothing but the stamp) when the screen is brought back to the front, when the connection returns, and every 20 minutes. A bar appears offering **Reload now** or **Later**; it never reloads by itself, because that would throw away a cart someone is in the middle of.
+- `version.txt` is written by `build.py` alongside `index.html`. Keep them deployed together or the check silently does nothing.
+- Checking via the service worker's own `reg.update()` does **not** work for this: it refetches the same `sw.js` URL, whose bytes do not change between builds, so it never sees a new one. That was the original bug — along with a cache version that was never wired up, so every build shared one cache called `inv-1` that was never cleared.
+
 ## Barcodes & labels
 - Product form → **Generate** next to Barcode, or leave `barcode` blank in the Excel and use **Barcode labels → Generate missing barcodes** (admin) to fill every product at once.
 - Codes are 13-digit EAN-13 numbers starting `200` (the range reserved for in-store use) from one shared counter, so two staff can never get the same code. Once a SKU has a barcode it is kept: the Generate button locks, a blank value can't overwrite it (also on Excel import), and duplicates are refused.
