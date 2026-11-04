@@ -112,6 +112,16 @@ Nobody except an admin can change something already saved. A manager or sales ex
 ## Data fields per product
 name, SKU, barcode, vendor, dimension + dimension unit, category / sub-category / type (id, name, slug from your taxonomy, plus `fullSlug` of the deepest level), MRP, selling price, cost, GST %, stock, reorder level, unit, location, notes, timestamps, updated-by.
 
+## Tiles open the list behind them
+- **Every stat tile in the app is clickable**, not just the dashboard's, and each opens the list already filtered to exactly the rows it counted. A figure on a tile is a question — *which ones?* — and the answer is one tap away.
+  - **Bookings**: *Open bookings* and *Received on open bookings* open the open ones; **Due for delivery** opens just those due on or before today, with a line saying so and a link back to all open bookings.
+  - **Enquiries**: *Open*, *To follow up* (due today or earlier) and *Won*.
+  - **Customers**: *Pending from customers* and *Credit with shop* filter the list to exactly those people; *Billed to date* clears the filter.
+  - **Vendors**: *Vendors* and *Stock on hand* open Products; *Needs restocking* opens Products filtered to **Low or out of stock**; *Payable to vendors* filters the vendor list to the ones owed money.
+  - **A vendor's page**: *Products* and *Stock value* open that vendor's products; *Needs restocking* opens their low or out-of-stock ones.
+  - **A customer's or vendor's own page**: the money tiles scroll to the ledger below, which matters on a phone where it is a long way down.
+- The products **stock filter** gained **Low or out of stock**, because that is what "needs restocking" counts — with only *Low* and *Out* separately, a tile counting one product could open a list showing none.
+
 ## Dashboard
 - Tiles: **Products**, **Stock value (cost)** (admins and anyone allowed to see cost), **Open bookings**, **Today's sales** and **This month's sales**.
 - **Every tile opens the screen behind its number** — a › sits in its corner. Today's sales opens Sales on today, This month's sales opens Sales on the whole month, Open bookings opens the open bookings, and the other two open Products.
@@ -235,6 +245,7 @@ Every invoice and every purchase bill has a page of its own, and an admin can co
 
 ## Bookings
 - **Bookings → + New booking**: pick products like a bill, enter the customer's phone and name, the **booking amount received**, a **tentative delivery date** and any notes. Booking numbers run BK-00001 upward.
+- **The booking amount records how it was paid**, which it never did before: a mode beside the amount, or **Received in parts…** for a row per mode — ₹5,000 cash and ₹3,000 UPI. The modes are kept with the booking and named in the customer's ledger. If an admin later changes the amount, the split is dropped rather than left claiming a breakdown that no longer adds up.
 - Booked pieces stay in stock but are **reserved**: the product list shows "🔖 2 booked · 2 free", and Sell and New booking only allow what is free, so the same last piece can't be sold twice.
 - **As many products as you like go in one booking** — keep searching and tapping; each one becomes its own line with its own quantity. Selling works the same way: the cart on the Sell screen holds any number of products and bills them together.
 - **Discount in two places, on the Sell screen and here.** Each line has its own **Less** box in ₹ or %, and there is a discount on the whole bill or order underneath. The bill-wide one comes off what is left *after* the per-item ones, and it is spread across the lines in proportion to their value, so the GST figure stays right. The summary separates **Item discounts** from **Discount on the bill** so you can see which is which, and so does the invoice, the thermal slip, the A4 bill, the booking slip and the Excel export (a `line_discount` column per item and an `item_discounts` total).
