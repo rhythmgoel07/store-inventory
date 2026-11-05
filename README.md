@@ -200,6 +200,12 @@ Products → Export gives an .xlsx with a **photo** column (pictures embedded, 2
 - On the Sell and New booking screens, typing a known phone fills the name and shows past bills, spend and open bookings.
 - Import/export: Customers → Import Excel uses the **Customers** sheet of the template (`name`, `phone` required; `email`, `address`, `notes` optional). A phone that already exists updates that customer rather than adding a duplicate. Export adds bills, total spent, open bookings, advance held, billed, received, balance and pending.
 
+## The cart
+- All three carts — **Sell**, **New booking** and **New enquiry** — are laid out like a shopping cart and built from one shared line, so they cannot drift apart.
+- **A tick box leads every row**, before the product name, so the first thing you see on a line is whether it is on the bill. Above the items, **Select all** ticks or unticks the lot and shows a dash while only some are ticked; beside it, a count — *2 of 3 items on the bill*.
+- Under the name sit the quantity stepper, the per-item **Less** discount and **Remove**; on the Sell screen the *Take from* location picker follows. The money is right-aligned: when a line is discounted the original price is **struck through** above the amount, with *saved ₹x* under it.
+- On a phone the controls stack one per line, which keeps every tap target full width.
+
 ## Taking an item off the bill without removing it
 - Every line in the Sell cart and the New booking cart has an **On the bill** tick. Untick it and the line greys out, its amount is struck through and it drops straight out of the total — tick it again and it comes back. Nothing is lost while the customer makes up their mind, so you can price a bill three ways in front of them without retyping anything.
 - An unticked line is **not billed, not reserved and not taken out of stock**: it is left out of the saved invoice or booking entirely. A note above the totals says how many lines are unticked, and **Complete sale** / **Confirm booking** is greyed out if nothing is ticked.
