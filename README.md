@@ -200,6 +200,17 @@ Products → Export gives an .xlsx with a **photo** column (pictures embedded, 2
 - On the Sell and New booking screens, typing a known phone fills the name and shows past bills, spend and open bookings.
 - Import/export: Customers → Import Excel uses the **Customers** sheet of the template (`name`, `phone` required; `email`, `address`, `notes` optional). A phone that already exists updates that customer rather than adding a duplicate. Export adds bills, total spent, open bookings, advance held, billed, received, balance and pending.
 
+## Two people working at once
+- **The cart is private to the device.** It lives in that browser's memory, is never saved, and reserves nothing. Two staff can have the same sofa in their carts and neither knows.
+- **The screen's stock check is advisory** — it reflects whatever that device last heard from the server. The real decision is made when you save, inside a database transaction that re-reads the product: **whoever saves first wins**, and the second is refused with a message naming the product. Proven for two sales of the last piece, a booking after it was sold, and two bookings of the same piece.
+- **A sale checks *free* stock, not total stock.** Pieces reserved against a booking belong to that customer. (This was a bug: a bill already in a cart when someone else took a booking used to sell the reserved piece out from under it, leaving the booking holding stock that no longer existed.) Delivering a booking is unaffected — that path releases its own reservation first.
+- **An open booking for the customer is flagged at the till.** Type the phone on the Sell screen and, if that customer has an open booking, a warning lists it with its items, amount and deposit. If anything on the booking is **also in the cart**, it is named in red with a **Deliver & bill** button — because billing it again charges the customer twice and strands their deposit on the open booking. The New booking screen shows the same warning, advising you to add to the existing booking instead of taking a second one.
+- **Enquiries never touch stock**, so they never conflict with anything.
+- With **Allow selling beyond available stock** on, all of these checks are bypassed — that is what the setting is for, but concurrent sales can then take you negative.
+
+## Going back
+- **Back returns to where you came from**, not to a fixed screen. Open a product from a half-built bill and Back puts you on the Sell screen with the cart intact; a chain such as customer → booking → product unwinds one step at a time. A link opened cold falls back to the matching list, and choosing a screen from the sidebar starts a fresh trail.
+
 ## The cart
 - All three carts — **Sell**, **New booking** and **New enquiry** — are laid out like a shopping cart and built from one shared line, so they cannot drift apart.
 - **A tick box leads every row**, before the product name, so the first thing you see on a line is whether it is on the bill. Above the items, **Select all** ticks or unticks the lot and shows a dash while only some are ticked; beside it, a count — *2 of 3 items on the bill*.
