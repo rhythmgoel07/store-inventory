@@ -214,6 +214,7 @@ Products → Export gives an .xlsx with a **photo** column (pictures embedded, 2
 ## The cart
 - All three carts — **Sell**, **New booking** and **New enquiry** — are laid out like a shopping cart and built from one shared line, so they cannot drift apart.
 - **A tick box leads every row**, before the product name, so the first thing you see on a line is whether it is on the bill. Above the items, **Select all** ticks or unticks the lot and shows a dash while only some are ticked; beside it, a count — *2 of 3 items on the bill*.
+- **The product name on a cart line is a link** to its page, like everywhere else a product is named. With Back returning to where you came from, you can check a size or a photo mid-bill and come straight back to the cart with everything still ticked. A product deleted since is left as plain text.
 - Under the name sit the quantity stepper, the per-item **Less** discount and **Remove**; on the Sell screen the *Take from* location picker follows. The money is right-aligned: when a line is discounted the original price is **struck through** above the amount, with *saved ₹x* under it.
 - On a phone the controls stack one per line, which keeps every tap target full width.
 
