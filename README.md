@@ -211,6 +211,14 @@ Products → Export gives an .xlsx with a **photo** column (pictures embedded, 2
 ## Going back
 - **Back returns to where you came from**, not to a fixed screen. Open a product from a half-built bill and Back puts you on the Sell screen with the cart intact; a chain such as customer → booking → product unwinds one step at a time. A link opened cold falls back to the matching list, and choosing a screen from the sidebar starts a fresh trail.
 
+## Adding products to a bill, booking or enquiry
+- **You pick from the real Products page**, not a one-line list. Press **+ Add products** (or **Browse products** on an empty cart) and Products opens in shopping mode: every photo, category, size, location and vendor filter you normally have, with an **Add** button on each card. Add again and the button becomes a **− 1 +** stepper; cards already in the cart are outlined.
+- **A bar pinned to the top** says which document you are filling — *Billing*, *Booking*, *Quoting* — with the running piece count and total, a **View bill / booking / estimate** button to go back to it, and **Stop adding**. Catalogue buttons (Add product, Import, Export, labels) are hidden while shopping, since that is not what you are doing.
+- **Tapping a card still opens the product page**, and Back returns you to browsing with the cart intact — worth it for checking a photo or a size mid-sale.
+- **Out of stock behaves differently by document**: it cannot be added to a bill or a booking (the button reads *None* and is disabled), but it can be added to an **enquiry**, which is exactly when a customer asks about something not on the floor.
+- **The barcode box stays on the cart screen**, because a scanner is still the fastest way in at the till. Scanning a barcode or typing an exact SKU adds it straight away; a few letters matching one product adds that; anything matching several hands the text to Products so you can look properly.
+- The cart screens are now the cart alone and run full width, so the lines, discounts and totals have room.
+
 ## The cart
 - All three carts — **Sell**, **New booking** and **New enquiry** — are laid out like a shopping cart and built from one shared line, so they cannot drift apart.
 - **A tick box leads every row**, before the product name, so the first thing you see on a line is whether it is on the bill. Above the items, **Select all** ticks or unticks the lot and shows a dash while only some are ticked; beside it, a count — *2 of 3 items on the bill*.
