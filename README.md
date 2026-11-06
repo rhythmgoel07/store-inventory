@@ -209,7 +209,10 @@ Products → Export gives an .xlsx with a **photo** column (pictures embedded, 2
 - With **Allow selling beyond available stock** on, all of these checks are bypassed — that is what the setting is for, but concurrent sales can then take you negative.
 
 ## Going back
-- **Back returns to where you came from**, not to a fixed screen. Open a product from a half-built bill and Back puts you on the Sell screen with the cart intact; a chain such as customer → booking → product unwinds one step at a time. A link opened cold falls back to the matching list, and choosing a screen from the sidebar starts a fresh trail.
+- **Back returns to where you came from**, not to a fixed screen. Open a product from a half-built bill and Back puts you on the Sell screen with the cart intact; a chain such as customer → booking → product unwinds one step at a time.
+- **The phone's own Back button does exactly the same thing** as the on-screen one. Installed as an app it used to close the app on the first press — because most screens changed without leaving a history entry behind, so Back popped straight past the app, cart and all. Every move forward now leaves an entry carrying a snapshot of the screen, and only the first screen's Back closes the app, the way any other app on the phone behaves.
+- **Back closes what is open on top first.** A stock sheet, a payment box, the customer picker — one press closes it and leaves you on the screen underneath; the next press leaves the screen.
+- **A link opened cold falls back to the matching list** rather than closing the app: open a shared `#product/...` link and the first Back puts you on Products.
 
 ## Adding products to a bill, booking or enquiry
 - **You pick from the real Products page**, not a one-line list. Press **+ Add products** (or **Browse products** on an empty cart) and Products opens in shopping mode: every photo, category, size, location and vendor filter you normally have, with an **Add** button on each card. Add again and the button becomes a **− 1 +** stepper; cards already in the cart are outlined.
