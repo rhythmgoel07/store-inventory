@@ -280,7 +280,7 @@ if (typeof window !== "undefined") window.RawPrint = RawPrint;
 if (typeof module !== "undefined") module.exports = RawPrint;
 </script>
 <script>
-const $=i=>document.getElementById(i);let P=null;
+const $=i=>document.getElementById(i)||{};let P=null;   // a missing button is ignored
 const log=m=>{$("log").textContent+=new Date().toLocaleTimeString()+"  "+m+"\n"};
 const st=m=>{$("st").textContent=m;log(m)};
 const on=b=>document.querySelectorAll(".t").forEach(x=>x.disabled=!b);
