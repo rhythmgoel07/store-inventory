@@ -23,19 +23,12 @@ label{font-size:14px;color:#555}
 <p><label><input type="checkbox" id="all"> Show every Bluetooth device, not only ones named "Seznik"</label></p>
 <div id="st">Not connected</div>
 
-<h2>2. Label roll loaded, printer in label mode</h2>
-<p>Before <b>each</b> test, press the printer's feed button once so the roll lines up, then tap one button. We are looking for a label whose box starts at the very top of the sticker.</p>
+<h2>2. Label roll loaded, printer switched to label mode (power button 3 times)</h2>
 <p>Label size <select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select> mm</p>
-<button class="t" id="p-j" disabled>Label J</button>
-<button class="t" id="p-k" disabled>Label K</button>
-<button class="t" id="p-l" disabled>Label L</button>
-<p>Shorter label that needs no pull-back:</p>
-<button class="t" id="p-m" disabled>Label M</button>
-<button class="t" id="p-m2" disabled>Label M &times; 2</button>
-<p>Same short label, then the paper is moved on so the next sticker reaches the tear edge without pressing the feed button:</p>
-<button class="t" id="p-n" disabled>Label N</button>
-<button class="t" id="p-n3" disabled>Label N &times; 3</button>
-<p>Gap between stickers <select id="gap"><option>2</option><option>3</option><option>4</option></select> mm</p>
+<button class="t go" id="p-tspl" disabled>Label A (TSPL)</button>
+<button class="t" id="p-tspl3" disabled>Label A &times; 3</button>
+<button class="t" id="p-cpcl" disabled>Label B (CPCL)</button>
+<p>Earlier picture label, for comparison: <button class="t" id="p-n" disabled>Label N</button></p>
 
 <h2>3. Receipt roll loaded, printer in receipt mode</h2>
 <button class="t" id="p-rcpt" disabled>Receipt (ESC/POS)</button>
@@ -282,27 +275,16 @@ async function send(what,data){
   catch(e){log("Send failed: "+e.message)}
 }
 const sz=()=>{const[w,h]=$("size").value.split("x").map(Number);return{w,h}};
-// A sample label drawn at the roll's size, 8 dots per mm, with a letter to tell prints apart.
-// "top" mm are left off the top of the picture, for printing below the part the head cannot reach.
 function pic(tag,n,top,pad){const{w,h}=sz(),W=Math.min(w*8,384),H=(h-(top||0))*8,c=document.createElement("canvas");c.width=W;c.height=H+(pad||0)*8;
   const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,W,c.height);g.fillStyle="#000";g.lineWidth=3;g.strokeRect(3,3,W-6,H-10);
   g.textAlign="center";g.font="bold 24px sans-serif";g.fillText("Label "+tag+(n?" #"+n:""),W/2,32);
   g.font="20px sans-serif";g.fillText(item.sku,W/2,H*0.42);g.fillText("MRP ₹24,999",W/2,H*0.62);
   g.font="bold "+Math.round(H*0.17)+"px sans-serif";g.fillText("₹18,999",W/2,H-20);return c}
-const R=RawPrint,INIT=[0x1b,0x40],BACK=64;   // 64 dots = 8 mm, the distance the print started below the label top
-// J, K, L: three commands that may pull the paper back to the label top before printing.
-$("p-j").onclick=()=>send("label J (1B 6A 40 first)",R.raster(pic("J"),{pre:[...INIT,0x1b,0x6a,BACK],post:[]}));
-$("p-k").onclick=()=>send("label K (1B 4B 40 first)",R.raster(pic("K"),{pre:[...INIT,0x1b,0x4b,BACK],post:[]}));
-$("p-l").onclick=()=>send("label L (1D 0C first)",R.raster(pic("L"),{pre:[...INIT,0x1d,0x0c],post:[]}));
-// M: no pull-back. The picture is 8 mm shorter and fills the part of the label below where printing starts.
-const short=n=>R.raster(pic("M",n,8),{post:[]});
-$("p-m").onclick=()=>send("label M (22 mm tall)",short());
-$("p-m2").onclick=async()=>{await send("label M #1",short(1));await new Promise(r=>setTimeout(r,3000));await send("label M #2",short(2))};
-// N: the short label followed by blank rows (the one thing known to move the paper): the 2 mm gap plus
-// the 8 mm between head and tear edge. Picture + blank = exactly one sticker pitch.
-const full=n=>R.raster(pic("N",n,8,8+Number($("gap").value||2)),{post:[]});
-$("p-n").onclick=()=>send("label N (22 mm + blank to the tear edge)",full());
-$("p-n3").onclick=()=>send("label N x 3",R.cat(full(1),full(2),full(3)));
+const R=RawPrint;
+$("p-tspl").onclick=()=>send("label A (TSPL)",R.label({...item,name:"Label A "+item.name},sz()));
+$("p-tspl3").onclick=()=>send("label A x 3 (TSPL)",R.cat([1,2,3].map(n=>R.label({...item,name:"Label A #"+n+" "+item.name},sz()))));
+$("p-cpcl").onclick=()=>send("label B (CPCL)",R.label({...item,name:"Label B "+item.name},{...sz(),lang:"cpcl"}));
+$("p-n").onclick=()=>send("label N (picture)",R.raster(pic("N",0,8,10),{post:[]}));
 $("p-rcpt").onclick=()=>send("receipt (ESC/POS)",RawPrint.receipt({title:"B-HOME",header:["Printer test"],
   meta:[["Bill","TEST-1"],["Date",new Date().toLocaleDateString("en-IN")]],
   items:[{name:item.name,qty:1,rate:18999}],totals:[["Total",18999,true]],barcode:"TEST-1",footer:["Thank you"]}));
