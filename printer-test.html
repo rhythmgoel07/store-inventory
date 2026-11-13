@@ -24,9 +24,13 @@ label{font-size:14px;color:#555}
 <div id="st">Not connected</div>
 
 <h2>2. Label roll loaded, printer in label mode</h2>
-<button class="t" id="p-tspl" disabled>Label A (TSPL)</button>
-<button class="t" id="p-cpcl" disabled>Label B (CPCL)</button>
-<p>Label size <select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select></p>
+<p>Labels sent the way the receipt was (ESC/POS). Try each once. Look for two things: does it print, and does the paper stop at the next label's edge.</p>
+<button class="t" id="p-c" disabled>Label C</button>
+<button class="t" id="p-d" disabled>Label D</button>
+<button class="t" id="p-e" disabled>Label E (picture)</button>
+<button class="t" id="p-f" disabled>Label F (no feed)</button>
+<p>Earlier tests, which did not print: <button class="t" id="p-tspl" disabled>A (TSPL)</button><button class="t" id="p-cpcl" disabled>B (CPCL)</button>
+<select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select></p>
 
 <h2>3. Receipt roll loaded, printer in receipt mode</h2>
 <button class="t" id="p-rcpt" disabled>Receipt (ESC/POS)</button>
@@ -155,6 +159,30 @@ const RawPrint = (() => {
     return cat(out);
   }
 
+  /* ---------- labels on an ESC/POS printer ---------- */
+  // For a 2-in-1 printer that only speaks ESC/POS: print the label as receipt
+  // content, then send a feed-to-next-label command. Which command the printer
+  // obeys varies by maker: "ff" = 0C, "gsff" = 1D 0C, "none" = nothing.
+  const FEEDS = { ff: [0x0c], gsff: [GS, 0x0c], none: [] };
+  function labelEsc(item, o = {}) {
+    const code = ascii(item.barcode || item.sku), payload = cat("{B", code);
+    const price = [item.mrp != null ? "MRP " + money(item.mrp) : "", money(item.price)].filter(Boolean).join("  ");
+    return cat([ESC, 0x40], [ESC, 0x61, 1], [ESC, 0x33, 26],
+      wrap(item.name, 32, 1).map(l => [l, LF]), item.sku ? [ascii(item.sku), LF] : [],
+      [GS, 0x68, o.barHeight || 56], [GS, 0x77, 2], [GS, 0x48, 2], [GS, 0x6b, 73, payload.length], payload,
+      [ESC, 0x45, 1], price, LF, [ESC, 0x45, 0], FEEDS[o.feed || "ff"]);
+  }
+  // A canvas (max 384 px wide) as an ESC/POS raster image: GS v 0.
+  function raster(canvas, o = {}) {
+    const w = Math.min(canvas.width, HEAD), h = canvas.height, bw = Math.ceil(w / 8);
+    const px = canvas.getContext("2d").getImageData(0, 0, w, h).data, bits = new Uint8Array(bw * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      if (px[i + 3] > 127 && px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114 < 140) bits[y * bw + (x >> 3)] |= 0x80 >> (x & 7);
+    }
+    return cat([ESC, 0x40], [GS, 0x76, 0x30, 0, bw & 255, bw >> 8, h & 255, h >> 8], bits, FEEDS[o.feed || "ff"]);
+  }
+
   /* ---------- transports ---------- */
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   // Write services seen on small thermal printers. The first writable characteristic wins.
@@ -223,7 +251,7 @@ const RawPrint = (() => {
   const supported = () => typeof navigator === "undefined" ? {} :
     ({ ble: !!navigator.bluetooth, serial: !!navigator.serial, usb: !!navigator.usb });
 
-  return { connect, supported, label, labels, receipt, cat };
+  return { connect, supported, label, labels, labelEsc, raster, receipt, cat };
 })();
 if (typeof window !== "undefined") window.RawPrint = RawPrint;
 if (typeof module !== "undefined") module.exports = RawPrint;
@@ -251,6 +279,14 @@ async function send(what,data){
 const sz=()=>{const[w,h]=$("size").value.split("x").map(Number);return{w,h}};
 $("p-tspl").onclick=()=>send("label A (TSPL)",RawPrint.label(item,sz()));
 $("p-cpcl").onclick=()=>send("label B (CPCL)",RawPrint.label(item,{...sz(),lang:"cpcl"}));
+$("p-c").onclick=()=>send("label C (text, feed 0C)",RawPrint.labelEsc(item,{feed:"ff"}));
+$("p-d").onclick=()=>send("label D (text, feed 1D 0C)",RawPrint.labelEsc(item,{feed:"gsff"}));
+$("p-f").onclick=()=>send("label F (text, no feed)",RawPrint.labelEsc(item,{feed:"none"}));
+$("p-e").onclick=()=>{const c=document.createElement("canvas");c.width=384;c.height=200;const g=c.getContext("2d");
+  g.fillStyle="#fff";g.fillRect(0,0,384,200);g.fillStyle="#000";g.strokeStyle="#000";g.lineWidth=3;g.strokeRect(4,4,376,192);
+  g.textAlign="center";g.font="bold 26px sans-serif";g.fillText(item.name,192,48);g.font="22px sans-serif";g.fillText(item.sku,192,84);
+  g.fillText("MRP \u20B924,999",192,124);g.font="bold 40px sans-serif";g.fillText("\u20B918,999",192,174);
+  send("label E (picture, feed 0C)",RawPrint.raster(c,{feed:"ff"}))};
 $("p-rcpt").onclick=()=>send("receipt (ESC/POS)",RawPrint.receipt({title:"B-HOME",header:["Printer test"],
   meta:[["Bill","TEST-1"],["Date",new Date().toLocaleDateString("en-IN")]],
   items:[{name:item.name,qty:1,rate:18999}],totals:[["Total",18999,true]],barcode:"TEST-1",footer:["Thank you"]}));
