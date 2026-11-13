@@ -316,7 +316,10 @@ Every invoice and every purchase bill has a page of its own, and an admin can co
 ## Voiding a bill made from a booking (admin)
 - **The booking reopens.** The goods go back into stock and are reserved for the booking again, and the booking returns to *booked* — so it can be **modified, delivered again, or cancelled**. The voided invoice is listed on it under *Earlier invoices*.
 - **Money collected on delivery stays received.** It becomes a payment against the booking, dated the day of the delivery and in the mode it was taken, so the customer's balance doesn't move when the bill is voided. Cancelling the booking afterwards then settles it in the usual way — kept as credit, refunded, or kept as a cancellation charge.
-- **Bookings already stuck** — showing *delivered* although their bill was voided before this existed — say so on their page, and an admin gets **Reopen booking**, which does the same: reserves the goods again (warning if stock has since run short) and keeps the delivery money as a payment. Until it is reopened, such a booking makes the customer look as if they owe what they paid at the door.
+- **Bookings already stuck** — delivered on a bill that was voided before this existed — are marked **bill void** (in red) in the ledger, the bookings list and on their page, never *delivered*. The money taken at the door is counted as received in the ledger even while stuck, so the balance is honest. An admin gets two ways to close it:
+  - **Cancel booking** closes it for good. The goods are already back on the shelf, so nothing moves in stock; the booking's value comes off the ledger, and **everything received** — booking amount, later payments and what was collected at the door — is settled the usual way: **kept as credit**, **refunded** (balance settles to zero), or **kept as a cancellation charge** (balance settles to zero).
+  - **Reopen booking** keeps the order alive: the goods are reserved for it again (with a warning if stock has since run short), the delivery money becomes a payment against it, and it can be changed or delivered again.
+  A sales login sees the explanation and is asked to get an admin.
 - Voiding a booking's bill is admin-only, on screen and in the database rules; anyone else gets **Ask admin**.
 
 ## An admin can correct the ledger
