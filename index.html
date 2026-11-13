@@ -5063,21 +5063,15 @@ function rollLabelsHTML(items,o,svgFn){
    ${pz}${pz&&F.tax?`<div class="gst">GST &amp; other charges extra as applicable</div>`:""}</div>`}).join("");
   return `<!doctype html><html><head><meta charset="utf-8"><title>Barcode labels</title><style>${css}</style></head><body><div class="sheet">${body}</div>${o.noprint?"":"<script>onload=()=>setTimeout(()=>print(),500)<\/script>"}</body></html>`;
 }
-/* ---- Straight to the Seznik DEV, without the print dialog ----
-   What the printer was found to do, on the real one (firmware C1.12.03):
-   - it is ESC/POS only. In label mode it ignores TSPL, CPCL and ESC/POS text; a raster image
-     (GS v 0) is the one thing it prints, so a label goes as a picture of the label;
-   - no feed-to-gap command moves it (0C, 1D 0C and the 1F F0 family were tried), and it does
-     not line itself up after a job. Blank raster rows do move the paper, so each label is
-     sent as exactly one sticker pitch: picture, then blank rows;
-   - a job starts about DIRECT.off mm below the top of the sticker, whether or not the feed
-     button was pressed, and the paper cannot be pulled back, so that band stays blank and the
-     label is laid out in the height below it. Both figures can be corrected in the dialogs and
-     are remembered on the device, since rolls and printers differ. */
-const DIRECT={off:5,gap:4,head:384,dpmm:8};
-const fitPref=()=>{const p=labelPrefs(),f=(v,d,hi)=>{v=+v;return v>=0&&v<=hi?v:d};return {off:f(p.off,DIRECT.off,15),gap:f(p.gap,DIRECT.gap,10)}};
-const FIT_FIELDS=id=>{const f=fitPref();return `<div><label>Blank at top (mm)</label><input id="${id}-off" type="number" min="0" max="15" step="0.5" value="${f.off}" inputmode="decimal"></div><div><label>Gap between stickers (mm)</label><input id="${id}-gap" type="number" min="0" max="10" step="0.5" value="${f.gap}" inputmode="decimal"></div>`};
-const readFit=id=>{const f={off:+$("#"+id+"-off").value,gap:+$("#"+id+"-gap").value};if(!(f.off>=0&&f.off<=15))f.off=DIRECT.off;if(!(f.gap>=0&&f.gap<=10))f.gap=DIRECT.gap;saveLabelPrefs({...labelPrefs(),off:f.off,gap:f.gap});return f};
+/* ---- Straight to the Seznik DEV (a 632-L58P), without the print dialog ----
+   The printer takes TSPL in label mode, in the form its own Windows driver sends (captured by
+   printing to FILE:): a fixed header, the whole label as one BITMAP in OR mode, then PRINT.
+   That job prints over Bluetooth LE from the phone and over USB alike, and the printer finds
+   the gap itself. ESC/POS, which the receipt mode speaks, is not used for labels. */
+const DIRECT={gap:3,dpmm:8};
+const fitPref=()=>{const p=labelPrefs(),g=+p.gap;return {gap:g>=0&&g<=10?g:DIRECT.gap}};
+const FIT_FIELDS=id=>`<div><label>Gap between stickers (mm)</label><input id="${id}-gap" type="number" min="0" max="10" step="0.5" value="${fitPref().gap}" inputmode="decimal"></div>`;
+const readFit=id=>{const f={gap:+$("#"+id+"-gap").value};if(!(f.gap>=0&&f.gap<=10))f.gap=DIRECT.gap;saveLabelPrefs({...labelPrefs(),gap:f.gap});return f};
 const SEZ={dev:null,ch:null,port:null};
 const SEZ_SERVICES=[0x18f0,0xff00,0xffe0,0xae30,0xfee7,"49535343-fe7d-4ae5-8fa9-9fafd205e455","e7810a71-73ae-499d-8c15-faa9aef0c3f2"];
 const directCan=()=>!!(navigator.bluetooth||navigator.serial);
@@ -5107,26 +5101,28 @@ async function seznikSend(data){
 /* The roll label the dialogs print, drawn into printer dots. The same HTML as the print is laid
    out in the height the head can reach and rasterised at 8 dots to the mm. */
 async function labelDots1(p,o,logo){
-  const off=o.off==null?DIRECT.off:+o.off,gap=o.gap==null?DIRECT.gap:+o.gap;
-  const W=Math.min(110,Math.max(20,+o.w||50)),h=Math.max(12,(+o.h||30)-off),MM=96/25.4,K=DIRECT.dpmm;
+  const W=Math.min(110,Math.max(20,+o.w||50)),h=Math.max(12,+o.h||30),MM=96/25.4,K=DIRECT.dpmm;
   const html=rollLabelsHTML([p],{...o,w:W,h,logo,noprint:false},barcodeSVG);
   const css=html.slice(html.indexOf("<style>")+7,html.indexOf("</style>")),a=html.indexOf('<div class="sheet">')+19;
   const box=document.createElement("div");box.setAttribute("style","font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff");
   box.innerHTML="<style>"+css+"</style>"+html.slice(a,html.lastIndexOf("</div>"));
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W*K}" height="${h*K}" viewBox="0 0 ${(W*MM).toFixed(3)} ${(h*MM).toFixed(3)}"><foreignObject x="0" y="0" width="${(W*MM).toFixed(3)}" height="${(h*MM).toFixed(3)}">${new XMLSerializer().serializeToString(box)}</foreignObject></svg>`;
   const img=await loadImg("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg));
-  /* One sticker pitch tall and as wide as the head; a roll wider or narrower than the head is centred on it. */
-  const rows=Math.round((h+off+gap)*K),c=document.createElement("canvas");c.width=DIRECT.head;c.height=rows;
-  const x=c.getContext("2d",{willReadFrequently:true});x.fillStyle="#fff";x.fillRect(0,0,c.width,rows);
-  x.drawImage(img,Math.round((DIRECT.head-W*K)/2),0,W*K,h*K);
+  const c=document.createElement("canvas");c.width=Math.ceil(W*K/8)*8;c.height=Math.round(h*K);
+  const x=c.getContext("2d",{willReadFrequently:true});x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,W*K,h*K);
   return c;
 }
 /* A canvas as one ESC/POS raster image: GS v 0, a bit per dot, set where the dot is dark. */
-function rasterBytes(c){
+/* The canvas as the driver's TSPL job. In a TSPL BITMAP a 1 bit is white. */
+function tsplJob(c,o){
   const w=c.width,hh=c.height,bw=Math.ceil(w/8),px=c.getContext("2d").getImageData(0,0,w,hh).data;
-  const out=new Uint8Array(10+bw*hh);out.set([0x1b,0x40,0x1d,0x76,0x30,0,bw&255,bw>>8,hh&255,hh>>8]);
+  const bits=new Uint8Array(bw*hh).fill(0xff);
   for(let y=0;y<hh;y++)for(let X=0;X<w;X++){const i=(y*w+X)*4;
-    if(px[i]*.299+px[i+1]*.587+px[i+2]*.114<150)out[10+y*bw+(X>>3)]|=0x80>>(X&7)}
+    if(px[i]*.299+px[i+1]*.587+px[i+2]*.114<150)bits[y*bw+(X>>3)]&=~(0x80>>(X&7))}
+  const gap=o.gap==null?DIRECT.gap:+o.gap,W=Math.min(110,Math.max(20,+o.w||50)),H=Math.max(12,+o.h||30);
+  const head=`SIZE ${W} mm,${H} mm\r\nREFERENCE 0,0\r\nDIRECTION 0\r\nGAP ${gap} mm,0 mm\r\nOFFSET 0 mm\r\nDENSITY 8\r\nSPEED 8\r\nSET TEAR ON\r\nCLS\r\nBITMAP 0,0,${bw},${hh},1,`,tail="\r\nPRINT 1,1\r\n";
+  const out=new Uint8Array(head.length+bits.length+tail.length);let k=0;
+  for(const ch of head)out[k++]=ch.charCodeAt(0);out.set(bits,k);k+=bits.length;for(const ch of tail)out[k++]=ch.charCodeAt(0);
   return out;
 }
 /* items: products, one per label. logoOf gives each its fitted logo. btn shows progress. */
@@ -5137,13 +5133,13 @@ async function seznikLabels(items,o,logoOf,btn){
     if(o.fields&&o.fields.barcode!==false)await loadJsBarcode();
     for(let i=0;i<items.length;i++){
       btn.textContent=items.length>1?`Printing ${i+1} of ${items.length}…`:"Printing…";
-      await seznikSend(rasterBytes(await labelDots1(items[i],o,await logoOf(items[i]))));
+      await seznikSend(tsplJob(await labelDots1(items[i],o,await logoOf(items[i])),o));
     }
     toast(items.length>1?`${items.length} labels sent to the printer`:"Label sent to the printer");
   }catch(e){if(e&&e.name==="NotFoundError")toast("No printer chosen",1);else{SEZ.ch=null;toast("Printer: "+emsg(e),1)}}
   btn.disabled=false;btn.textContent=was;
 }
-const DIRECT_NOTE=`<b>Print on Seznik</b> sends labels straight to the printer over Bluetooth, no print dialog. The printer must be in <b>label mode</b> (power button three times until it prints "Shift to Label Mode"); hold its feed button 3 s once per roll so it learns the stickers. The printer starts every label a few mm below the top of the sticker, so that band stays blank and the label is fitted below it. If labels print low or creep, correct the two figures above and print again.`;
+const DIRECT_NOTE=`<b>Print on Seznik</b> sends labels straight to the printer over Bluetooth, no print dialog. The printer must be in <b>label mode</b> (power button three times until it prints "Shift to Label Mode"); hold its feed button 3 s once per roll so it learns the stickers. The gap above is the space between stickers on the roll.`;
 /* One product, from its own page: tick what goes on the label, pick the roll, see it, print.
    Name, SKU, barcode, MRP and selling price start ticked and the roll starts at 50 × 30 every
    time, so the usual label is one tap; anything else is a choice made for this print. */
@@ -5221,7 +5217,7 @@ window.openProductLabel=function(pid){
     const o=opts();if(!Object.entries(o.fields).some(([k,v])=>v&&k!=="logo"&&k!=="disc"&&k!=="tax"))return toast("Tick at least one thing to print",1);
     const n=Math.min(500,Math.max(1,Math.floor(+$("#pl-copies").value||1)));
     const fit=readFit("pl");
-    let lg;const logoOf=async()=>lg!==undefined?lg:(lg=await logoFor(o.logoId,{...o,h:Math.max(12,o.h-fit.off)}));
+    let lg;const logoOf=async()=>lg!==undefined?lg:(lg=await logoFor(o.logoId,o));
     await seznikLabels(Array.from({length:n},()=>p),{...o,...fit},logoOf,$("#pl-direct"));
   };
   nobar();draw();
@@ -5335,7 +5331,7 @@ window.openLabels=function(){
     if(items.length>300)return toast(`That would be ${items.length} labels — over Bluetooth, print at most 300 at a time`,1);
     if(items.length>20&&!confirm(`Print ${items.length} labels on the Seznik printer?`))return;
     const o=opts(),fit=readFit("lb");let fn;
-    const logoOf=async p=>{if(fn===undefined)fn=await logoFn(o.logoMode,L,{...o,h:Math.max(12,o.h-fit.off)});return typeof fn==="function"?fn(p):fn};
+    const logoOf=async p=>{if(fn===undefined)fn=await logoFn(o.logoMode,L,o);return typeof fn==="function"?fn(p):fn};
     await seznikLabels(items,{...o,layout:"roll",...fit},logoOf,$("#lb-direct"));
   };
   $("#lb-print").onclick=async()=>{
