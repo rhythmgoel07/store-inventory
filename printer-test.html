@@ -22,6 +22,7 @@ label{font-size:14px;color:#555}
 <button id="c-usb">USB</button>
 <p><label><input type="checkbox" id="all"> Show every Bluetooth device, not only ones named "Seznik"</label></p>
 <div id="st">Not connected</div>
+<p><label>Send on channel <select id="chan"><option value="0">1st writable</option></select></label></p>
 
 <h2>2. Label roll loaded, printer switched to label mode (power button 3 times)</h2>
 <p>Label size <select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select> mm</p>
@@ -193,22 +194,30 @@ const RawPrint = (() => {
       ? { filters: [{ namePrefix: o.namePrefix }], optionalServices: BLE_SERVICES }
       : { acceptAllDevices: true, optionalServices: BLE_SERVICES });
     const gatt = await dev.gatt.connect();
-    let ch = null;
+    const all = [], seen = [];
     for (const s of await gatt.getPrimaryServices()) {
-      for (const c of await s.getCharacteristics())
-        if (c.properties.writeWithoutResponse || c.properties.write) { ch = c; break; }
-      if (ch) break;
+      for (const c of await s.getCharacteristics()) {
+        const p = c.properties, f = Object.keys(p).filter(k => p[k]).join("/");
+        seen.push(s.uuid.slice(0, 8) + " > " + c.uuid.slice(0, 8) + " [" + f + "]");
+        if (p.writeWithoutResponse || p.write) all.push(c);
+      }
     }
-    if (!ch) { gatt.disconnect(); throw new Error("Connected, but found no writable channel on " + (dev.name || "the printer") + "."); }
-    const fast = ch.properties.writeWithoutResponse, chunk = o.chunk || 100;
+    if (o.log) o.log("Channels: " + (seen.join("; ") || "none"));
+    if (!all.length) { gatt.disconnect(); throw new Error("Connected, but found no writable channel on " + (dev.name || "the printer") + "."); }
+    const chunk = o.chunk || 100;
+    const write = async (ch, data) => {
+      for (let i = 0; i < data.length; i += chunk) {
+        const part = data.subarray(i, i + chunk);
+        if (ch.properties.writeWithoutResponse) { await ch.writeValueWithoutResponse(part); await sleep(o.delay ?? 20); }
+        else await ch.writeValueWithResponse(part);
+      }
+    };
     return {
-      kind: "ble", name: dev.name || "Bluetooth printer",
-      async send(data) {
-        for (let i = 0; i < data.length; i += chunk) {
-          const part = data.subarray(i, i + chunk);
-          if (fast) { await ch.writeValueWithoutResponse(part); await sleep(o.delay ?? 20); }
-          else await ch.writeValueWithResponse(part);
-        }
+      kind: "ble", name: dev.name || "Bluetooth printer", channels: all,
+      async send(data, which) {                 // which: index into channels; default the first
+        const ch = all[which || 0] || all[0];
+        if (!gatt.connected) throw new Error("Bluetooth link dropped — connect again");
+        await write(ch, data);
       },
       async close() { gatt.disconnect(); }
     };
@@ -264,14 +273,15 @@ if(!sup.ble)$("c-ble").disabled=true;if(!sup.serial)$("c-serial").disabled=true;
 log("This browser: Bluetooth "+(sup.ble?"yes":"no")+", Serial "+(sup.serial?"yes":"no")+", USB "+(sup.usb?"yes":"no"));
 async function conn(kind){
   try{ if(P){try{await P.close()}catch(e){} P=null;on(false)}
-    P=await RawPrint.connect(kind,kind==="ble"&&!$("all").checked?{namePrefix:"Seznik"}:{});
+    P=await RawPrint.connect(kind,{log,...(kind==="ble"&&!$("all").checked?{namePrefix:"Seznik"}:{})});
     st("Connected: "+P.name+" ("+P.kind+")");on(true);
+    if(P.channels){$("chan").innerHTML=P.channels.map((c,i)=>`<option value="${i}">${i+1}: ${c.uuid.slice(0,8)}</option>`).join("");log("Writable channels: "+P.channels.length)}
   }catch(e){st("Not connected");log("Connect failed: "+e.message)}
 }
 ["ble","serial","usb"].forEach(k=>$("c-"+k).onclick=()=>conn(k));
 const item={name:"Test Coffee Table Walnut",sku:"BH-TEST-001",barcode:"890123456789",mrp:24999,price:18999};
 async function send(what,data){
-  try{log("Sending "+what+" ("+data.length+" bytes)");await P.send(data);log("Sent "+what+". Did it print?")}
+  try{const w=+($("chan").value||0);log("Sending "+what+" ("+data.length+" bytes) on channel "+(w+1));await P.send(data,w);log("Sent "+what+". Did it print?")}
   catch(e){log("Send failed: "+e.message)}
 }
 const sz=()=>{const[w,h]=$("size").value.split("x").map(Number);return{w,h}};
