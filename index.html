@@ -210,6 +210,14 @@ table td.c,table th.c{text-align:center}
 .pwrap{position:relative}
 .pcard.sel{border-color:var(--brand2);box-shadow:0 0 0 2px color-mix(in srgb,var(--brand2) 35%,transparent)}
 .pcard.incart{border-color:var(--ok)}
+.lgbox{height:84px;border:1px solid var(--line);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
+.lgbox img{max-width:100%;max-height:100%;object-fit:contain}
+.lgrow{display:grid;grid-template-columns:92px 1fr;gap:8px 12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.lgrow>.row{grid-column:2;gap:6px}
+.lgrow:last-of-type{border-bottom:0}
+.lgthumb{flex:none;width:92px;height:46px;border:1px solid var(--line);border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;padding:4px;overflow:hidden}
+.lgthumb img{max-width:100%;max-height:100%;object-fit:contain}
+
 .qty.shopq{gap:2px}
 .qty.shopq input{width:34px;pointer-events:none;background:transparent}
 .qty.shopq button{width:26px;height:26px}
@@ -250,7 +258,7 @@ import {firebaseConfig} from "./firebase-config.js";
 
 /* ---------- Taxonomy (embedded from homecentre_taxonomy.json) ---------- */
 const DEFAULT_TAX = [{"id":"living-room","name":"Living Room","slug":"livingroom","subcategories":[{"id":"sofas","name":"Sofas","slug":"livingroom-sofas","subcategories":[{"id":"3-seater-sofas","name":"3 Seater Sofas","slug":"livingroom-sofas-3seatersofas","subcategories":[]},{"id":"2-seater-sofas","name":"2 Seater Sofas","slug":"livingroom-sofas-2seatersofas","subcategories":[]},{"id":"1-seater-sofas","name":"1 Seater Sofas","slug":"livingroom-sofas-1seatersofas","subcategories":[]},{"id":"sofa-sets","name":"Sofa Sets","slug":"livingroom-sofas-sofasets","subcategories":[]},{"id":"sofa-cum-beds","name":"Sofa Cum Beds","slug":"livingroom-sofas-sofacumbeds","subcategories":[]},{"id":"corner-sofas","name":"Corner Sofas","slug":"livingroom-sofas-cornersofa","subcategories":[]}]},{"id":"customised-furniture","name":"Customised Furniture","slug":"customizedfurniture","subcategories":[]},{"id":"recliners","name":"Recliners","slug":"livingroom-recliners","subcategories":[{"id":"3-seater-recliners","name":"3 Seater Recliners","slug":"livingroom-recliners-3seaterrecliners","subcategories":[]},{"id":"2-seater-recliners","name":"2 Seater Recliners","slug":"livingroom-recliners-2seaterrecliners","subcategories":[]},{"id":"1-seater-recliners","name":"1 Seater Recliners","slug":"livingroom-recliners-1seaterrecliners","subcategories":[]},{"id":"recliner-sets","name":"Recliner Sets","slug":"livingroom-recliners-reclinersets","subcategories":[]}]},{"id":"occasional-chairs","name":"Occasional Chairs","slug":"livingroom-occasionalchairs","subcategories":[{"id":"accent-chairs","name":"Accent Chairs","slug":"livingroom-occasionalchairs-accentchairs","subcategories":[]},{"id":"folding-chairs","name":"Folding Chairs","slug":"livingroom-occasionalchairs-foldingchairs","subcategories":[]},{"id":"cafe-chairs","name":"Cafe Chairs","slug":"livingroom-occasionalchairs-cafechairs","subcategories":[]},{"id":"plastic-chairs","name":"Plastic Chairs","slug":"livingroom-occasionalchairs-plasticchairs","subcategories":[]}]},{"id":"benches-stools","name":"Benches & Stools","slug":"livingroom-benchandstools","subcategories":[{"id":"benches","name":"Benches","slug":"livingroom-benchandstools-benches","subcategories":[]},{"id":"stools","name":"Stools","slug":"livingroom-benchandstools-stools","subcategories":[]}]},{"id":"bean-bags-pouffes","name":"Bean Bags & Pouffes","slug":"livingroom-beanbagsandpouffes","subcategories":[{"id":"pouffes","name":"Pouffes","slug":"livingroom-beanbagsandpouffes-pouffes","subcategories":[]},{"id":"bean-bags","name":"Bean Bags","slug":"livingroom-beanbagsandpouffes-beanbags","subcategories":[]}]},{"id":"tables","name":"Tables","slug":"livingroom-tables","subcategories":[{"id":"centre-tables","name":"Centre Tables","slug":"livingroom-tables-centertables","subcategories":[]},{"id":"end-tables","name":"End Tables","slug":"livingroom-tables-endtables","subcategories":[]},{"id":"console-tables","name":"Console Tables","slug":"livingroom-tables-consoletables","subcategories":[]},{"id":"nesting-tables","name":"Nesting Tables","slug":"livingroom-tables-nestingtables","subcategories":[]}]},{"id":"tv-media-units","name":"TV & Media Units","slug":"livingroom-tvandmediaunits","subcategories":[{"id":"tv-consoles","name":"TV Consoles","slug":"livingroom-tvandmediaunits-tvconsoles","subcategories":[]},{"id":"tv-units","name":"TV Units","slug":"livingroom-tvandmediaunits-tvunits","subcategories":[]}]},{"id":"shelves","name":"Shelves","slug":"livingroom-shelves","subcategories":[{"id":"wall-shelves","name":"Wall Shelves","slug":"livingroom-shelves-wallshelves","subcategories":[]},{"id":"corner-shelves","name":"Corner Shelves","slug":"livingroom-shelves-cornershelves","subcategories":[]},{"id":"home-mandir","name":"Home Mandir","slug":"livingroom-shelves-homemandir","subcategories":[]}]},{"id":"shoe-racks","name":"Shoe Racks","slug":"livingroom-shoeracks","subcategories":[{"id":"shoe-cabinets","name":"Shoe Cabinets","slug":"livingroom-shoeracks-shoecabinets","subcategories":[]},{"id":"open-shoe-racks","name":"Open Shoe Racks","slug":"livingroom-shoeracks-shoeopenshelves","subcategories":[]}]},{"id":"study-work","name":"Study & Work","slug":"livingroom-studyandwork","subcategories":[{"id":"study-office-tables","name":"Study & Office Tables","slug":"livingroom-studyandwork-studyandofficetables","subcategories":[]},{"id":"study-office-chairs","name":"Study & Office Chairs","slug":"livingroom-studyandwork-studyandofficechairs","subcategories":[]}]},{"id":"book-cases-cabinets","name":"Book Cases & Cabinets","slug":"livingroom-bookcaseandcabinets","subcategories":[{"id":"book-cabinets","name":"Book Cabinets","slug":"livingroom-bookcaseandcabinets-bookcabinets","subcategories":[]},{"id":"open-book-shelves","name":"Open Book Shelves","slug":"livingroom-bookcaseandcabinets-openbookshelves","subcategories":[]}]},{"id":"outdoor-furniture","name":"Outdoor Furniture","slug":"outdoor","subcategories":[{"id":"outdoor-seating-tables","name":"Outdoor Seating & Tables","slug":"outdoor-outdoorseatingandtables","subcategories":[]}]},{"id":"ottomans","name":"Ottomans","slug":"livingroom-ottomans","subcategories":[]},{"id":"tea-table-sets","name":"Tea Table Sets","slug":"livingroom-teasets","subcategories":[]}]},{"id":"bedroom","name":"Bedroom","slug":"bedroom","subcategories":[{"id":"beds","name":"Beds","slug":"bedroom-beds","subcategories":[{"id":"king-beds","name":"King Beds","slug":"bedroom-beds-kingbeds","subcategories":[]},{"id":"queen-beds","name":"Queen Beds","slug":"bedroom-beds-queenbeds","subcategories":[]},{"id":"single-beds","name":"Single Beds","slug":"bedroom-beds-singlebeds","subcategories":[]},{"id":"bunk-beds","name":"Bunk Beds","slug":"bedroom-beds-bunkbeds","subcategories":[]}]},{"id":"wardrobes","name":"Wardrobes","slug":"bedroom-wardrobes","subcategories":[{"id":"2-door-wardrobes","name":"2 Door Wardrobes","slug":"bedroom-wardrobes-2doorswingwardrobes","subcategories":[]},{"id":"3-door-wardrobes","name":"3 Door Wardrobes","slug":"bedroom-wardrobes-3doorswingwardrobes","subcategories":[]},{"id":"4-door-wardrobes","name":"4 Door Wardrobes","slug":"bedroom-wardrobes-4doorswingwardrobes","subcategories":[]},{"id":"sliding-wardrobes","name":"Sliding Wardrobes","slug":"bedroom-wardrobes-2doorslidingwardrobes","subcategories":[]}]},{"id":"mattresses","name":"Mattresses","slug":"bedroom-mattresses","subcategories":[{"id":"king-mattresses","name":"King Mattresses","slug":"bedroom-mattresses-kingmattresses","subcategories":[]},{"id":"queen-mattresses","name":"Queen Mattresses","slug":"bedroom-mattresses-queenmattresses","subcategories":[]},{"id":"single-mattresses","name":"Single Mattresses","slug":"bedroom-mattresses-singlemattresses","subcategories":[]}]},{"id":"bed-side-tables","name":"Bed Side Tables","slug":"bedroom-bedsidetables","subcategories":[]},{"id":"chest-of-drawers","name":"Chest of Drawers","slug":"bedroom-chestofdrawers","subcategories":[]},{"id":"dresser-mirrors","name":"Dresser Mirrors","slug":"bedroom-dressermirrors","subcategories":[]}]},{"id":"dining-room","name":"Dining Room","slug":"diningroom","subcategories":[{"id":"dining-sets","name":"Dining Sets","slug":"diningroom-diningtablesets","subcategories":[{"id":"4-seater-dining-sets","name":"4 Seater Dining Sets","slug":"diningroom-diningtablesets-4seaterdiningtablesets","subcategories":[]},{"id":"6-seater-dining-sets","name":"6 Seater Dining Sets","slug":"diningroom-diningtablesets-6seaterdiningtablesets","subcategories":[]},{"id":"8-seater-dining-sets","name":"8 Seater Dining Sets","slug":"diningroom-diningtablesets-8seaterdiningtablesets","subcategories":[]}]},{"id":"dining-tables","name":"Dining Tables","slug":"diningroom-diningtables","subcategories":[{"id":"4-seater-dining-tables","name":"4 Seater Dining Tables","slug":"diningroom-diningtables-4seatertables","subcategories":[]},{"id":"6-seater-dining-tables","name":"6 Seater Dining Tables","slug":"diningroom-diningtables-6seatertables","subcategories":[]},{"id":"8-seater-dining-tables","name":"8 Seater Dining Tables","slug":"diningroom-diningtables-8seatertables","subcategories":[]}]},{"id":"bar-furniture","name":"Bar Furniture","slug":"diningroom-bar","subcategories":[{"id":"bar-cabinet-curios","name":"Bar Cabinet-Curios","slug":"diningroom-bar-barcabinetcurios","subcategories":[]},{"id":"bar-stools-chairs","name":"Bar Stools & Chairs","slug":"diningroom-bar-barstools","subcategories":[]},{"id":"serving-trolleys","name":"Serving Trolleys","slug":"diningroom-bar-servingtrolleys","subcategories":[]}]},{"id":"dining-chairs","name":"Dining Chairs","slug":"diningroom-diningchairs","subcategories":[]},{"id":"dining-benches","name":"Dining Benches","slug":"diningroom-diningbenches","subcategories":[]},{"id":"crockery-units","name":"Crockery Units","slug":"diningroom-crockeryunits","subcategories":[]}]},{"id":"decor","name":"Decor","slug":"decor","subcategories":[{"id":"home-accessories","name":"Home Accessories","slug":"decor-homeaccessories","subcategories":[{"id":"figurines","name":"Figurines","slug":"decor-homeaccessories-figurines","subcategories":[]},{"id":"vases","name":"Vases","slug":"decor-homeaccessories-vases","subcategories":[]},{"id":"table-accents","name":"Table Accents","slug":"decor-homeaccessories-tableaccents","subcategories":[]},{"id":"candle-holders-lanterns","name":"Candle Holders & Lanterns","slug":"decor-homeaccessories-candleholdersandlanterns","subcategories":[]},{"id":"potpourri-bowls-platters","name":"Potpourri Bowls & Platters","slug":"decor-homeaccessories-bowls","subcategories":[]},{"id":"clocks","name":"Clocks","slug":"decor-homeaccessories-clocks","subcategories":[]},{"id":"desk-accessories","name":"Desk Accessories","slug":"decor-homeaccessories-deskaccessories","subcategories":[]},{"id":"gift-accessories","name":"Gift Accessories","slug":"decor-homeaccessories-giftaccessories","subcategories":[]}]},{"id":"lighting","name":"Lighting","slug":"decor-lighting","subcategories":[{"id":"table-lamps","name":"Table Lamps","slug":"decor-lighting-tablelamps","subcategories":[]},{"id":"wall-lamps","name":"Wall Lamps","slug":"decor-lighting-walllamps","subcategories":[]},{"id":"hanging-lamps","name":"Hanging Lamps","slug":"decor-lighting-ceilinglamps","subcategories":[]},{"id":"floor-lamps","name":"Floor Lamps","slug":"decor-lighting-floorlamps","subcategories":[]},{"id":"decorative-lights","name":"Decorative Lights","slug":"decor-lighting-decorativelights","subcategories":[]},{"id":"string-lights","name":"String Lights","slug":"decor-lighting-stringlights","subcategories":[]},{"id":"bulbs","name":"Bulbs","slug":"decor-lighting-bulbs","subcategories":[]}]},{"id":"wall-decor","name":"Wall Decor","slug":"decor-wallaccent","subcategories":[{"id":"wall-accents","name":"Wall Accents","slug":"decor-wallaccent-walldecor","subcategories":[]},{"id":"decorative-mirrors","name":"Decorative Mirrors","slug":"decor-wallaccent-decorativemirrors","subcategories":[]},{"id":"photo-frames","name":"Photo Frames","slug":"decor-wallaccent-photoframes","subcategories":[]},{"id":"posters-paintings","name":"Posters & Paintings","slug":"decor-wallaccent-pictureframes","subcategories":[]}]},{"id":"home-fragrances","name":"Home Fragrances","slug":"decor-homefragrance","subcategories":[{"id":"candles","name":"Candles","slug":"decor-homefragrance-candles","subcategories":[]},{"id":"fragrances-potpourris","name":"Fragrances & Potpourris","slug":"decor-homefragrance-fragranceandpotpourri","subcategories":[]},{"id":"diffusers","name":"Diffusers","slug":"decor-homefragrance-diffusers","subcategories":[]},{"id":"aroma-oils","name":"Aroma Oils","slug":"decor-homefragrance-aromaoil","subcategories":[]},{"id":"room-car-sprays","name":"Room & Car Sprays","slug":"decor-homefragrance-roomsprays","subcategories":[]}]},{"id":"garden","name":"Garden","slug":"decor-garden","subcategories":[{"id":"artificial-plants-flowers","name":"Artificial Plants & Flowers","slug":"decor-garden-artificialplantsandflowers","subcategories":[]},{"id":"pots-planters","name":"Pots & Planters","slug":"decor-garden-potsandplanters","subcategories":[]},{"id":"fountains","name":"Fountains","slug":"decor-garden-indoorandoutdoorfountains","subcategories":[]}]}]},{"id":"kitchen","name":"Kitchen","slug":"kitchen","subcategories":[{"id":"storage-containers","name":"Storage & Containers","slug":"kitchen-storageandcontainers","subcategories":[{"id":"containers-jars","name":"Containers & Jars","slug":"kitchen-storageandcontainers-containersandjars","subcategories":[]},{"id":"bottles","name":"Bottles","slug":"kitchen-storageandcontainers-bottles","subcategories":[]},{"id":"flasks","name":"Flasks","slug":"kitchen-storageandcontainers-flask","subcategories":[]},{"id":"lunch-boxes-bags","name":"Lunch Boxes & Bags","slug":"kitchen-storageandcontainers-lunchboxandbags","subcategories":[]},{"id":"kitchen-organisers","name":"Kitchen Organisers","slug":"kitchen-storageandcontainers-organisers","subcategories":[]}]},{"id":"cookware","name":"Cookware","slug":"kitchen-cooking","subcategories":[{"id":"cookware-sets","name":"Cookware Sets","slug":"kitchen-cooking-cookwaresets","subcategories":[]},{"id":"induction-cookware","name":"Induction Cookware","slug":"kitchen-cooking-inductioncookware","subcategories":[]},{"id":"pots-pans","name":"Pots & Pans","slug":"kitchen-cooking-potsandpans","subcategories":[]},{"id":"kadhai-woks","name":"Kadhai & Woks","slug":"kitchen-cooking-kadhaiandwoks","subcategories":[]},{"id":"cooking-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-cooking-toolsandgadgets","subcategories":[]},{"id":"pressure-cookers","name":"Pressure Cookers","slug":"kitchen-cooking-pressurecookers","subcategories":[]},{"id":"tawas","name":"Tawas","slug":"kitchen-cooking-tawas","subcategories":[]}]},{"id":"kitchenware","name":"Kitchenware","slug":"kitchen-kitchenware","subcategories":[{"id":"kitchen-trolleys","name":"Kitchen Trolleys","slug":"kitchen-kitchenware-kitchentrolley","subcategories":[]},{"id":"knives-scissors","name":"Knives & Scissors","slug":"kitchen-kitchenware-knivesandscissors","subcategories":[]},{"id":"casseroles","name":"Casseroles","slug":"kitchen-kitchenware-casseroles","subcategories":[]},{"id":"oil-vinegar-servers","name":"Oil & Vinegar Servers","slug":"kitchen-kitchenware-oilandvinegarserver","subcategories":[]},{"id":"utensil-holders","name":"Utensil Holders","slug":"kitchen-kitchenware-utensilholders","subcategories":[]},{"id":"chopping-boards","name":"Chopping Boards","slug":"kitchen-kitchenware-choppingboards","subcategories":[]},{"id":"dish-racks","name":"Dish Racks","slug":"kitchen-kitchenware-dishracks","subcategories":[]},{"id":"fruit-baskets","name":"Fruit Baskets","slug":"kitchen-kitchenware-fruitstands","subcategories":[]},{"id":"strainers-colanders","name":"Strainers & Colanders","slug":"kitchen-kitchenware-strainersandcolanders","subcategories":[]},{"id":"kitchenware-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-kitchenware-toolsandgadgets","subcategories":[]}]},{"id":"kitchen-linen","name":"Kitchen Linen","slug":"kitchen-kitchenlinens","subcategories":[{"id":"aprons","name":"Aprons","slug":"kitchen-kitchenlinens-aprons","subcategories":[]},{"id":"pot-holders-mittens","name":"Pot Holders & Mittens","slug":"kitchen-kitchenlinens-potholders","subcategories":[]},{"id":"kitchen-towels","name":"Kitchen Towels","slug":"kitchen-kitchenlinens-kitchentowels","subcategories":[]}]},{"id":"bakeware","name":"Bakeware","slug":"kitchen-bakeware","subcategories":[]},{"id":"kitchen-appliances","name":"Kitchen Appliances","slug":"kitchen-appliances","subcategories":[]}]},{"id":"furnishings","name":"Furnishings","slug":"furnishing","subcategories":[{"id":"bedding","name":"Bedding","slug":"furnishing-bedding","subcategories":[{"id":"double-bedsheets","name":"Double Bedsheets","slug":"furnishing-bedding-doublebedsheets","subcategories":[]},{"id":"single-bedsheets","name":"Single Bedsheets","slug":"furnishing-bedding-singlebedsheets","subcategories":[]},{"id":"bedding-sets","name":"Bedding Sets","slug":"furnishing-bedding-beddingsets","subcategories":[]},{"id":"pillows-pillow-covers","name":"Pillows & Pillow Covers","slug":"furnishing-bedding-pillowsandpillowcovers","subcategories":[]},{"id":"blankets-quilts","name":"Blankets & Quilts","slug":"furnishing-bedding-blanketsandquilts","subcategories":[]},{"id":"comforters","name":"Comforters","slug":"furnishing-bedding-comforters","subcategories":[]},{"id":"throws","name":"Throws","slug":"furnishing-bedding-throws","subcategories":[]},{"id":"duvets-duvet-covers","name":"Duvets & Duvet Covers","slug":"furnishing-bedding-duvetandduvetcovers","subcategories":[]},{"id":"dohars","name":"Dohars","slug":"furnishing-bedding-dohars","subcategories":[]},{"id":"bed-covers","name":"Bed Covers","slug":"furnishing-bedding-bedcovers","subcategories":[]}]},{"id":"cushions","name":"Cushions","slug":"furnishing-cushions","subcategories":[{"id":"cushion-covers","name":"Cushion Covers","slug":"furnishing-cushions-cushioncovers","subcategories":[]},{"id":"filled-cushions","name":"Filled Cushions","slug":"furnishing-cushions-filledcushions","subcategories":[]},{"id":"cushion-fillers","name":"Cushion Fillers","slug":"furnishing-cushions-cushionfilling","subcategories":[]},{"id":"floor-cushions","name":"Floor Cushions","slug":"furnishing-cushions-floorcushions","subcategories":[]}]},{"id":"curtains-blinds","name":"Curtains & Blinds","slug":"furnishing-curtains","subcategories":[{"id":"door-curtains","name":"Door Curtains","slug":"furnishing-curtains-doorcurtains","subcategories":[]},{"id":"window-curtains","name":"Window Curtains","slug":"furnishing-curtains-windowcurtains","subcategories":[]},{"id":"blinds","name":"Blinds","slug":"furnishing-curtains-blinds","subcategories":[]},{"id":"rods-accessories","name":"Rods & Accessories","slug":"furnishing-curtains-rodsandaccessories","subcategories":[]}]},{"id":"accessories","name":"Accessories","slug":"furnishing-accessories","subcategories":[{"id":"bags","name":"Bags","slug":"furnishing-accessories-bags","subcategories":[]},{"id":"pads-mats","name":"Pads & Mats","slug":"furnishing-accessories-padsandmats","subcategories":[]},{"id":"sofa-covers","name":"Sofa Covers","slug":"furnishing-accessories-sofacovers","subcategories":[]}]},{"id":"floor-coverings","name":"Floor Coverings","slug":"furnishing-floorcoverings","subcategories":[{"id":"carpets-rugs","name":"Carpets & Rugs","slug":"furnishing-floorcoverings-carpets","subcategories":[]},{"id":"dhurries","name":"Dhurries","slug":"furnishing-floorcoverings-dhurries","subcategories":[]},{"id":"doormats","name":"Doormats","slug":"furnishing-floorcoverings-doormats","subcategories":[]}]}]},{"id":"tableware","name":"Tableware","slug":"dining","subcategories":[{"id":"serving","name":"Serving","slug":"dining-serving","subcategories":[{"id":"trays-platters","name":"Trays & Platters","slug":"dining-serving-traysandplatters","subcategories":[]},{"id":"glasses-jugs","name":"Glasses & Jugs","slug":"dining-serving-glassesandjugs","subcategories":[]},{"id":"bar-accessories","name":"Bar Accessories","slug":"dining-serving-baraccessories","subcategories":[]},{"id":"salt-pepper-shakers","name":"Salt & Pepper Shakers","slug":"dining-serving-saltandpeppershakers","subcategories":[]},{"id":"chip-dip","name":"Chip & Dip","slug":"dining-serving-chipanddip","subcategories":[]}]},{"id":"crockery","name":"Crockery","slug":"dining-crockery","subcategories":[{"id":"bowls","name":"Bowls","slug":"dining-crockery-bowls","subcategories":[]},{"id":"plates","name":"Plates","slug":"dining-crockery-plates","subcategories":[]},{"id":"mugs","name":"Mugs","slug":"dining-crockery-mugsandcups","subcategories":[]},{"id":"cups-saucers","name":"Cups & Saucers","slug":"dining-crockery-cupsandsaucers","subcategories":[]},{"id":"pots-kettles","name":"Pots & Kettles","slug":"dining-crockery-potsandkettles","subcategories":[]},{"id":"dinner-sets","name":"Dinner Sets","slug":"dining-crockery-dinnersets","subcategories":[]}]},{"id":"cutlery","name":"Cutlery","slug":"dining-cutlery","subcategories":[{"id":"spoons","name":"Spoons","slug":"dining-cutlery-spoons","subcategories":[]},{"id":"cutlery-sets","name":"Cutlery & Cutlery Sets","slug":"dining-cutlery-cutlerysets","subcategories":[]},{"id":"cutlery-holders","name":"Cutlery Holders","slug":"dining-cutlery-cutleryholders","subcategories":[]}]},{"id":"table-linens","name":"Table Linens","slug":"dining-tableaccessories","subcategories":[{"id":"placemats","name":"Placemats","slug":"dining-tableaccessories-placemats","subcategories":[]},{"id":"table-runners","name":"Table Runners","slug":"dining-tableaccessories-tablerunners","subcategories":[]},{"id":"table-cloths","name":"Table Cloths","slug":"dining-tableaccessories-tablecloths","subcategories":[]},{"id":"trivets-coasters","name":"Trivets & Coasters","slug":"dining-tableaccessories-trivetandcoasters","subcategories":[]},{"id":"tissue-holders","name":"Tissue Holders","slug":"dining-tableaccessories-tissueholders","subcategories":[]}]}]},{"id":"bath-laundry","name":"Bath & Laundry","slug":"bathandlaundry","subcategories":[{"id":"bath-linen","name":"Bath Linen","slug":"bathandlaundry-bath","subcategories":[{"id":"towels","name":"Towels","slug":"bathandlaundry-bath-towel","subcategories":[]},{"id":"robes","name":"Robes","slug":"bathandlaundry-bath-robes","subcategories":[]},{"id":"bathmats","name":"Bathmats","slug":"bathandlaundry-bath-bathmats","subcategories":[]}]},{"id":"bath-accessories","name":"Bath Accessories","slug":"bathandlaundry-bathaccessories","subcategories":[{"id":"holders-tumblers","name":"Holders & Tumblers","slug":"bathandlaundry-bathaccessories-holdersandtumblers","subcategories":[]},{"id":"soap-dispensers","name":"Soap Dispensers","slug":"bathandlaundry-bathaccessories-soapdispensers","subcategories":[]},{"id":"soap-dishes","name":"Soap Dishes","slug":"bathandlaundry-bathaccessories-soapdishes","subcategories":[]},{"id":"bath-sets","name":"Bath Sets","slug":"bathandlaundry-bathaccessories-accessorysets","subcategories":[]},{"id":"storage-mirrors","name":"Storage & Mirrors","slug":"bathandlaundry-bathaccessories-storageandmirrors","subcategories":[]},{"id":"towel-holders","name":"Towel Holders","slug":"bathandlaundry-bathaccessories-towelholders","subcategories":[]},{"id":"toilet-accessories","name":"Toilet Accessories","slug":"bathandlaundry-bathaccessories-toiletpaperandbrushholders","subcategories":[]},{"id":"shower-curtains","name":"Shower Curtains","slug":"bathandlaundry-bathaccessories-showercurtains","subcategories":[]},{"id":"bath-stools","name":"Bath Stools","slug":"bathandlaundry-bathaccessories-bathstools","subcategories":[]}]},{"id":"laundry","name":"Laundry","slug":"bathandlaundry-laundry","subcategories":[{"id":"laundry-storage-baskets","name":"Laundry Storage & Baskets","slug":"bathandlaundry-laundry-storage","subcategories":[]},{"id":"cleaning-accessories","name":"Cleaning Accessories","slug":"bathandlaundry-laundry-cleaningaccessories","subcategories":[]},{"id":"dustbins","name":"Dustbins","slug":"bathandlaundry-laundry-dustbins","subcategories":[]},{"id":"cloth-dryers","name":"Cloth Dryers","slug":"bathandlaundry-laundry-clothdryers","subcategories":[]},{"id":"hangers-hooks","name":"Hangers & Hooks","slug":"bathandlaundry-laundry-hangersandhooks","subcategories":[]}]}]},{"id":"gifting","name":"Gifting","slug":"gifts","subcategories":[{"id":"housewarming-gifts","name":"Housewarming Gifts","slug":"gifts-housewarminggifts","subcategories":[]},{"id":"wedding-gifts","name":"Wedding Gifts","slug":"gifts-weddinggifts","subcategories":[]},{"id":"anniversary-gifts","name":"Anniversary Gifts","slug":"gifts-anniversarygifts","subcategories":[]},{"id":"birthday-gifts","name":"Birthday Gifts","slug":"gifts-birthdaygifts","subcategories":[]},{"id":"gifts-for-him","name":"Gifts for Him","slug":"gifts-giftsforhim","subcategories":[]},{"id":"gifts-for-her","name":"Gifts for Her","slug":"gifts-giftsforher","subcategories":[]},{"id":"festive-gifts","name":"Festive Gifts","slug":"gifts-festivegifts","subcategories":[{"id":"ganesh-chaturthi","name":"Ganesh Chaturthi","slug":"gifts-festivegifts-ganeshchaturthigifts","subcategories":[]}]},{"id":"special-occasions","name":"Special Occasions","slug":"gifts-specialoccasiongifts","subcategories":[]}]}];
-const BUILD = "13 Nov 12:56";
+const BUILD = "13 Nov 13:34";
 let TAXONOMY = DEFAULT_TAX;
 const bySlug = {}; // slug -> {cat,sub,type}
 function reindex(){
@@ -493,7 +501,7 @@ const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",inv
   products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",dim:"",loc:"",vendor:"",stock:"all",sort:"name",limit:100},sel:null,
   lists:{...DEFAULT_LISTS},vendors:[],purchases:[],vpays:[],pcart:[],pchg:[],pq:"",vf:{q:"",cat:"",pay:false},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:"",bal:""},bf:{q:"",status:"booked",due:false},detailCust:null,detailBk:null,
   bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bpays:null,bdisc:0,bdiscType:"amt",bdate:"",bnotes:"",bq:"",saleOn:"",bookedOn:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",pays:null,
-  nav:[],shop:null,enquiries:[],ecart:[],ecustId:"",ephone:"",ename:"",edisc:0,ediscType:"amt",enote:"",eq:"",efollow:"",esrc:"",
+  nav:[],shop:null,brands:[],enquiries:[],ecart:[],ecustId:"",ephone:"",ename:"",edisc:0,ediscType:"amt",enote:"",eq:"",efollow:"",esrc:"",
   ef:{q:"",status:"open",due:false},detailEnq:null,fromEnq:"",
   detailSale:null,detailPur:null,es:null,puEdit:"",unsub:[]};
 
@@ -612,6 +620,7 @@ function startListeners(){
   on(query(collection(db,"sales"),orderBy("createdAt","desc"),limit(500)),s=>{S.sales=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(collection(db,"customers"),s=>{S.customers=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(collection(db,"vendors"),s=>{S.vendors=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  on(collection(db,"brands"),s=>{S.brands=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"purchases"),orderBy("createdAt","desc"),limit(1000)),s=>{S.purchases=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"vendorPayments"),orderBy("createdAt","desc"),limit(1000)),s=>{S.vpays=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"bookings"),orderBy("createdAt","desc"),limit(500)),s=>{S.bookings=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
@@ -902,7 +911,7 @@ function vProduct(el){
   if(!p){el.innerHTML=`<div class="top"><h2>Product not found</h2><button class="btn sec" onclick="goBack('products')">← Back</button></div><div class="card"><p class="mute">It may have been deleted, or products are still loading.</p></div>`;return}
   const by=id=>S.users.find(u=>u.id===id)?.name||"";
   const margin=p.price>0&&p.cost>0?`${inr(p.price-p.cost)} (${((p.price-p.cost)/p.price*100).toFixed(1)}% of selling price)`:"—";
-  const R=[["Name",esc(p.name)],["SKU",esc(p.sku)],["Barcode",esc(p.barcode||"—")],
+  const R=[["Name",esc(p.name)],["SKU",esc(p.sku)],["Barcode",esc(p.barcode||"—")],["Brand",esc(brandName(p)||"—")],
     ...(can("seeVendor")?[["Vendor",(()=>{const v=vendorOf(p);return v?`<a href="#vendor/${v.id}">${esc(v.name)}</a>${v.billingMethod?` <span class="small mute">· ${esc(v.billingMethod)}${v.creditDays?` (${v.creditDays} days)`:""}</span>`:""}`:esc(vend(p)||"—")})()]]:[]),
     ["Category",esc([p.categoryName,p.subcategoryName,p.typeName].filter(Boolean).join(" › ")||"—")],["Category slug",esc(p.fullSlug||"—")],
     ["MRP",inr(p.mrp)],["Selling price",inr(p.price)],
@@ -939,6 +948,142 @@ async function showPhotoStrip(p){
 window.S=S;window.render=render;
 
 /* Product form */
+/* ---------- Brands and logos ---------- */
+const LOGO_SLOTS={store:"Physical store",online:"Online store"};
+const brandOf=p=>!p?null:(S.brands.find(b=>b.id===p.brandId)||(p.brandName?S.brands.find(b=>norm(b.name)===norm(p.brandName)):null)||null);
+const brandName=p=>brandOf(p)?.name||p?.brandName||"";
+const brandsSorted=()=>S.brands.slice().sort((a,b)=>natcmp(a.name,b.name));
+/* A logo is a few hundred KB, so it is fetched when wanted, not streamed to every screen. */
+const LOGOS=new Map();
+async function getLogo(id,fresh){
+  if(!id)return null;
+  if(!fresh&&LOGOS.has(id))return LOGOS.get(id);
+  try{const s=await getDoc(doc(db,"logos",id));const v=s.exists()?s.data():null;LOGOS.set(id,v);return v}
+  catch(e){return LOGOS.get(id)||null}
+}
+/* Adds a brand by name, or finds the one already there; returns its id. */
+async function addBrand(name){
+  name=String(name||"").trim().replace(/\s+/g," ");if(!name)return "";
+  const ex=S.brands.find(b=>norm(b.name)===norm(name));if(ex)return ex.id;
+  const r=doc(collection(db,"brands"));
+  await setDoc(r,{name,hasLogo:false,createdAt:serverTimestamp(),createdBy:S.user.uid});
+  if(!S.brands.some(b=>b.id===r.id))S.brands.push({id:r.id,name,hasLogo:false});   // before the listener catches up
+  return r.id;
+}
+const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);
+  i.onerror=()=>no(new Error("That file isn't an image this browser can read — try PNG or JPG"));i.src=src});
+/* Two copies of every logo. A colour one, as uploaded, for screens and bills. And one for the
+   label printer, whose head has no grey and no colour — every dot is black or white — so the app
+   makes that call itself, at the head's resolution, and shows it before anything is saved.
+   Blank margins are trimmed from both so the mark fills the corner it is given. */
+function logoVersions(img,thr){
+  const sw=img.naturalWidth||img.width||300,sh=img.naturalHeight||img.height||150;
+  const k0=Math.min(1,600/Math.max(sw,sh)),aw=Math.max(1,Math.round(sw*k0)),ah=Math.max(1,Math.round(sh*k0));
+  const a=document.createElement("canvas");a.width=aw;a.height=ah;
+  const ax=a.getContext("2d",{willReadFrequently:true});ax.fillStyle="#fff";ax.fillRect(0,0,aw,ah);ax.drawImage(img,0,0,aw,ah);
+  const px=ax.getImageData(0,0,aw,ah).data;let x0=aw,y0=ah,x1=-1,y1=-1;
+  for(let y=0;y<ah;y++)for(let x=0;x<aw;x++){const i=(y*aw+x)*4;
+    if(.299*px[i]+.587*px[i+1]+.114*px[i+2]<235){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}}
+  if(x1<0)throw new Error("That image looks blank — is the logo white on a clear background?");
+  const pad=Math.round(Math.max(x1-x0,y1-y0)*.02);
+  x0=Math.max(0,x0-pad);y0=Math.max(0,y0-pad);x1=Math.min(aw-1,x1+pad);y1=Math.min(ah-1,y1+pad);
+  const sx=x0/k0,sy=y0/k0,sW=(x1-x0+1)/k0,sH=(y1-y0+1)/k0;
+  let color="",cw=0,ch=0;
+  for(const lim of [480,360,240]){                     // keep the record comfortably under Firestore's 1 MB
+    const kc=Math.min(1,lim/sW,lim/2/sH),c=document.createElement("canvas");
+    c.width=cw=Math.max(1,Math.round(sW*kc));c.height=ch=Math.max(1,Math.round(sH*kc));
+    c.getContext("2d").drawImage(img,sx,sy,sW,sH,0,0,c.width,c.height);
+    color=c.toDataURL("image/png");if(color.length<600000)break;
+  }
+  // The largest logo corner is 16 × 8 mm — 128 × 64 dots at 203 dpi; twice that keeps edges clean.
+  const km=Math.min(256/sW,128/sH),m=document.createElement("canvas");
+  m.width=Math.max(1,Math.round(sW*km));m.height=Math.max(1,Math.round(sH*km));
+  const mx=m.getContext("2d",{willReadFrequently:true});mx.fillStyle="#fff";mx.fillRect(0,0,m.width,m.height);
+  mx.imageSmoothingQuality="high";mx.drawImage(img,sx,sy,sW,sH,0,0,m.width,m.height);
+  const d=mx.getImageData(0,0,m.width,m.height),D=d.data;
+  for(let i=0;i<D.length;i+=4){const v=.299*D[i]+.587*D[i+1]+.114*D[i+2]<thr?0:255;D[i]=D[i+1]=D[i+2]=v;D[i+3]=255}
+  mx.putImageData(d,0,0);
+  return {color,mono:m.toDataURL("image/png"),w:cw,h:ch};
+}
+/* Upload, check how it prints, save. Admin only, as the rules also insist. */
+window.openLogoUpload=(id,title)=>{
+  if(!isAdmin())return toast("Only an admin can change logos",1);
+  let img=null,cur=null;
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:540px"><h3>${esc(title)}</h3>
+   <p class="mute small">PNG, JPG or SVG — a logo on a white or clear background works best. The label printer prints only black dots, so the app makes a black-and-white copy for labels. Check it below before saving.</p>
+   <div class="grid">
+    <div><input type="file" id="lg-f" accept="image/png,image/jpeg,image/webp,image/svg+xml"></div>
+    <div id="lg-body" class="hide grid">
+     <div class="f"><div><label>As uploaded</label><div class="lgbox" id="lg-col"></div></div>
+      <div><label>As printed — every dot black or white</label><div class="lgbox" id="lg-mono"></div></div></div>
+     <div><label>Darkness <span id="lg-thrv" class="mute"></span></label><input type="range" id="lg-thr" min="40" max="240" step="5" value="160" style="padding:0">
+      <p class="small mute" style="margin:4px 0 0">Slide right if thin or light parts of the logo disappear; left if it prints as a blob.</p></div>
+     <div><label>On a 50 × 30 mm label</label><div id="lg-prev" style="background:#e9e9ec;border-radius:10px;padding:14px;display:flex;justify-content:center;overflow:hidden"></div></div></div></div>
+   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="lg-save" disabled>Save logo</button></div></div></div>`;
+  const sample=S.products.find(p=>p.barcode&&num(p.mrp)>num(p.price))||S.products.find(p=>p.barcode)
+    ||{name:"Sample product name",sku:"SKU-0001",barcode:"2000000000015",mrp:45000,price:39999};
+  const draw=async()=>{
+    if(!img)return;const thr=+$("#lg-thr").value;$("#lg-thrv").textContent=thr;
+    try{cur=logoVersions(img,thr)}catch(e){cur=null;$("#lg-body").classList.add("hide");$("#lg-save").disabled=true;return toast(emsg(e),1)}
+    $("#lg-body").classList.remove("hide");$("#lg-save").disabled=false;
+    $("#lg-col").innerHTML=`<img src="${cur.color}" alt="">`;
+    $("#lg-mono").innerHTML=`<img src="${await fitLogo({color:cur.color,threshold:thr},labelGeom({w:50,h:30}).box)}" alt="" style="image-rendering:pixelated;width:100%">`;
+    try{await loadJsBarcode()}catch(e){}
+    const so={layout:"roll",w:50,h:30,price:true},lgx=await fitLogo({color:cur.color,threshold:thr},labelGeom(so).box);
+    drawLabelPreview($("#lg-prev"),"lg-frame",labelsHTML([sample],{...so,logo:lgx,noprint:true},barcodeSVG),50,30,true);
+  };
+  $("#lg-f").onchange=async e=>{const f=e.target.files[0];if(!f)return;
+    if(f.size>8e6)return toast("That file is over 8 MB — use a smaller one",1);
+    const url=URL.createObjectURL(f);
+    try{img=await loadImg(url);await draw()}catch(x){toast(emsg(x),1)}};
+  $("#lg-thr").oninput=draw;
+  $("#lg-save").onclick=async()=>{if(!cur)return;const b=$("#lg-save");b.disabled=true;b.textContent="Saving…";
+    try{
+      const rec={color:cur.color,mono:cur.mono,w:cur.w,h:cur.h,threshold:+$("#lg-thr").value,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+      await setDoc(doc(db,"logos",id),rec);LOGOS.set(id,rec);
+      if(id.startsWith("brand-"))await updateDoc(doc(db,"brands",id.slice(6)),{hasLogo:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+      closeModal();toast(title+" saved");render();
+    }catch(x){b.disabled=false;b.textContent="Save logo";toast(emsg(x),1)}};
+};
+window.removeLogo=async(id,title)=>{
+  if(!isAdmin()||!confirm(`Remove the ${title}? Labels will leave its corner blank until a new one is uploaded.`))return;
+  try{await deleteDoc(doc(db,"logos",id));LOGOS.set(id,null);
+    if(id.startsWith("brand-"))await updateDoc(doc(db,"brands",id.slice(6)),{hasLogo:false,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+    toast(title+" removed");render()}catch(e){toast(emsg(e),1)}
+};
+window.newBrand=async()=>{
+  const n=(prompt("Brand name:")||"").trim();if(!n)return;
+  if(S.brands.some(b=>norm(b.name)===norm(n)))return toast("That brand is already in the list",1);
+  try{await addBrand(n);toast("Brand added");render()}catch(e){toast(emsg(e),1)}
+};
+window.renameBrand=async id=>{
+  const b=S.brands.find(x=>x.id===id);if(!b)return;
+  const n=(prompt("Rename the brand:",b.name)||"").trim();if(!n||n===b.name)return;
+  if(S.brands.some(x=>x.id!==id&&norm(x.name)===norm(n)))return toast("Another brand already has that name",1);
+  try{await updateDoc(doc(db,"brands",id),{name:n,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+    const hit=S.products.filter(p=>brandOf(p)?.id===id);
+    for(let i=0;i<hit.length;i+=400){const bt=writeBatch(db);hit.slice(i,i+400).forEach(p=>bt.update(doc(db,"products",p.id),{brandId:id,brandName:n,updatedAt:serverTimestamp(),updatedBy:S.user.uid}));await bt.commit()}
+    toast(`Renamed${hit.length?` — ${hit.length} product${hit.length===1?"":"s"} updated`:""}`)}catch(e){toast(emsg(e),1)}
+};
+window.deleteBrand=async id=>{
+  const b=S.brands.find(x=>x.id===id);if(!b)return;
+  const hit=S.products.filter(p=>brandOf(p)?.id===id);
+  if(!confirm(`Delete the brand "${b.name}"?${hit.length?`\n\n${hit.length} product${hit.length===1?" uses":"s use"} it and will be left without a brand.`:""}${b.hasLogo?"\n\nIts logo is deleted too.":""}`))return;
+  try{
+    for(let i=0;i<hit.length;i+=400){const bt=writeBatch(db);hit.slice(i,i+400).forEach(p=>bt.update(doc(db,"products",p.id),{brandId:"",brandName:"",updatedAt:serverTimestamp(),updatedBy:S.user.uid}));await bt.commit()}
+    if(b.hasLogo){await deleteDoc(doc(db,"logos","brand-"+id));LOGOS.set("brand-"+id,null)}
+    await deleteDoc(doc(db,"brands",id));toast("Brand deleted")}catch(e){toast(emsg(e),1)}
+};
+/* Thumbnails on the Settings page fill in once each logo has been fetched. */
+function fillLogoThumbs(){
+  document.querySelectorAll("[data-logo]").forEach(async el=>{
+    const id=el.dataset.logo,show=v=>{
+      el.innerHTML=v?`<img src="${v.color}" alt="">`:`<span class="small mute">none</span>`;
+      document.querySelectorAll(`[data-logorm="${id}"]`).forEach(b=>b.classList.toggle("hide",!v));
+      document.querySelectorAll(`[data-logoup="${id}"]`).forEach(b=>b.textContent=v?"Replace":"Upload");};
+    if(LOGOS.has(id))show(LOGOS.get(id));else show(await getLogo(id));
+  });
+}
 /* Where to come back to when a form is opened from inside another one. */
 let FORMBACK=null;
 /* A barcode comes off a counter, so one generated for a product that is never saved would
@@ -949,7 +1094,7 @@ let BARHOLD=null;
 const productDraft=()=>{
   const t=i=>{const el=$(i);return el?String(el.value).trim():""};
   const n=i=>{const s=t(i);return s===""?undefined:+s};
-  return {draft:true,name:t("#p-name"),sku:t("#p-sku"),barcode:t("#p-bar"),vendor:t("#p-vendor"),
+  return {draft:true,name:t("#p-name"),sku:t("#p-sku"),barcode:t("#p-bar"),vendor:t("#p-vendor"),brandId:t("#p-brand"),
     categoryId:t("#p-cat"),subcategoryId:t("#p-sub"),typeId:t("#p-type"),
     dimension:t("#p-dim"),dimUnit:t("#p-dimunit"),unit:t("#p-unit"),location:t("#p-loc"),
     description:t("#p-desc"),imageUrl:t("#p-imgurl"),
@@ -974,6 +1119,9 @@ window.openProduct=function(id,preset){
    <div><label>Vendor</label><div class="row" style="flex-wrap:nowrap"><select id="p-vendor">${
      (()=>`<option value="">—</option>`+withCur(allVendorNames(),vend(p)).map(n=>`<option ${vend(p)===n?"selected":""}>${esc(n)}</option>`).join(""))()
    }</select>${can("manageVendors")?`<button class="btn sec sm" type="button" id="p-vendadd" title="Add a vendor">＋</button>`:""}</div></div>
+   <div><label>Brand</label><div class="row" style="flex-wrap:nowrap"><select id="p-brand"><option value="">—</option>${
+     brandsSorted().map(b=>`<option value="${b.id}" ${brandOf(p)?.id===b.id?"selected":""}>${esc(b.name)}</option>`).join("")
+   }</select><button class="btn sec sm" type="button" id="p-brandadd" title="Add a brand">＋</button></div></div>
    <div><label>MRP (₹)</label><input id="p-mrp" type="number" step="0.01" value="${p.mrp??""}"></div>
    <div><label>Selling price (₹) *</label><input id="p-price" type="number" step="0.01" value="${p.price??""}"></div>
    <div><label>Cost price (₹)</label><input id="p-cost" type="number" step="0.01" value="${p.cost??""}"></div>
@@ -1032,6 +1180,11 @@ window.openProduct=function(id,preset){
     FORMBACK={kind:"product",id,draft:productDraft()};
     openVendor(null,"");
   });
+  $("#p-brandadd").onclick=async()=>{
+    const n=(prompt("Brand name:")||"").trim();if(!n)return;
+    try{const bid=await addBrand(n),sel=$("#p-brand");
+      if(![...sel.options].some(o=>o.value===bid))sel.add(new Option(S.brands.find(b=>b.id===bid)?.name||n,bid));
+      sel.value=bid;toast("Brand added")}catch(e){toast(emsg(e),1)}};
   $("#p-locadd").onclick=async()=>{
     const v=(prompt("New location / rack name:")||"").trim();if(!v)return;
     const sel=$("#p-loc"),have=[...sel.options].find(o=>o.value.toLowerCase()===v.toLowerCase());
@@ -1064,7 +1217,8 @@ async function saveProduct(id){
   const barcode=v("#p-bar")||old.barcode||"";
   if(barcode&&S.products.some(x=>x.barcode===barcode&&x.id!==id))return toast("That barcode is already used by another product",1);
   const vname=v("#p-vendor"),vrec=S.vendors.find(x=>norm(x.name)===norm(vname));
-  const d={name,sku,barcode,vendor:vname,vendorId:vrec?.id||"",
+  const brec=S.brands.find(b=>b.id===v("#p-brand"));
+  const d={name,sku,barcode,vendor:vname,vendorId:vrec?.id||"",brandId:brec?.id||"",brandName:brec?.name||"",
     categoryId:cat.id,categoryName:cat.name,categorySlug:cat.slug,
     subcategoryId:sub?.id||"",subcategoryName:sub?.name||"",subcategorySlug:sub?.slug||"",
     typeId:type?.id||"",typeName:type?.name||"",typeSlug:type?.slug||"",
@@ -3763,6 +3917,22 @@ function vSettings(el){
         <input type="checkbox" id="s-${k}" style="width:auto" ${st[k]===false?"":"checked"}> ${t}</label>`).join("")}
    </div>
    <p class="small mute" style="margin-top:6px" id="s-cardmsg">Cost price also needs the <i>See cost price</i> permission, so unticking it hides the figure from everyone and the permission still decides who could have seen it. Saved as you tick.</p></div>`:""}
+  ${isAdmin()?`<div class="card"><h3 style="margin-bottom:10px">Store logos</h3>
+   <p class="mute small">Printed in the top-left corner of barcode labels. The physical store logo is the one used unless you pick another when printing.</p>
+   ${Object.entries(LOGO_SLOTS).map(([id,t])=>`<div class="lgrow"><div class="lgthumb" data-logo="${id}"></div>
+     <div style="flex:1;min-width:0"><b>${t} logo</b><div class="small mute">${id==="store"?"Default on every label":"Pick it when printing labels for online orders"}</div></div>
+     <div class="row"><button class="btn sm" data-logoup="${id}" onclick="openLogoUpload('${id}','${t} logo')">Upload</button>
+      <button class="btn sm sec hide" data-logorm="${id}" onclick="removeLogo('${id}','${t} logo')">Remove</button></div></div>`).join("")}</div>
+  <div class="card"><h3 style="margin-bottom:10px">Brands</h3>
+   <p class="mute small">The brands your products are sold under. Choose one on a product, and its logo can go on that product's label instead of the store's.</p>
+   ${brandsSorted().map(b=>{const n=S.products.filter(p=>brandOf(p)?.id===b.id).length;
+     return `<div class="lgrow"><div class="lgthumb" ${b.hasLogo?`data-logo="brand-${b.id}"`:""}>${b.hasLogo?"":`<span class="small mute">no logo</span>`}</div>
+     <div style="flex:1;min-width:0"><b>${esc(b.name)}</b><div class="small mute">${n} product${n===1?"":"s"}</div></div>
+     <div class="row"><button class="btn sm" onclick="openLogoUpload('brand-${b.id}','${esc(b.name).replace(/'/g,"&#39;")} logo')">${b.hasLogo?"Replace logo":"Upload logo"}</button>
+      ${b.hasLogo?`<button class="btn sm sec" onclick="removeLogo('brand-${b.id}','${esc(b.name).replace(/'/g,"&#39;")} logo')">Remove logo</button>`:""}
+      <button class="btn sm sec" onclick="renameBrand('${b.id}')">Rename</button><button class="btn sm sec" onclick="deleteBrand('${b.id}')">Delete</button></div></div>`}).join("")
+     ||`<p class="small mute">No brands yet.</p>`}
+   <div class="row" style="margin-top:10px"><button class="btn sec" onclick="newBrand()">+ Add brand</button></div></div>`:""}
   <div class="card"><h3 style="margin-bottom:10px">Store details</h3><div class="grid">
    <div><label>Store name</label><input id="s-nm" value="${esc(st.storeName)}" ${isAdmin()?"":"disabled"}></div><div><label>Address</label><input id="s-ad" value="${esc(st.address)}" ${isAdmin()?"":"disabled"}></div>
    <div><label>Phone</label><input id="s-ph" value="${esc(st.phone)}" ${isAdmin()?"":"disabled"}></div><div><label>GSTIN</label><input id="s-gs" value="${esc(st.gstin)}" ${isAdmin()?"":"disabled"}></div>
@@ -3792,6 +3962,7 @@ function vSettings(el){
     $("#s-save").onclick=async()=>{const mode=document.querySelector("input[name=mode]:checked").value;
       try{await setDoc(doc(db,"settings","store"),{storeName:$("#s-nm").value.trim()||"My Store",address:$("#s-ad").value.trim(),phone:$("#s-ph").value.trim(),gstin:$("#s-gs").value.trim(),invoicePrefix:$("#s-pf").value.trim()||"INV",footer:$("#s-ft").value.trim(),allowNegative:$("#s-neg").checked,mode,
         cardSale:$("#s-cardSale").checked,cardMrp:$("#s-cardMrp").checked,cardCost:$("#s-cardCost").checked},{merge:true});toast("Settings saved")}catch(e){toast(emsg(e),1)}};
+    fillLogoThumbs();
   }
 }
 function listCard(key,title,hint){
@@ -3909,7 +4080,7 @@ function resolveCategory(r){
   const m=bySlug[String(r.categorySlug||"").trim()];
   return m?{cat:m.cat,sub:m.sub,type:m.type}:{err:"Category is blank"};
 }
-const HMAP={sku:"sku",name:"name",productname:"name",vendor:"vendor",brand:"vendor",supplier:"vendor",suppliername:"vendor",vendorname:"vendor",barcode:"barcode",category:"category",subcategory:"subcategory",subcat:"subcategory",type:"type",categoryslug:"categorySlug",imageurl:"imageUrl",image:"imageUrl",mrp:"mrp",price:"price",sellingprice:"price",cost:"cost",costprice:"cost",gst:"gst",qty:"qty",stock:"qty",reorder:"reorder",unit:"unit",location:"location",description:"description",dimension:"dimension",size:"dimension",dimensions:"dimension",measurement:"dimension",dimunit:"dimUnit",dimensionunit:"dimUnit",sizeunit:"dimUnit",unitofmeasurement:"dimUnit",uom:"dimUnit",phone:"phone",mobile:"phone",phoneno:"phone",phonenumber:"phone",mobileno:"phone",contact:"phone",contactno:"phone",customername:"name",email:"email",emailid:"email",address:"address",notes:"notes"};
+const HMAP={sku:"sku",name:"name",productname:"name",vendor:"vendor",brand:"brandName",brandname:"brandName",supplier:"vendor",suppliername:"vendor",vendorname:"vendor",barcode:"barcode",category:"category",subcategory:"subcategory",subcat:"subcategory",type:"type",categoryslug:"categorySlug",imageurl:"imageUrl",image:"imageUrl",mrp:"mrp",price:"price",sellingprice:"price",cost:"cost",costprice:"cost",gst:"gst",qty:"qty",stock:"qty",reorder:"reorder",unit:"unit",location:"location",description:"description",dimension:"dimension",size:"dimension",dimensions:"dimension",measurement:"dimension",dimunit:"dimUnit",dimensionunit:"dimUnit",sizeunit:"dimUnit",unitofmeasurement:"dimUnit",uom:"dimUnit",phone:"phone",mobile:"phone",phoneno:"phone",phonenumber:"phone",mobileno:"phone",contact:"phone",contactno:"phone",customername:"name",email:"email",emailid:"email",address:"address",notes:"notes"};
 function toObjs(all,key="sku"){
   const hi=all.findIndex(r=>r.some(c=>String(c).trim().toLowerCase()===key));
   if(hi<0)throw new Error(`Could not find a header row with a "${key}" column`);
@@ -3982,9 +4153,9 @@ async function photoMap(list){
   return{images,failed,EJ};
 }
 const MONEY="#,##0.00";
-const PCOLS_X=[["photo",11],["sku",14,"@"],["name",34],["vendor",18],["barcode",18,"@"],["category",20],["subcategory",24],["type",22],["categorySlug",40],["imageUrl",30],
+const PCOLS_X=[["photo",11],["sku",14,"@"],["name",34],["vendor",18],["brand",16],["barcode",18,"@"],["category",20],["subcategory",24],["type",22],["categorySlug",40],["imageUrl",30],
   ["mrp",12,MONEY],["price",12,MONEY],["cost",12,MONEY],["dimension",14],["dim_unit",11],["gst",7],["qty",7],["booked",8],["available",10],["reorder",9],["unit",7],["location",18],["locations",30],["photos",8],["description",34]];
-const prow=p=>({sku:p.sku,name:p.name,vendor:vend(p),barcode:String(p.barcode||""),category:p.categoryName||"",subcategory:p.subcategoryName||"",type:p.typeName||"",
+const prow=p=>({sku:p.sku,name:p.name,vendor:vend(p),brand:brandName(p),barcode:String(p.barcode||""),category:p.categoryName||"",subcategory:p.subcategoryName||"",type:p.typeName||"",
   categorySlug:p.fullSlug||"",imageUrl:p.imageUrl||"",mrp:num(p.mrp),price:num(p.price),cost:num(p.cost),dimension:dimOf(p),dim_unit:dimUnitOf(p),gst:num(p.gst),qty:+p.qty||0,booked:bk(p),available:avail(p),
   reorder:+p.reorder||0,unit:p.unit||"",location:p.location||"",locations:locText(p),photos:photoCount(p),description:p.description||""});
 const prodOf=pid=>S.products.find(p=>p.id===pid)||null;
@@ -4011,12 +4182,12 @@ async function buildTemplate(EJ,tax,lists){
   locs.forEach((x,k)=>ls.getCell(k+2,locCol).value=x);
   const maxSub=Math.max(10,...tax.map(c=>c.subcategories.length))+5,maxTyp=Math.max(10,0,...tax.flatMap(c=>c.subcategories.map(s=>s.subcategories.length)))+5;
   // Products
-  const C=[["sku",14,1],["name",34,1],["vendor",18],["barcode",16],["category",20,1],["subcategory",24],["type",24],["categorySlug",42,2],["imageUrl",30],["mrp",11],["price",11,1],["cost",11],["gst",8],["qty",8],["reorder",9],["unit",8],["location",18],["description",36],["dimension",14],["dimUnit",12]];
+  const C=[["sku",14,1],["name",34,1],["vendor",18],["barcode",16],["category",20,1],["subcategory",24],["type",24],["categorySlug",42,2],["imageUrl",30],["mrp",11],["price",11,1],["cost",11],["gst",8],["qty",8],["reorder",9],["unit",8],["location",18],["description",36],["dimension",14],["dimUnit",12],["brand",16]];
   C.forEach(([h,w,k],i)=>{const cell=ws.getCell(1,i+1);cell.value=h;hdr(cell,k===1?"FFC8873A":k===2?"FF6B7570":"FF1F3A34");ws.getColumn(i+1).width=w});
   ws.getRow(1).height=22;ws.getColumn(1).numFmt="@";ws.getColumn(4).numFmt="@";
   ws.getCell("H1").note="Filled in automatically from category / subcategory / type. Don't type here.";
   const c0=tax[0],s0=c0?.subcategories[0],t0=s0?.subcategories[0];
-  const ex=["SOF-1001","EXAMPLE - delete this row","Brasscity","8901234567890",c0?.name||"",s0?.name||"",t0?.name||"",null,"",45000,39999,28000,18,4,1,"pcs",locs[0]||"Floor 1 - A2","Delete this row before importing","16x16","inch"];
+  const ex=["SOF-1001","EXAMPLE - delete this row","Brasscity","8901234567890",c0?.name||"",s0?.name||"",t0?.name||"",null,"",45000,39999,28000,18,4,1,"pcs",locs[0]||"Floor 1 - A2","Delete this row before importing","16x16","inch",""];
   ex.forEach((v,i)=>{if(v!==null){const cell=ws.getCell(2,i+1);cell.value=v;cell.font=AR({color:{argb:"FF0000FF"}})}});
   for(let r=2;r<=1000;r++){
     const cell=ws.getCell(r,8);
@@ -4032,8 +4203,10 @@ async function buildTemplate(EJ,tax,lists){
   ws.dataValidations.add("G2:G1000",V(`OFFSET(Lists!$${colL(tS)}$1,1,MATCH($E2&"|"&$F2,${tRng},0)-1,COUNTA(OFFSET(Lists!$${colL(tS)}$1,1,MATCH($E2&"|"&$F2,${tRng},0)-1,${maxTyp},1)),1)`));
   ws.dataValidations.add("M2:M1000",V(`"${(lists.gstRates||[]).join(",")}"`));
   ws.dataValidations.add("P2:P1000",V(`"${(lists.units||[]).join(",")}"`));
-  ws.dataValidations.add(`${colL(C.length)}2:${colL(C.length)}1000`,V(`"${(lists.dimUnits||[]).join(",")}"`,{errorStyle:"warning",errorTitle:"New unit?",error:"That unit is not in your list yet — it will still import."}));
-  ws.getCell(`${colL(C.length-1)}1`).note="The measurement only, e.g. 16x16 or 90x100. Put inch / cm / ft in the next column.";
+  const ci=k=>C.findIndex(c=>c[0]===k)+1;
+  ws.dataValidations.add(`${colL(ci("dimUnit"))}2:${colL(ci("dimUnit"))}1000`,V(`"${(lists.dimUnits||[]).join(",")}"`,{errorStyle:"warning",errorTitle:"New unit?",error:"That unit is not in your list yet — it will still import."}));
+  ws.getCell(`${colL(ci("brand"))}1`).note="Optional. The brand the product is sold under — its logo can go on the label. A name not in the app yet is added to the Brands list.";
+  ws.getCell(`${colL(ci("dimension"))}1`).note="The measurement only, e.g. 16x16 or 90x100. Put inch / cm / ft in the next column.";
   if(locs.length)ws.dataValidations.add("Q2:Q1000",V(`Lists!$${colL(locCol)}$2:$${colL(locCol)}$${locs.length+1}`,{errorStyle:"warning",errorTitle:"New location?",error:"This location is not in your list yet. It will be added when you import."}));
   // How to use
   how.getColumn(1).width=20;how.getColumn(2).width=100;
@@ -4168,6 +4341,9 @@ window.openImport=(kind="products")=>{
     $("#imp-go").disabled=true;$("#imp-go").textContent="Importing…";
     const bySku=Object.fromEntries(S.products.map(p=>[p.sku.toLowerCase(),p]));let n=0,u=0;const seen={};
     try{
+      // A brand named in the sheet is matched to the list, or added to it.
+      const bnames=[...new Map(good.map(({r})=>String(r.brandName||"").trim()).filter(Boolean).map(x=>[norm(x),x])).values()];
+      for(const bn of bnames)await addBrand(bn);
       for(let i=0;i<good.length;i+=150){const b=writeBatch(db);
         good.slice(i,i+150).forEach(({r,m})=>{const c=m.cat,s=m.sub,t=m.type;const key=r.sku.toLowerCase();
           const vr=r.vendor?S.vendors.find(x=>norm(x.name)===norm(r.vendor)):null;
@@ -4176,6 +4352,7 @@ window.openImport=(kind="products")=>{
             dimension:dimNorm(r.dimension),dimUnit:String(r.dimUnit||"").trim(),
             mrp:num(r.mrp)||num(r.price),price:num(r.price),cost:num(r.cost),gst:r.gst===undefined||r.gst===""?0:num(r.gst),reorder:r.reorder===undefined||r.reorder===""?0:num(r.reorder),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
           if(r.imageUrl)d.imageUrl=r.imageUrl;
+          if(String(r.brandName||"").trim()){const br=S.brands.find(b=>norm(b.name)===norm(r.brandName));if(br){d.brandId=br.id;d.brandName=br.name}}
           const ex=bySku[key]||seen[key];
           if(ex){if(!r.barcode)delete d.barcode;b.update(doc(db,"products",ex.id),d);u++}
           else{const ref=doc(collection(db,"products")),q=Math.max(0,Math.floor(num(r.qty)));seen[key]={id:ref.id};
@@ -4285,8 +4462,32 @@ function labelsHTML(items,o,svgFn){
 /* Whole printer dots per bar that a barcode of m bars gets on a label W mm wide. Under 2 it
    cannot be printed dependably: the code is too long for the label. */
 const labelDots=(W,m)=>Math.min(4,Math.floor((Math.min(W,48)-6)*8/m));
-function rollLabelsHTML(items,o,svgFn){
+function labelGeom(o){
   const W=Math.min(110,Math.max(20,+o.w||LABEL_SIZES[0][0])),H=Math.min(150,Math.max(12,+o.h||LABEL_SIZES[0][1]));
+  const side=Math.max(2,(W-48)/2+1),big=(o.fields||{}).barcode===false,short=H<28;
+  // the logo corner, in whole dots
+  const lgW=Math.floor(Math.min(16,(W-2*side)*.3)*8)/8,lgH=short?5:big?8:6.5;
+  return {W,H,side,big,short,lgW,lgH,box:{w:Math.round(lgW*8),h:Math.round(lgH*8)}};
+}
+const LOGOFIT=new Map();
+/* The logo for one corner size: the colour original, fitted, then each dot black or white. */
+async function fitLogo(rec,box){
+  if(!rec||!rec.color||!box)return "";
+  const thr=+rec.threshold||160,key=`${box.w}x${box.h}|${thr}|${rec.color.length}|${rec.color.slice(-48)}`;
+  if(LOGOFIT.has(key))return LOGOFIT.get(key);
+  let img;try{img=await loadImg(rec.color)}catch(e){console.warn("logo unreadable",e);return ""}   // a damaged logo leaves its corner blank; it never stops a print
+  const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;
+  const c=document.createElement("canvas");c.width=box.w;c.height=box.h;
+  const x=c.getContext("2d",{willReadFrequently:true});x.fillStyle="#fff";x.fillRect(0,0,box.w,box.h);
+  const k=Math.min(box.w/iw,box.h/ih),dw=Math.max(1,Math.round(iw*k)),dh=Math.max(1,Math.round(ih*k));
+  x.imageSmoothingQuality="high";x.drawImage(img,0,Math.floor((box.h-dh)/2),dw,dh);
+  const d=x.getImageData(0,0,box.w,box.h),D=d.data;
+  for(let i=0;i<D.length;i+=4){const v=.299*D[i]+.587*D[i+1]+.114*D[i+2]<thr?0:255;D[i]=D[i+1]=D[i+2]=v;D[i+3]=255}
+  x.putImageData(d,0,0);
+  const out=c.toDataURL("image/png");LOGOFIT.set(key,out);return out;
+}
+function rollLabelsHTML(items,o,svgFn){
+  const G=labelGeom(o),W=G.W,H=G.H;
   const side=Math.max(2,(W-48)/2+1),f=Math.min(1.2,Math.max(.72,H/30))*Math.min(1,Math.max(.8,W/50));
   const rs=n=>inr(n).replace(/\.00$/,"");      // a label has no room to spend on ".00"
   const bcw=svg=>{const m=+((/data-m="(\d+)"/.exec(svg)||[])[1]||0);if(!m)return "";
@@ -4302,14 +4503,14 @@ function rollLabelsHTML(items,o,svgFn){
   const big=!F.barcode,short=H<28,pt=(n,min=0)=>Math.max(min,n*f*(big?1.3:1)).toFixed(2)+"pt";
   /* The logo corner: a fixed box at the top left, wider than tall because most marks are.
      Until there is a logo to put in it, the print leaves it blank and the preview outlines it. */
-  const lgW=Math.min(16,(W-2*side)*.3),lgH=short?5:big?8:6.5;
+  const lgW=G.lgW,lgH=G.lgH;
   const css=`@page{size:${W}mm ${H}mm;margin:0}
 *{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.lb{width:${W}mm;height:${H}mm;padding:1.1mm ${side.toFixed(2)}mm .9mm;overflow:hidden;display:flex;flex-direction:column;${big?"justify-content:space-between;":""}break-inside:avoid;page-break-inside:avoid;page-break-after:always;break-after:page}
+.lb{width:${W}mm;height:${H}mm;padding:1.125mm ${side.toFixed(3)}mm .9mm;overflow:hidden;display:flex;flex-direction:column;${big?"justify-content:space-between;":""}break-inside:avoid;page-break-inside:avoid;page-break-after:always;break-after:page}
 .lb:last-child{page-break-after:auto;break-after:auto}
 .hd{flex:none;display:flex;gap:1.2mm;align-items:flex-start}
-.lg{flex:none;width:${lgW.toFixed(2)}mm;height:${lgH}mm;display:flex;align-items:center}
-.lg img{display:block;max-width:100%;max-height:100%;object-fit:contain;image-rendering:pixelated}
+.lg{flex:none;width:${lgW.toFixed(3)}mm;height:${lgH}mm;display:flex;align-items:center}
+.lg img{display:block;width:100%;height:100%;object-fit:contain}
 .lg.ph{outline:.25mm dashed #aaa;outline-offset:-.25mm;justify-content:center;color:#999;font-size:5pt;letter-spacing:.4px}
 .hd .tx{flex:1;min-width:0}
 .nm{font-size:${pt(7.5,5.5)};line-height:1.15;max-height:${short?"1.15em":big?"3.45em":"2.3em"};overflow:hidden;font-weight:700}
@@ -4337,8 +4538,11 @@ function rollLabelsHTML(items,o,svgFn){
     if(F.mrp)return `<div class="pz one"><span class="sp"><small>MRP </small>${rs(m)}</span></div>`;
     return "";
   };
-  const logo=F.logo?(o.logo?`<div class="lg"><img src="${esc(o.logo)}" alt=""></div>`:`<div class="lg${o.noprint?" ph":""}">${o.noprint?"LOGO":""}</div>`):"";
-  const body=items.map(p=>{const bar=F.barcode&&p.barcode,svg=bar?svgFn(p.barcode):"",dim=F.size&&dimText(p);
+  /* o.logo is one image for every label, or a function giving each product its own. With none
+     to show, the corner stays blank in print and is outlined in the preview. */
+  const logoOf=p=>{if(!F.logo)return "";const src=typeof o.logo==="function"?o.logo(p):o.logo;
+    return src?`<div class="lg"><img src="${esc(src)}" alt=""></div>`:`<div class="lg${o.noprint?" ph":""}">${o.noprint?"LOGO":""}</div>`};
+  const body=items.map(p=>{const bar=F.barcode&&p.barcode,svg=bar?svgFn(p.barcode):"",dim=F.size&&dimText(p),logo=logoOf(p);
     const sk=F.sku||dim?`<div class="sk"><span>${F.sku?esc(p.sku):""}</span>${dim?`<span class="dm">${esc(dimText(p))}</span>`:""}</div>`:"";
     const nm=F.name?`<div class="nm">${esc(p.name)}</div>`:"";
     const pz=money(p);
@@ -4350,11 +4554,11 @@ function rollLabelsHTML(items,o,svgFn){
 /* One product, from its own page: tick what goes on the label, pick the roll, see it, print.
    Name, SKU, barcode, MRP and selling price start ticked and the roll starts at 50 × 30 every
    time, so the usual label is one tap; anything else is a choice made for this print. */
-const LABEL_FIELDS=[["logo","Logo space"],["name","Name"],["sku","SKU"],["barcode","Barcode"],["mrp","MRP"],["price","Selling price"],
+const LABEL_FIELDS=[["name","Name"],["sku","SKU"],["barcode","Barcode"],["mrp","MRP"],["price","Selling price"],
   ["disc","Discount %"],["tax","GST note"],["size","Size"]];
 window.openProductLabel=function(pid){
   const p=S.products.find(x=>x.id===pid);if(!p)return;
-  const hasDim=!!dimText(p);
+  const hasDim=!!dimText(p),br=brandOf(p),fetched=new Set();
   const box=(k,l,on,dis)=>`<label style="display:flex;gap:6px;align-items:center;color:var(--ink);font-size:14px;margin:0">
      <input type="checkbox" class="pl-f" data-k="${k}" ${on?"checked":""} ${dis?"disabled":""} style="width:auto"> ${l}</label>`;
   $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:520px"><h3>Print label</h3>
@@ -4364,8 +4568,10 @@ window.openProductLabel=function(pid){
     <div id="pl-fields" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px 14px">
      ${LABEL_FIELDS.filter(([k])=>k!=="size"||hasDim).map(([k,l])=>box(k,l,k!=="size"&&!(k==="barcode"&&!p.barcode),k==="barcode"&&!p.barcode)).join("")}</div>
     <div id="pl-nobar" class="small" style="margin-top:6px"></div></div>
-   <div class="f"><div><label>Label size</label><select id="pl-size">${LABEL_SIZES.map(([w,h2])=>`<option value="${w}x${h2}">${w} × ${h2} mm</option>`).join("")}<option value="custom">Another size…</option></select></div>
-    <div><label>Copies</label><input id="pl-copies" type="number" min="1" max="500" step="1" value="1" inputmode="numeric"></div></div>
+   <div class="f"><div><label>Logo</label><select id="pl-logo"><option value="store">Store logo</option><option value="online">Online store logo</option>${
+      br?`<option value="brand-${br.id}">Brand logo — ${esc(br.name)}</option>`:""}<option value="">No logo</option></select></div>
+    <div><label>Label size</label><select id="pl-size">${LABEL_SIZES.map(([w,h2])=>`<option value="${w}x${h2}">${w} × ${h2} mm</option>`).join("")}<option value="custom">Another size…</option></select></div></div>
+   <div class="f"><div><label>Copies</label><input id="pl-copies" type="number" min="1" max="500" step="1" value="1" inputmode="numeric"></div><div></div></div>
    <div id="pl-custom" class="f hide"><div><label>Width (mm)</label><input id="pl-w" type="number" min="20" max="110" step="1" value="50"></div><div><label>Height (mm)</label><input id="pl-h" type="number" min="12" max="150" step="1" value="30"></div></div>
    <div><label>Preview</label><div id="pl-prev" style="background:#e9e9ec;border-radius:10px;padding:14px;display:flex;justify-content:center;overflow:hidden"></div>
     <div id="pl-note" class="small mute" style="margin-top:6px"></div></div></div>
@@ -4373,7 +4579,10 @@ window.openProductLabel=function(pid){
   const opts=()=>{const sz=$("#pl-size").value;let w,h2;
     if(sz==="custom"){w=+$("#pl-w").value||50;h2=+$("#pl-h").value||30}else[w,h2]=sz.split("x").map(Number);
     const fields={};LABEL_FIELDS.forEach(([k])=>{const c=document.querySelector(`.pl-f[data-k="${k}"]`);fields[k]=!!(c&&c.checked&&!c.disabled)});
-    return {layout:"roll",w:Math.min(110,Math.max(20,w)),h:Math.min(150,Math.max(12,h2)),fields,price:true}};
+    const logoId=$("#pl-logo").value;fields.logo=!!logoId;
+    return {layout:"roll",w:Math.min(110,Math.max(20,w)),h:Math.min(150,Math.max(12,h2)),fields,price:true,logoId}};
+  /* The chosen logo, read fresh the first time in this dialog so a new upload shows at once. */
+  const logoFor=async(id,o)=>{if(!id)return "";const v=await getLogo(id,!fetched.has(id));fetched.add(id);return fitLogo(v,labelGeom(o).box)};
   const nobar=()=>{
     $("#pl-nobar").innerHTML=p.barcode?""
       :`<span style="color:var(--warn)">This product has no barcode yet.</span>${can("editProducts")?` <button class="btn sm sec" id="pl-gen" type="button">Generate barcode</button>`:" Ask an admin to generate one."}`;
@@ -4393,9 +4602,11 @@ window.openProductLabel=function(pid){
     $("#pl-print").disabled=!any;
     if(!any){$("#pl-prev").innerHTML=`<span class="small mute" style="padding:30px 0">Tick at least one thing to print.</span>`;$("#pl-note").textContent="";return}
     if(o.fields.barcode)try{await loadJsBarcode()}catch(e){$("#pl-prev").innerHTML=`<span class="small mute">${esc(emsg(e))}</span>`;return}
-    drawLabelPreview($("#pl-prev"),"pl-frame",labelsHTML([p],{...o,noprint:true},barcodeSVG),o.w,o.h,true);
+    const lg=await logoFor(o.logoId,o);
+    drawLabelPreview($("#pl-prev"),"pl-frame",labelsHTML([p],{...o,logo:lg,noprint:true},barcodeSVG),o.w,o.h,true);
+    const lname={store:"store logo",online:"online store logo"}[o.logoId]||(br?`${br.name} logo`:"logo");
     let note=`Actual size <b>${o.w} × ${o.h} mm</b>, shown enlarged. In the print dialog pick the label printer, paper size ${o.w} × ${o.h} mm, margins none, scale 100%.`
-      +(o.fields.logo?` The dashed corner is left blank for the logo.`:"");
+      +(o.logoId&&!lg?`<br><span style="color:var(--warn)">No ${esc(lname)} has been uploaded yet, so its corner prints blank.</span>${isAdmin()?" Add it in Settings.":" An admin can add it in Settings."}`:"");
     if(o.fields.barcode&&p.barcode&&!isEAN13(String(p.barcode))){
       const m=+((/data-m="(\d+)"/.exec(barcodeSVG(String(p.barcode)))||[])[1]||0);
       if(m&&labelDots(o.w,m)<2)note+=`<br><span style="color:var(--warn)">This barcode is too long to print dependably on a ${o.w} mm label — use a wider roll.</span>`;
@@ -4403,13 +4614,13 @@ window.openProductLabel=function(pid){
     $("#pl-note").innerHTML=note;
   };
   document.querySelectorAll(".pl-f").forEach(c=>c.onchange=draw);
-  $("#pl-size").onchange=draw;["#pl-w","#pl-h"].forEach(i=>$(i).oninput=draw);
+  $("#pl-size").onchange=draw;$("#pl-logo").onchange=draw;["#pl-w","#pl-h"].forEach(i=>$(i).oninput=draw);
   $("#pl-print").onclick=async()=>{
     const o=opts();if(!Object.entries(o.fields).some(([k,v])=>v&&k!=="logo"&&k!=="disc"&&k!=="tax"))return toast("Tick at least one thing to print",1);
     const n=Math.min(500,Math.max(1,Math.floor(+$("#pl-copies").value||1)));
     const w=window.open("","_blank");if(!w)return toast("Allow pop-ups to print",1);
-    try{if(o.fields.barcode)await loadJsBarcode();
-      w.document.write(labelsHTML(Array.from({length:n},()=>p),o,barcodeSVG));w.document.close();
+    try{if(o.fields.barcode)await loadJsBarcode();const lg=await logoFor(o.logoId,o);
+      w.document.write(labelsHTML(Array.from({length:n},()=>p),{...o,logo:lg},barcodeSVG));w.document.close();
     }catch(e){w.close();toast(emsg(e),1)}
   };
   nobar();draw();
@@ -4429,6 +4640,8 @@ window.openLabels=function(){
    <div><label>Which products</label><select id="lb-scope"><option value="shown">Products currently shown in the list</option><option value="all">All products</option></select></div>
    <div class="f"><div><label>Copies</label><select id="lb-copies"><option value="1">1 label per product</option><option value="qty">1 label per unit in stock</option></select></div>
    <div><label>Layout</label><select id="lb-layout"><option value="roll">Label roll (thermal printer)</option><option value="a4">A4 sheet — 24 labels (3 × 8)</option></select></div></div>
+   <div class="f" id="lb-logorow"><div><label>Logo</label><select id="lb-logo"><option value="store">Store logo</option><option value="online">Online store logo</option>
+     <option value="brand">Each product's brand logo (store logo if it has none)</option><option value="">No logo</option></select></div><div></div></div>
    <div class="f" id="lb-rollrow"><div><label>Label size on the roll</label><select id="lb-size">${LABEL_SIZES.map(([w,h2])=>`<option value="${w}x${h2}">${w} × ${h2} mm</option>`).join("")}<option value="custom">Another size…</option></select></div>
     <div id="lb-custom" class="f hide"><div><label>Width (mm)</label><input id="lb-w" type="number" min="20" max="110" step="1" value="50"></div><div><label>Height (mm)</label><input id="lb-h" type="number" min="12" max="150" step="1" value="30"></div></div></div>
    <div class="row"><label style="display:flex;gap:6px;align-items:center;color:var(--ink);font-size:14px"><input type="checkbox" id="lb-price" checked style="width:auto"> Show MRP and selling price</label>
@@ -4445,12 +4658,22 @@ window.openLabels=function(){
   /* What the dialog is set to, in the shape labelsHTML takes. */
   const opts=()=>{const sz=$("#lb-size").value;let w,h2;
     if(sz==="custom"){w=+$("#lb-w").value||50;h2=+$("#lb-h").value||30}else[w,h2]=sz.split("x").map(Number);
-    return {layout:$("#lb-layout").value,w,h:h2,price:$("#lb-price").checked,border:$("#lb-border").checked}};
+    return {layout:$("#lb-layout").value,w,h:h2,price:$("#lb-price").checked,border:$("#lb-border").checked,
+      logoMode:$("#lb-logo").value,fields:{logo:!!$("#lb-logo").value}}};
+  /* Fetch every logo this selection could use, then hand the label a lookup. */
+  const fetchedL=new Set();
+  const logoFn=async(mode,L,o)=>{
+    if(!mode)return "";
+    const ids=new Set(mode==="brand"?["store",...L.map(brandOf).filter(b=>b&&b.hasLogo).map(b=>"brand-"+b.id)]:[mode]);
+    const box=labelGeom(o).box,fit={};
+    await Promise.all([...ids].map(async id=>{const v=await getLogo(id,!fetchedL.has(id));fetchedL.add(id);fit[id]=await fitLogo(v,box)}));
+    return mode==="brand"?(p=>{const b=brandOf(p);return (b&&fit["brand-"+b.id])||fit.store||""}):(fit[mode]||"");
+  };
   /* The preview is the print — the same HTML in a frame, enlarged — so what is seen is what
      comes out. It shows the longest name in the selection, since that is the label that breaks. */
   const preview=async()=>{
     const o=opts(),roll=o.layout==="roll";
-    $("#lb-rollrow").classList.toggle("hide",!roll);
+    $("#lb-rollrow").classList.toggle("hide",!roll);$("#lb-logorow").classList.toggle("hide",!roll);
     $("#lb-custom").classList.toggle("hide",$("#lb-size").value!=="custom");
     $("#lb-border").closest("label").classList.toggle("hide",roll);
     saveLabelPrefs({layout:o.layout,size:$("#lb-size").value,w:o.w,h:o.h,price:o.price});
@@ -4460,7 +4683,8 @@ window.openLabels=function(){
     $("#lb-prevbox").classList.remove("hide");
     try{await loadJsBarcode()}catch(e){$("#lb-prev").innerHTML=`<span class="small mute">${esc(emsg(e))}</span>`;return}
     const W=roll?Math.min(110,Math.max(20,o.w)):64,H=roll?Math.min(150,Math.max(12,o.h)):34;
-    drawLabelPreview($("#lb-prev"),"lb-frame",labelsHTML([{...pick,barcode:pick.barcode||"2000000000015"}],{...o,border:false,noprint:true},barcodeSVG),W,H,roll);
+    const lg=roll?await logoFn(o.logoMode,[pick],o):"";
+    drawLabelPreview($("#lb-prev"),"lb-frame",labelsHTML([{...pick,barcode:pick.barcode||"2000000000015"}],{...o,logo:lg,border:false,noprint:true},barcodeSVG),W,H,roll);
     $("#lb-prevnote").innerHTML=(roll?`Actual size <b>${W} × ${H} mm</b>, shown enlarged. One label per page — in the print dialog pick the label printer, paper size ${W} × ${H} mm, margins none, scale 100%.`
         :`One of 24 on the A4 sheet, 64 × 34 mm, shown enlarged.`)
       +(pick.barcode?` Showing <b>${esc(pick.sku||"")}</b>, the longest name in this selection.`:` This product has no barcode yet, so the bars are a sample.`);
@@ -4477,7 +4701,7 @@ window.openLabels=function(){
     if(pf.w)$("#lb-w").value=pf.w;if(pf.h)$("#lb-h").value=pf.h;
     if(pf.price===false)$("#lb-price").checked=false;
   }
-  ["#lb-layout","#lb-size","#lb-price","#lb-border"].forEach(i=>$(i).onchange=preview);
+  ["#lb-layout","#lb-size","#lb-price","#lb-border","#lb-logo"].forEach(i=>$(i).onchange=preview);
   ["#lb-w","#lb-h"].forEach(i=>$(i).oninput=preview);
   $("#lb-scope").onchange=()=>{info();preview()};info();preview();
   $("#lb-gen").onclick=async()=>{
@@ -4508,7 +4732,7 @@ window.openLabels=function(){
     if(items.length>2000)return toast(`That would be ${items.length} labels — narrow the selection (max 2000)`,1);
     const w=window.open("","_blank");if(!w)return toast("Allow pop-ups to print",1);
     try{await loadJsBarcode();
-      w.document.write(labelsHTML(items,opts(),barcodeSVG));w.document.close();
+      const o=opts();w.document.write(labelsHTML(items,{...o,logo:o.layout==="roll"?await logoFn(o.logoMode,L,o):""},barcodeSVG));w.document.close();
     }catch(e){w.close();toast(emsg(e),1)}
   };
 };

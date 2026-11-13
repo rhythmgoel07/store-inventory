@@ -190,6 +190,15 @@ Until that secret exists the workflow fails on purpose with a message pointing h
 - **Each label carries the MRP and the selling price** — MRP small on the left, the selling price large on the right, above the barcode, with the SKU and the size on the line above. That is on by default; untick *Show MRP and selling price* for a plain SKU-and-barcode label. You can also print one label per unit in stock.
 - Any USB/Bluetooth barcode scanner works: scan in Sell (adds to the bill), Stock or the product search.
 
+## Logos and brands
+- **Settings → Store logos** (admin): upload the **Physical store logo** and the **Online store logo**. PNG, JPG or SVG; a logo on a white or clear background works best. Blank margins are trimmed so the mark fills its corner.
+- **The label printer prints only black dots**, so each upload shows the logo *as printed* — every dot black or white — on a real 50 × 30 label, with a **Darkness** slider: slide right if thin or light parts disappear, left if it prints as a blob. The colour original is kept too, for bills and screens later.
+- **Settings → Brands** (admin): add the brands your products are sold under, upload a logo for each, rename (every product using it follows), or delete (products using it are left without a brand). Anyone who can edit products can also add a brand from the product form's **＋**.
+- **Each product has a Brand** field (its own field — the old "brand" column that meant the vendor is untouched). The Excel import reads a **brand** column, matching names already in the list and adding new ones; the export and the import template carry it too.
+- **On labels**, the **Logo** menu offers **Store logo** (always the default), **Online store logo**, the **product's brand logo** when it has a brand, or **No logo**. The bulk Barcode labels dialog adds **Each product's brand logo** — the store logo for products without one. A logo not uploaded yet is said so in the dialog and its corner prints blank; a damaged one never stops a print.
+- **Logos are drawn for the corner they fill, at the printer's 8 dots to the mm**, black or white per dot by the darkness chosen at upload, so the driver has nothing to grey out or speckle.
+- Where they live: the `logos` collection in Firestore — `store`, `online` and `brand-<id>` — and the brand names in `brands`. Only an admin can change a logo; everyone signed in can print with them.
+
 ## Export
 Products → Export gives an .xlsx with a **photo** column (pictures embedded, 220 px) plus all fields. Photos from image links are embedded only if the website allows it; the link always stays in `imageUrl`.
 

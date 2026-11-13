@@ -79,6 +79,22 @@ service cloud.firestore {
       allow update, delete: if can('manageVendors');
     }
 
+    // Brands products are sold under. Anyone who can edit products may add one (from the
+    // product form or an import); renaming, deleting and the logo flag are the admin's.
+    match /brands/{id} {
+      allow read: if isStaff();
+      allow create: if can('editProducts') && autoId(id)
+        && nd().get('hasLogo', false) == false && nd().get('name', '') is string && nd().get('name', '').size() > 0;
+      allow update, delete: if isAdmin();
+    }
+
+    // Logos for labels: the physical store's, the online store's, and one per brand.
+    // Only an admin changes them, and only under those names.
+    match /logos/{id} {
+      allow read: if isStaff();
+      allow write: if isAdmin() && (id in ['store', 'online'] || id.matches('^brand-[A-Za-z0-9]{20}$'));
+    }
+
     // Purchase bills from vendors and the payments made to them: the vendor ledger.
     // Recording is a permission the admin grants; correcting one is admin-only.
     match /purchases/{id} {
