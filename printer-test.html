@@ -26,7 +26,7 @@ label{font-size:14px;color:#555}
 
 <h2>2. Label roll loaded, printer in label mode (power button 3 times)</h2>
 <p>Label size <select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select> mm</p>
-<p>TSPL exactly as Open Label+ sends it: the label as picture strips of about 1 KB each inside a TSPL job.</p>
+<p>TSPL exactly as Open Label+ sends it: one command per Bluetooth write, the label as picture strips. Pause between writes <select id="pause"><option>30</option><option>100</option><option>300</option></select> ms</p>
 <button class="t go" id="p-t0" disabled>T0 exact Open Label+ job shape</button>
 <button class="t go" id="p-t1" disabled>T1 TSPL picture</button>
 <button class="t" id="p-t2" disabled>T2 TSPL picture (LF only)</button>
@@ -204,7 +204,14 @@ const RawPrint = (() => {
       const n = Math.min(rows, h - y);
       strips.push(`BITMAP ${o.x || 0},${y},${bw},${n},0,`, bits.subarray(y * bw, (y + n) * bw), nl);
     }
-    return cat(`SIZE ${W} mm, ${H} mm${nl}GAP ${o.gap ?? 2} mm,0 mm${nl}`, o.direction != null ? `DIRECTION ${o.direction}${nl}` : "", `CLS${nl}`, strips, `SET CUTTER OFF${nl}PRINT 1,${o.copies || 1}${nl}`);
+    const parts = [str(`SIZE ${W} mm, ${H} mm${nl}`), str(`GAP ${o.gap ?? 2} mm,0 mm${nl}`)];
+    if (o.direction != null) parts.push(str(`DIRECTION ${o.direction}${nl}`));
+    parts.push(str(`CLS${nl}`));
+    for (let i = 0; i < strips.length; i += 3) parts.push(cat(strips[i], strips[i + 1], strips[i + 2]));
+    parts.push(str(`SET CUTTER OFF${nl}`), str(`PRINT 1,${o.copies || 1}${nl}`));
+    /* One command per write, as the logged job went: this firmware seems to parse a packet as
+       a command. o.parts gives the array; otherwise the whole job as one buffer. */
+    return o.parts ? parts : cat(parts);
   }
 
   /* ---------- transports ---------- */
@@ -309,7 +316,11 @@ let busy=false;
 async function send(what,data){
   if(busy){log("Wait — still sending the previous job");return}
   busy=true;on(false);
-  try{const w=+($("chan").value||0);log("Sending "+what+" ("+data.length+" bytes) on channel "+(w+1));await P.send(data,w);log("Sent "+what+". Did it print?")}
+  try{const w=+($("chan").value||0);
+    if(Array.isArray(data)){log("Sending "+what+" ("+data.length+" writes, "+data.reduce((n,d)=>n+d.length,0)+" bytes) on channel "+(w+1));
+      for(const d of data){await P.send(d,w);await new Promise(r=>setTimeout(r,+($("pause").value||30)))}}
+    else{log("Sending "+what+" ("+data.length+" bytes) on channel "+(w+1));await P.send(data,w)}
+    log("Sent "+what+". Did it print?")}
   catch(e){log("Send failed: "+e.message)}
   busy=false;on(true);
 }
@@ -330,16 +341,16 @@ $("p-q4").onclick=()=>send("Q4 full picture x 3 + ESC d 1 each",R.cat([1,2,3].ma
 const pitchpic=(tag,n)=>R.raster(pic(tag,n,0,Number($("gap").value||2)),{post:[]});
 $("p-r1").onclick=()=>send("R1 one label at pitch",pitchpic("R1"));
 $("p-r2").onclick=()=>send("R2 three labels at pitch",R.cat([1,2,3].map(n=>pitchpic("R2",n))));
-const tpic=(tag,n,o)=>R.tsplBitmap(pic(tag,n,0,0),{...sz(),gap:Number($("gap").value||2),...o});
+const tpic=(tag,n,o)=>R.tsplBitmap(pic(tag,n,0,0),{...sz(),gap:Number($("gap").value||2),parts:true,...o});
 // T0: the geometry seen in the Open Label+ log - SIZE 35 mm, 25 mm, picture 34 bytes wide at x=8 in 30-row strips.
 $("p-t0").onclick=()=>{const c=document.createElement("canvas");c.width=272;c.height=200;const g=c.getContext("2d");
   g.fillStyle="#fff";g.fillRect(0,0,272,200);g.fillStyle="#000";g.lineWidth=3;g.strokeRect(3,3,266,194);g.textAlign="center";
   g.font="bold 24px sans-serif";g.fillText("Label T0",136,36);g.font="20px sans-serif";g.fillText(item.sku,136,90);g.font="bold 34px sans-serif";g.fillText("₹18,999",136,170);
-  send("T0 Open Label+ shape",R.tsplBitmap(c,{w:35,h:25,gap:2,strip:30,x:8}))};
+  send("T0 Open Label+ shape",R.tsplBitmap(c,{w:35,h:25,gap:2,strip:30,x:8,parts:true}))};
 $("p-t1").onclick=()=>send("T1 TSPL picture",tpic("T1"));
 $("p-t2").onclick=()=>send("T2 TSPL picture, LF",tpic("T2",0,{lf:true}));
-$("p-t3").onclick=()=>send("T3 TSPL picture x 3",R.cat([1,2,3].map(n=>tpic("T3",n))));
-$("p-t4").onclick=()=>{const{w,h}=sz();send("T4 TSPL blank label",R.cat(`SIZE ${w} mm,${h} mm\r\nGAP ${$("gap").value} mm,0 mm\r\nCLS\r\nPRINT 1,1\r\n`))};
+$("p-t3").onclick=()=>send("T3 TSPL picture x 3",[1,2,3].flatMap(n=>tpic("T3",n)));
+$("p-t4").onclick=()=>{const{w,h}=sz();send("T4 TSPL blank label",[`SIZE ${Math.min(48,w)} mm, ${h} mm\r\n`,`GAP ${$("gap").value} mm,0 mm\r\n`,"CLS\r\n","PRINT 1,1\r\n"].map(x=>R.cat(x)))};
 $("p-rcpt").onclick=()=>send("receipt (ESC/POS)",RawPrint.receipt({title:"B-HOME",header:["Printer test"],
   meta:[["Bill","TEST-1"],["Date",new Date().toLocaleDateString("en-IN")]],
   items:[{name:item.name,qty:1,rate:18999}],totals:[["Total",18999,true]],barcode:"TEST-1",footer:["Thank you"]}));
