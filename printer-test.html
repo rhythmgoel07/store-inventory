@@ -30,6 +30,11 @@ label{font-size:14px;color:#555}
 <button class="t" id="p-tspl3" disabled>Label A &times; 3</button>
 <button class="t" id="p-cpcl" disabled>Label B (CPCL)</button>
 <p>Earlier picture label, for comparison: <button class="t" id="p-n" disabled>Label N</button></p>
+<p>Does label mode hold the print until it is told the label is finished?</p>
+<button class="t go" id="p-p1" disabled>P1 text + FF</button>
+<button class="t" id="p-p2" disabled>P2 picture + FF</button>
+<button class="t" id="p-p3" disabled>P3 picture + GS FF</button>
+<button class="t" id="p-p4" disabled>P4 picture + ESC d</button>
 <p>To tell what language label mode speaks:</p>
 <button class="t" id="p-txt" disabled>Plain text</button>
 <button class="t" id="p-zpl" disabled>Label Z (ZPL)</button>
@@ -304,6 +309,10 @@ $("p-txt").onclick=()=>send("plain text",R.cat("HELLO SEZNIK 12345\r\n\r\n\r\n")
 $("p-zpl").onclick=()=>{const{w,h}=sz();send("label Z (ZPL)",R.cat(`^XA^PW${w*8}^LL${h*8}^LH0,0^FO16,16^A0N,32,32^FDLabel Z^FS^FO16,60^A0N,24,24^FD${item.sku}^FS^FO40,96^BY2^BCN,80,Y,N,N^FD${item.barcode}^FS^XZ`))};
 $("p-tsin").onclick=()=>{const{w,h}=sz();send("label A2 (TSPL inches)",R.cat(`SIZE ${(w/25.4).toFixed(2)},${(h/25.4).toFixed(2)}\r\nGAP 0.08,0\r\nCLS\r\nTEXT 20,20,"3",0,1,1,"Label A2"\r\nTEXT 20,60,"2",0,1,1,"${item.sku}"\r\nBARCODE 40,100,"128",80,1,0,2,2,"${item.barcode}"\r\nPRINT 1\r\n`))};
 $("p-cpcl2").onclick=()=>{const{w,h}=sz();send("label B2 (CPCL simple)",R.cat(`! 0 200 200 ${h*8} 1\r\nTEXT 4 0 20 20 Label B2\r\nTEXT 7 0 20 70 ${item.sku}\r\nBARCODE 128 1 1 80 40 110 ${item.barcode}\r\nFORM\r\nPRINT\r\n`))};
+$("p-p1").onclick=()=>send("P1 text + FF",R.cat([0x1b,0x40],"Label P1\r\n"+item.sku+"\r\nMRP Rs.24,999\r\n",[0x0c]));
+$("p-p2").onclick=()=>send("P2 picture + FF",R.raster(pic("P2",0,8),{post:[0x0c]}));
+$("p-p3").onclick=()=>send("P3 picture + GS FF",R.raster(pic("P3",0,8),{post:[0x1d,0x0c]}));
+$("p-p4").onclick=()=>send("P4 picture + ESC d 2",R.raster(pic("P4",0,8),{post:[0x1b,0x64,2]}));
 $("p-rcpt").onclick=()=>send("receipt (ESC/POS)",RawPrint.receipt({title:"B-HOME",header:["Printer test"],
   meta:[["Bill","TEST-1"],["Date",new Date().toLocaleDateString("en-IN")]],
   items:[{name:item.name,qty:1,rate:18999}],totals:[["Total",18999,true]],barcode:"TEST-1",footer:["Thank you"]}));
