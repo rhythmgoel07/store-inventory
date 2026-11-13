@@ -26,11 +26,10 @@ label{font-size:14px;color:#555}
 
 <h2>2. Label roll loaded, printer in label mode (power button 3 times)</h2>
 <p>Label size <select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select> mm</p>
-<p>Full-height picture, the whole sticker, ended three different ways. Press feed once before each; wait for "Sent" before the next tap.</p>
-<button class="t go" id="p-q1" disabled>Q1 picture only</button>
-<button class="t" id="p-q2" disabled>Q2 picture + ESC d</button>
-<button class="t" id="p-q3" disabled>Q3 picture + GS FF</button>
-<button class="t" id="p-q4" disabled>Q4 picture &times; 3 + ESC d</button>
+<p>Full-height label, drawn to exactly one sticker pitch (label + gap), so a run does not creep. Gap <select id="gap"><option>2</option><option>3</option><option>4</option></select> mm</p>
+<button class="t go" id="p-r1" disabled>R1 one label</button>
+<button class="t" id="p-r2" disabled>R2 three labels, one job</button>
+<p>For R1: press feed once, tap R1, then <b>without pressing feed</b> tap R1 again. Do both land right?</p>
 <p>Earlier: <button class="t" id="p-n" disabled>Label N</button> <button class="t" id="p-tspl" disabled>A (TSPL)</button></p>
 
 <h2>3. Receipt roll loaded, printer in receipt mode</h2>
@@ -304,6 +303,9 @@ $("p-q1").onclick=()=>send("Q1 full picture",fullpic("Q1"));
 $("p-q2").onclick=()=>send("Q2 full picture + ESC d 1",R.cat(fullpic("Q2"),[0x1b,0x64,1]));
 $("p-q3").onclick=()=>send("Q3 full picture + GS FF",R.cat(fullpic("Q3"),[0x1d,0x0c]));
 $("p-q4").onclick=()=>send("Q4 full picture x 3 + ESC d 1 each",R.cat([1,2,3].map(n=>R.cat(fullpic("Q4",n),[0x1b,0x64,1]))));
+const pitchpic=(tag,n)=>R.raster(pic(tag,n,0,Number($("gap").value||2)),{post:[]});
+$("p-r1").onclick=()=>send("R1 one label at pitch",pitchpic("R1"));
+$("p-r2").onclick=()=>send("R2 three labels at pitch",R.cat([1,2,3].map(n=>pitchpic("R2",n))));
 $("p-rcpt").onclick=()=>send("receipt (ESC/POS)",RawPrint.receipt({title:"B-HOME",header:["Printer test"],
   meta:[["Bill","TEST-1"],["Date",new Date().toLocaleDateString("en-IN")]],
   items:[{name:item.name,qty:1,rate:18999}],totals:[["Total",18999,true]],barcode:"TEST-1",footer:["Thank you"]}));
