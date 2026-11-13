@@ -341,9 +341,6 @@ $("p-q1").onclick=()=>send("Q1 full picture",fullpic("Q1"));
 $("p-q2").onclick=()=>send("Q2 full picture + ESC d 1",R.cat(fullpic("Q2"),[0x1b,0x64,1]));
 $("p-q3").onclick=()=>send("Q3 full picture + GS FF",R.cat(fullpic("Q3"),[0x1d,0x0c]));
 $("p-q4").onclick=()=>send("Q4 full picture x 3 + ESC d 1 each",R.cat([1,2,3].map(n=>R.cat(fullpic("Q4",n),[0x1b,0x64,1]))));
-const pitchpic=(tag,n)=>R.raster(pic(tag,n,0,Number($("gap").value||2)),{post:[]});
-$("p-r1").onclick=()=>send("R1 one label at pitch",pitchpic("R1"));
-$("p-r2").onclick=()=>send("R2 three labels at pitch",R.cat([1,2,3].map(n=>pitchpic("R2",n))));
 const tpic=(tag,n,o)=>R.tsplBitmap(pic(tag,n,0,0),{...sz(),gap:Number($("gap").value||2),parts:true,...o});
 // T0: the geometry seen in the Open Label+ log - SIZE 35 mm, 25 mm, picture 34 bytes wide at x=8 in 30-row strips.
 $("p-t0").onclick=()=>{const c=document.createElement("canvas");c.width=272;c.height=200;const g=c.getContext("2d");
