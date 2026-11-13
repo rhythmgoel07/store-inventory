@@ -30,6 +30,11 @@ label{font-size:14px;color:#555}
 <button class="t" id="p-tspl3" disabled>Label A &times; 3</button>
 <button class="t" id="p-cpcl" disabled>Label B (CPCL)</button>
 <p>Earlier picture label, for comparison: <button class="t" id="p-n" disabled>Label N</button></p>
+<p>To tell what language label mode speaks:</p>
+<button class="t" id="p-txt" disabled>Plain text</button>
+<button class="t" id="p-zpl" disabled>Label Z (ZPL)</button>
+<button class="t" id="p-tsin" disabled>Label A2 (TSPL, inches)</button>
+<button class="t" id="p-cpcl2" disabled>Label B2 (CPCL, simple)</button>
 
 <h2>3. Receipt roll loaded, printer in receipt mode</h2>
 <button class="t" id="p-rcpt" disabled>Receipt (ESC/POS)</button>
@@ -295,6 +300,10 @@ $("p-tspl").onclick=()=>send("label A (TSPL)",R.label({...item,name:"Label A "+i
 $("p-tspl3").onclick=()=>send("label A x 3 (TSPL)",R.cat([1,2,3].map(n=>R.label({...item,name:"Label A #"+n+" "+item.name},sz()))));
 $("p-cpcl").onclick=()=>send("label B (CPCL)",R.label({...item,name:"Label B "+item.name},{...sz(),lang:"cpcl"}));
 $("p-n").onclick=()=>send("label N (picture)",R.raster(pic("N",0,8,10),{post:[]}));
+$("p-txt").onclick=()=>send("plain text",R.cat("HELLO SEZNIK 12345\r\n\r\n\r\n"));
+$("p-zpl").onclick=()=>{const{w,h}=sz();send("label Z (ZPL)",R.cat(`^XA^PW${w*8}^LL${h*8}^LH0,0^FO16,16^A0N,32,32^FDLabel Z^FS^FO16,60^A0N,24,24^FD${item.sku}^FS^FO40,96^BY2^BCN,80,Y,N,N^FD${item.barcode}^FS^XZ`))};
+$("p-tsin").onclick=()=>{const{w,h}=sz();send("label A2 (TSPL inches)",R.cat(`SIZE ${(w/25.4).toFixed(2)},${(h/25.4).toFixed(2)}\r\nGAP 0.08,0\r\nCLS\r\nTEXT 20,20,"3",0,1,1,"Label A2"\r\nTEXT 20,60,"2",0,1,1,"${item.sku}"\r\nBARCODE 40,100,"128",80,1,0,2,2,"${item.barcode}"\r\nPRINT 1\r\n`))};
+$("p-cpcl2").onclick=()=>{const{w,h}=sz();send("label B2 (CPCL simple)",R.cat(`! 0 200 200 ${h*8} 1\r\nTEXT 4 0 20 20 Label B2\r\nTEXT 7 0 20 70 ${item.sku}\r\nBARCODE 128 1 1 80 40 110 ${item.barcode}\r\nFORM\r\nPRINT\r\n`))};
 $("p-rcpt").onclick=()=>send("receipt (ESC/POS)",RawPrint.receipt({title:"B-HOME",header:["Printer test"],
   meta:[["Bill","TEST-1"],["Date",new Date().toLocaleDateString("en-IN")]],
   items:[{name:item.name,qty:1,rate:18999}],totals:[["Total",18999,true]],barcode:"TEST-1",footer:["Thank you"]}));
