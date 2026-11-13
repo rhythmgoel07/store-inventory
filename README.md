@@ -306,6 +306,19 @@ Every invoice and every purchase bill has a page of its own, and an admin can co
   The choice, the amount and any note show on the booking page and in the ledger line, and nothing is shown as "due" on a cancelled booking any more.
 - **Settling it later**: a booking already cancelled — including ones cancelled before this existed — shows **Settle the ₹X received** on its page for an admin, with the same three outcomes. The amount is worked out from the advance and the payments against it, so older cancellations are handled correctly without any data fixing.
 
+## Changing the items on a booking or a bill (admin)
+- **Modify items** on a booking adds, removes or changes items — quantity, rate, a line's discount, the discount on the order — with the order value before and after, what has been received, and what that leaves due or in credit, all shown before saving. A reason is asked for, and every change is listed under **Changes** on the booking.
+- **On an open booking** only the reservation moves: added pieces are reserved, removed ones go back to free stock. Only free stock can be added — pieces held for someone else's booking can't.
+- **On a delivered booking** the stock itself moves (to and from the rack it was taken from) and **its invoice is rewritten to match**. The bill follows the booking, never the other way round: on a bill made from a booking, the admin's button is **Modify booking**, and Edit bill there only corrects what was collected on delivery.
+- **Edit bill** on an ordinary invoice already adds, removes and changes items, moving stock by the difference. It now also refuses pieces reserved for a booking, which it used to take.
+- The customer's ledger charges the booking's or the bill's value and counts what was received, so it follows any change by itself. If more has been received than the order now comes to, the difference shows as credit with the shop.
+
+## Voiding a bill made from a booking (admin)
+- **The booking reopens.** The goods go back into stock and are reserved for the booking again, and the booking returns to *booked* — so it can be **modified, delivered again, or cancelled**. The voided invoice is listed on it under *Earlier invoices*.
+- **Money collected on delivery stays received.** It becomes a payment against the booking, dated the day of the delivery and in the mode it was taken, so the customer's balance doesn't move when the bill is voided. Cancelling the booking afterwards then settles it in the usual way — kept as credit, refunded, or kept as a cancellation charge.
+- **Bookings already stuck** — showing *delivered* although their bill was voided before this existed — say so on their page, and an admin gets **Reopen booking**, which does the same: reserves the goods again (warning if stock has since run short) and keeps the delivery money as a payment. Until it is reopened, such a booking makes the customer look as if they owe what they paid at the door.
+- Voiding a booking's bill is admin-only, on screen and in the database rules; anyone else gets **Ask admin**.
+
 ## An admin can correct the ledger
 A customer's ledger is built from bookings, invoices and payments, so most corrections are made on the thing itself — the bill, the booking, the payment. For everything else an admin has two tools on the customer's page:
 - **+ Adjustment** adds a line in either direction: *credits the customer* (reduces what they owe — a refund paid, a discount given, a small balance written off) or *charges the customer* (increases it — a missed charge, a delivery fee, a retained deposit). The dialog shows what the balance will become before you save, and a **reason is required** — it prints on the statement and is the only record of why the ledger moved.
