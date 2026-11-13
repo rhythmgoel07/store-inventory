@@ -306,6 +306,17 @@ Every invoice and every purchase bill has a page of its own, and an admin can co
   The choice, the amount and any note show on the booking page and in the ledger line, and nothing is shown as "due" on a cancelled booking any more.
 - **Settling it later**: a booking already cancelled — including ones cancelled before this existed — shows **Settle the ₹X received** on its page for an admin, with the same three outcomes. The amount is worked out from the advance and the payments against it, so older cancellations are handled correctly without any data fixing.
 
+## Sales returns
+- **When a customer brings goods back**, open the invoice and press **Sales return** (or go to **Returns** and type the invoice number — the number alone, like *12*, works too). Choose how many of each item are coming back; the voucher can't take back more than was sold, less what already came back, even from two counters at once.
+- **Each item comes back at what the customer actually paid for it**: its price after its own discount, less its share of the discount on the bill. When the last piece of a line comes back, it takes exactly what is left of that line, so a bill's vouchers always add up to the bill.
+- **The money**: what is still due on the bill (or on its booking) is set off first; the rest is refunded now — the amount and mode are yours to change — and anything not refunded stays as credit with the shop. A reason is required, and goes on the voucher.
+- **The goods go into stock at a location called *Sales Return***, where they can be checked and then moved to a rack with the usual Transfer or bulk-location tools. Every location list includes it.
+- **Each return gets a serial-numbered voucher** — **SR-00001**, **SR-00002**… — a credit note with the store's header, the invoice it is against, the items, their value, the GST in it, the refund, the reason, and lines for the customer's and the store's signatures. **Print voucher** prints it; vouchers are never deleted, so the numbers stay accounted for.
+- **The invoice shows what came back, in red**: each returned line says how many and on which voucher, a line that came back whole turns red, and the totals add *Goods returned*, *Refunded* and *Bill after returns*. The printed bill shows the same.
+- **The customer's ledger** gets the voucher as a credit and the refund as money paid out, so the balance follows by itself; what the bill still shows as pending accounts for both.
+- **Returns** in the menu lists every voucher with totals and a search. Anyone allowed to void bills can make a return; an admin can **cancel a voucher** made by mistake — its pieces come out of stock again (out of *Sales Return* first) and the bill is as it was.
+- **Voiding a whole bill sends its goods to *Sales Return* too.** A bill with returns on it can't be voided or corrected until its vouchers are cancelled — take the rest back as a return instead.
+
 ## Changing the items on a booking or a bill (admin)
 - **Modify items** on a booking adds, removes or changes items — quantity, rate, a line's discount, the discount on the order — with the order value before and after, what has been received, and what that leaves due or in credit, all shown before saving. A reason is asked for, and every change is listed under **Changes** on the booking.
 - **On an open booking** only the reservation moves: added pieces are reserved, removed ones go back to free stock. Only free stock can be added — pieces held for someone else's booking can't.

@@ -191,7 +191,22 @@ service cloud.firestore {
       allow update: if isAdmin()
         || (can('voidSale') && resource.data.status == 'completed' && nd().status == 'void'
             && resource.data.get('bookingId', '') == ''
-            && changed().hasOnly(['status','voidedBy','voidedAt']));
+            && changed().hasOnly(['status','voidedBy','voidedAt']))
+        // a sales return records how many pieces of each product have come back
+        || (can('voidSale') && resource.data.status == 'completed' && nd().status == 'completed'
+            && changed().hasOnly(['returned','updatedAt','updatedBy']) && byMe('updatedBy')
+            && nd().returned is map);
+      allow delete: if false;
+    }
+
+    // Sales return vouchers (credit notes). Made by whoever may void a bill; only an admin
+    // cancels one, and none is ever deleted - the number stays accounted for.
+    match /salesReturns/{id} {
+      allow read: if isStaff();
+      allow create: if can('voidSale') && autoId(id) && byMe('createdBy')
+        && nd().status == 'active' && amount('value') && amount('refundAmount')
+        && nd().refundAmount <= nd().value;
+      allow update: if isAdmin();
       allow delete: if false;
     }
     // Stock movement log: append-only, always in the name of whoever is signed in.

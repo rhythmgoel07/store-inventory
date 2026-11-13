@@ -258,7 +258,7 @@ import {firebaseConfig} from "./firebase-config.js";
 
 /* ---------- Taxonomy (embedded from homecentre_taxonomy.json) ---------- */
 const DEFAULT_TAX = [{"id":"living-room","name":"Living Room","slug":"livingroom","subcategories":[{"id":"sofas","name":"Sofas","slug":"livingroom-sofas","subcategories":[{"id":"3-seater-sofas","name":"3 Seater Sofas","slug":"livingroom-sofas-3seatersofas","subcategories":[]},{"id":"2-seater-sofas","name":"2 Seater Sofas","slug":"livingroom-sofas-2seatersofas","subcategories":[]},{"id":"1-seater-sofas","name":"1 Seater Sofas","slug":"livingroom-sofas-1seatersofas","subcategories":[]},{"id":"sofa-sets","name":"Sofa Sets","slug":"livingroom-sofas-sofasets","subcategories":[]},{"id":"sofa-cum-beds","name":"Sofa Cum Beds","slug":"livingroom-sofas-sofacumbeds","subcategories":[]},{"id":"corner-sofas","name":"Corner Sofas","slug":"livingroom-sofas-cornersofa","subcategories":[]}]},{"id":"customised-furniture","name":"Customised Furniture","slug":"customizedfurniture","subcategories":[]},{"id":"recliners","name":"Recliners","slug":"livingroom-recliners","subcategories":[{"id":"3-seater-recliners","name":"3 Seater Recliners","slug":"livingroom-recliners-3seaterrecliners","subcategories":[]},{"id":"2-seater-recliners","name":"2 Seater Recliners","slug":"livingroom-recliners-2seaterrecliners","subcategories":[]},{"id":"1-seater-recliners","name":"1 Seater Recliners","slug":"livingroom-recliners-1seaterrecliners","subcategories":[]},{"id":"recliner-sets","name":"Recliner Sets","slug":"livingroom-recliners-reclinersets","subcategories":[]}]},{"id":"occasional-chairs","name":"Occasional Chairs","slug":"livingroom-occasionalchairs","subcategories":[{"id":"accent-chairs","name":"Accent Chairs","slug":"livingroom-occasionalchairs-accentchairs","subcategories":[]},{"id":"folding-chairs","name":"Folding Chairs","slug":"livingroom-occasionalchairs-foldingchairs","subcategories":[]},{"id":"cafe-chairs","name":"Cafe Chairs","slug":"livingroom-occasionalchairs-cafechairs","subcategories":[]},{"id":"plastic-chairs","name":"Plastic Chairs","slug":"livingroom-occasionalchairs-plasticchairs","subcategories":[]}]},{"id":"benches-stools","name":"Benches & Stools","slug":"livingroom-benchandstools","subcategories":[{"id":"benches","name":"Benches","slug":"livingroom-benchandstools-benches","subcategories":[]},{"id":"stools","name":"Stools","slug":"livingroom-benchandstools-stools","subcategories":[]}]},{"id":"bean-bags-pouffes","name":"Bean Bags & Pouffes","slug":"livingroom-beanbagsandpouffes","subcategories":[{"id":"pouffes","name":"Pouffes","slug":"livingroom-beanbagsandpouffes-pouffes","subcategories":[]},{"id":"bean-bags","name":"Bean Bags","slug":"livingroom-beanbagsandpouffes-beanbags","subcategories":[]}]},{"id":"tables","name":"Tables","slug":"livingroom-tables","subcategories":[{"id":"centre-tables","name":"Centre Tables","slug":"livingroom-tables-centertables","subcategories":[]},{"id":"end-tables","name":"End Tables","slug":"livingroom-tables-endtables","subcategories":[]},{"id":"console-tables","name":"Console Tables","slug":"livingroom-tables-consoletables","subcategories":[]},{"id":"nesting-tables","name":"Nesting Tables","slug":"livingroom-tables-nestingtables","subcategories":[]}]},{"id":"tv-media-units","name":"TV & Media Units","slug":"livingroom-tvandmediaunits","subcategories":[{"id":"tv-consoles","name":"TV Consoles","slug":"livingroom-tvandmediaunits-tvconsoles","subcategories":[]},{"id":"tv-units","name":"TV Units","slug":"livingroom-tvandmediaunits-tvunits","subcategories":[]}]},{"id":"shelves","name":"Shelves","slug":"livingroom-shelves","subcategories":[{"id":"wall-shelves","name":"Wall Shelves","slug":"livingroom-shelves-wallshelves","subcategories":[]},{"id":"corner-shelves","name":"Corner Shelves","slug":"livingroom-shelves-cornershelves","subcategories":[]},{"id":"home-mandir","name":"Home Mandir","slug":"livingroom-shelves-homemandir","subcategories":[]}]},{"id":"shoe-racks","name":"Shoe Racks","slug":"livingroom-shoeracks","subcategories":[{"id":"shoe-cabinets","name":"Shoe Cabinets","slug":"livingroom-shoeracks-shoecabinets","subcategories":[]},{"id":"open-shoe-racks","name":"Open Shoe Racks","slug":"livingroom-shoeracks-shoeopenshelves","subcategories":[]}]},{"id":"study-work","name":"Study & Work","slug":"livingroom-studyandwork","subcategories":[{"id":"study-office-tables","name":"Study & Office Tables","slug":"livingroom-studyandwork-studyandofficetables","subcategories":[]},{"id":"study-office-chairs","name":"Study & Office Chairs","slug":"livingroom-studyandwork-studyandofficechairs","subcategories":[]}]},{"id":"book-cases-cabinets","name":"Book Cases & Cabinets","slug":"livingroom-bookcaseandcabinets","subcategories":[{"id":"book-cabinets","name":"Book Cabinets","slug":"livingroom-bookcaseandcabinets-bookcabinets","subcategories":[]},{"id":"open-book-shelves","name":"Open Book Shelves","slug":"livingroom-bookcaseandcabinets-openbookshelves","subcategories":[]}]},{"id":"outdoor-furniture","name":"Outdoor Furniture","slug":"outdoor","subcategories":[{"id":"outdoor-seating-tables","name":"Outdoor Seating & Tables","slug":"outdoor-outdoorseatingandtables","subcategories":[]}]},{"id":"ottomans","name":"Ottomans","slug":"livingroom-ottomans","subcategories":[]},{"id":"tea-table-sets","name":"Tea Table Sets","slug":"livingroom-teasets","subcategories":[]}]},{"id":"bedroom","name":"Bedroom","slug":"bedroom","subcategories":[{"id":"beds","name":"Beds","slug":"bedroom-beds","subcategories":[{"id":"king-beds","name":"King Beds","slug":"bedroom-beds-kingbeds","subcategories":[]},{"id":"queen-beds","name":"Queen Beds","slug":"bedroom-beds-queenbeds","subcategories":[]},{"id":"single-beds","name":"Single Beds","slug":"bedroom-beds-singlebeds","subcategories":[]},{"id":"bunk-beds","name":"Bunk Beds","slug":"bedroom-beds-bunkbeds","subcategories":[]}]},{"id":"wardrobes","name":"Wardrobes","slug":"bedroom-wardrobes","subcategories":[{"id":"2-door-wardrobes","name":"2 Door Wardrobes","slug":"bedroom-wardrobes-2doorswingwardrobes","subcategories":[]},{"id":"3-door-wardrobes","name":"3 Door Wardrobes","slug":"bedroom-wardrobes-3doorswingwardrobes","subcategories":[]},{"id":"4-door-wardrobes","name":"4 Door Wardrobes","slug":"bedroom-wardrobes-4doorswingwardrobes","subcategories":[]},{"id":"sliding-wardrobes","name":"Sliding Wardrobes","slug":"bedroom-wardrobes-2doorslidingwardrobes","subcategories":[]}]},{"id":"mattresses","name":"Mattresses","slug":"bedroom-mattresses","subcategories":[{"id":"king-mattresses","name":"King Mattresses","slug":"bedroom-mattresses-kingmattresses","subcategories":[]},{"id":"queen-mattresses","name":"Queen Mattresses","slug":"bedroom-mattresses-queenmattresses","subcategories":[]},{"id":"single-mattresses","name":"Single Mattresses","slug":"bedroom-mattresses-singlemattresses","subcategories":[]}]},{"id":"bed-side-tables","name":"Bed Side Tables","slug":"bedroom-bedsidetables","subcategories":[]},{"id":"chest-of-drawers","name":"Chest of Drawers","slug":"bedroom-chestofdrawers","subcategories":[]},{"id":"dresser-mirrors","name":"Dresser Mirrors","slug":"bedroom-dressermirrors","subcategories":[]}]},{"id":"dining-room","name":"Dining Room","slug":"diningroom","subcategories":[{"id":"dining-sets","name":"Dining Sets","slug":"diningroom-diningtablesets","subcategories":[{"id":"4-seater-dining-sets","name":"4 Seater Dining Sets","slug":"diningroom-diningtablesets-4seaterdiningtablesets","subcategories":[]},{"id":"6-seater-dining-sets","name":"6 Seater Dining Sets","slug":"diningroom-diningtablesets-6seaterdiningtablesets","subcategories":[]},{"id":"8-seater-dining-sets","name":"8 Seater Dining Sets","slug":"diningroom-diningtablesets-8seaterdiningtablesets","subcategories":[]}]},{"id":"dining-tables","name":"Dining Tables","slug":"diningroom-diningtables","subcategories":[{"id":"4-seater-dining-tables","name":"4 Seater Dining Tables","slug":"diningroom-diningtables-4seatertables","subcategories":[]},{"id":"6-seater-dining-tables","name":"6 Seater Dining Tables","slug":"diningroom-diningtables-6seatertables","subcategories":[]},{"id":"8-seater-dining-tables","name":"8 Seater Dining Tables","slug":"diningroom-diningtables-8seatertables","subcategories":[]}]},{"id":"bar-furniture","name":"Bar Furniture","slug":"diningroom-bar","subcategories":[{"id":"bar-cabinet-curios","name":"Bar Cabinet-Curios","slug":"diningroom-bar-barcabinetcurios","subcategories":[]},{"id":"bar-stools-chairs","name":"Bar Stools & Chairs","slug":"diningroom-bar-barstools","subcategories":[]},{"id":"serving-trolleys","name":"Serving Trolleys","slug":"diningroom-bar-servingtrolleys","subcategories":[]}]},{"id":"dining-chairs","name":"Dining Chairs","slug":"diningroom-diningchairs","subcategories":[]},{"id":"dining-benches","name":"Dining Benches","slug":"diningroom-diningbenches","subcategories":[]},{"id":"crockery-units","name":"Crockery Units","slug":"diningroom-crockeryunits","subcategories":[]}]},{"id":"decor","name":"Decor","slug":"decor","subcategories":[{"id":"home-accessories","name":"Home Accessories","slug":"decor-homeaccessories","subcategories":[{"id":"figurines","name":"Figurines","slug":"decor-homeaccessories-figurines","subcategories":[]},{"id":"vases","name":"Vases","slug":"decor-homeaccessories-vases","subcategories":[]},{"id":"table-accents","name":"Table Accents","slug":"decor-homeaccessories-tableaccents","subcategories":[]},{"id":"candle-holders-lanterns","name":"Candle Holders & Lanterns","slug":"decor-homeaccessories-candleholdersandlanterns","subcategories":[]},{"id":"potpourri-bowls-platters","name":"Potpourri Bowls & Platters","slug":"decor-homeaccessories-bowls","subcategories":[]},{"id":"clocks","name":"Clocks","slug":"decor-homeaccessories-clocks","subcategories":[]},{"id":"desk-accessories","name":"Desk Accessories","slug":"decor-homeaccessories-deskaccessories","subcategories":[]},{"id":"gift-accessories","name":"Gift Accessories","slug":"decor-homeaccessories-giftaccessories","subcategories":[]}]},{"id":"lighting","name":"Lighting","slug":"decor-lighting","subcategories":[{"id":"table-lamps","name":"Table Lamps","slug":"decor-lighting-tablelamps","subcategories":[]},{"id":"wall-lamps","name":"Wall Lamps","slug":"decor-lighting-walllamps","subcategories":[]},{"id":"hanging-lamps","name":"Hanging Lamps","slug":"decor-lighting-ceilinglamps","subcategories":[]},{"id":"floor-lamps","name":"Floor Lamps","slug":"decor-lighting-floorlamps","subcategories":[]},{"id":"decorative-lights","name":"Decorative Lights","slug":"decor-lighting-decorativelights","subcategories":[]},{"id":"string-lights","name":"String Lights","slug":"decor-lighting-stringlights","subcategories":[]},{"id":"bulbs","name":"Bulbs","slug":"decor-lighting-bulbs","subcategories":[]}]},{"id":"wall-decor","name":"Wall Decor","slug":"decor-wallaccent","subcategories":[{"id":"wall-accents","name":"Wall Accents","slug":"decor-wallaccent-walldecor","subcategories":[]},{"id":"decorative-mirrors","name":"Decorative Mirrors","slug":"decor-wallaccent-decorativemirrors","subcategories":[]},{"id":"photo-frames","name":"Photo Frames","slug":"decor-wallaccent-photoframes","subcategories":[]},{"id":"posters-paintings","name":"Posters & Paintings","slug":"decor-wallaccent-pictureframes","subcategories":[]}]},{"id":"home-fragrances","name":"Home Fragrances","slug":"decor-homefragrance","subcategories":[{"id":"candles","name":"Candles","slug":"decor-homefragrance-candles","subcategories":[]},{"id":"fragrances-potpourris","name":"Fragrances & Potpourris","slug":"decor-homefragrance-fragranceandpotpourri","subcategories":[]},{"id":"diffusers","name":"Diffusers","slug":"decor-homefragrance-diffusers","subcategories":[]},{"id":"aroma-oils","name":"Aroma Oils","slug":"decor-homefragrance-aromaoil","subcategories":[]},{"id":"room-car-sprays","name":"Room & Car Sprays","slug":"decor-homefragrance-roomsprays","subcategories":[]}]},{"id":"garden","name":"Garden","slug":"decor-garden","subcategories":[{"id":"artificial-plants-flowers","name":"Artificial Plants & Flowers","slug":"decor-garden-artificialplantsandflowers","subcategories":[]},{"id":"pots-planters","name":"Pots & Planters","slug":"decor-garden-potsandplanters","subcategories":[]},{"id":"fountains","name":"Fountains","slug":"decor-garden-indoorandoutdoorfountains","subcategories":[]}]}]},{"id":"kitchen","name":"Kitchen","slug":"kitchen","subcategories":[{"id":"storage-containers","name":"Storage & Containers","slug":"kitchen-storageandcontainers","subcategories":[{"id":"containers-jars","name":"Containers & Jars","slug":"kitchen-storageandcontainers-containersandjars","subcategories":[]},{"id":"bottles","name":"Bottles","slug":"kitchen-storageandcontainers-bottles","subcategories":[]},{"id":"flasks","name":"Flasks","slug":"kitchen-storageandcontainers-flask","subcategories":[]},{"id":"lunch-boxes-bags","name":"Lunch Boxes & Bags","slug":"kitchen-storageandcontainers-lunchboxandbags","subcategories":[]},{"id":"kitchen-organisers","name":"Kitchen Organisers","slug":"kitchen-storageandcontainers-organisers","subcategories":[]}]},{"id":"cookware","name":"Cookware","slug":"kitchen-cooking","subcategories":[{"id":"cookware-sets","name":"Cookware Sets","slug":"kitchen-cooking-cookwaresets","subcategories":[]},{"id":"induction-cookware","name":"Induction Cookware","slug":"kitchen-cooking-inductioncookware","subcategories":[]},{"id":"pots-pans","name":"Pots & Pans","slug":"kitchen-cooking-potsandpans","subcategories":[]},{"id":"kadhai-woks","name":"Kadhai & Woks","slug":"kitchen-cooking-kadhaiandwoks","subcategories":[]},{"id":"cooking-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-cooking-toolsandgadgets","subcategories":[]},{"id":"pressure-cookers","name":"Pressure Cookers","slug":"kitchen-cooking-pressurecookers","subcategories":[]},{"id":"tawas","name":"Tawas","slug":"kitchen-cooking-tawas","subcategories":[]}]},{"id":"kitchenware","name":"Kitchenware","slug":"kitchen-kitchenware","subcategories":[{"id":"kitchen-trolleys","name":"Kitchen Trolleys","slug":"kitchen-kitchenware-kitchentrolley","subcategories":[]},{"id":"knives-scissors","name":"Knives & Scissors","slug":"kitchen-kitchenware-knivesandscissors","subcategories":[]},{"id":"casseroles","name":"Casseroles","slug":"kitchen-kitchenware-casseroles","subcategories":[]},{"id":"oil-vinegar-servers","name":"Oil & Vinegar Servers","slug":"kitchen-kitchenware-oilandvinegarserver","subcategories":[]},{"id":"utensil-holders","name":"Utensil Holders","slug":"kitchen-kitchenware-utensilholders","subcategories":[]},{"id":"chopping-boards","name":"Chopping Boards","slug":"kitchen-kitchenware-choppingboards","subcategories":[]},{"id":"dish-racks","name":"Dish Racks","slug":"kitchen-kitchenware-dishracks","subcategories":[]},{"id":"fruit-baskets","name":"Fruit Baskets","slug":"kitchen-kitchenware-fruitstands","subcategories":[]},{"id":"strainers-colanders","name":"Strainers & Colanders","slug":"kitchen-kitchenware-strainersandcolanders","subcategories":[]},{"id":"kitchenware-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-kitchenware-toolsandgadgets","subcategories":[]}]},{"id":"kitchen-linen","name":"Kitchen Linen","slug":"kitchen-kitchenlinens","subcategories":[{"id":"aprons","name":"Aprons","slug":"kitchen-kitchenlinens-aprons","subcategories":[]},{"id":"pot-holders-mittens","name":"Pot Holders & Mittens","slug":"kitchen-kitchenlinens-potholders","subcategories":[]},{"id":"kitchen-towels","name":"Kitchen Towels","slug":"kitchen-kitchenlinens-kitchentowels","subcategories":[]}]},{"id":"bakeware","name":"Bakeware","slug":"kitchen-bakeware","subcategories":[]},{"id":"kitchen-appliances","name":"Kitchen Appliances","slug":"kitchen-appliances","subcategories":[]}]},{"id":"furnishings","name":"Furnishings","slug":"furnishing","subcategories":[{"id":"bedding","name":"Bedding","slug":"furnishing-bedding","subcategories":[{"id":"double-bedsheets","name":"Double Bedsheets","slug":"furnishing-bedding-doublebedsheets","subcategories":[]},{"id":"single-bedsheets","name":"Single Bedsheets","slug":"furnishing-bedding-singlebedsheets","subcategories":[]},{"id":"bedding-sets","name":"Bedding Sets","slug":"furnishing-bedding-beddingsets","subcategories":[]},{"id":"pillows-pillow-covers","name":"Pillows & Pillow Covers","slug":"furnishing-bedding-pillowsandpillowcovers","subcategories":[]},{"id":"blankets-quilts","name":"Blankets & Quilts","slug":"furnishing-bedding-blanketsandquilts","subcategories":[]},{"id":"comforters","name":"Comforters","slug":"furnishing-bedding-comforters","subcategories":[]},{"id":"throws","name":"Throws","slug":"furnishing-bedding-throws","subcategories":[]},{"id":"duvets-duvet-covers","name":"Duvets & Duvet Covers","slug":"furnishing-bedding-duvetandduvetcovers","subcategories":[]},{"id":"dohars","name":"Dohars","slug":"furnishing-bedding-dohars","subcategories":[]},{"id":"bed-covers","name":"Bed Covers","slug":"furnishing-bedding-bedcovers","subcategories":[]}]},{"id":"cushions","name":"Cushions","slug":"furnishing-cushions","subcategories":[{"id":"cushion-covers","name":"Cushion Covers","slug":"furnishing-cushions-cushioncovers","subcategories":[]},{"id":"filled-cushions","name":"Filled Cushions","slug":"furnishing-cushions-filledcushions","subcategories":[]},{"id":"cushion-fillers","name":"Cushion Fillers","slug":"furnishing-cushions-cushionfilling","subcategories":[]},{"id":"floor-cushions","name":"Floor Cushions","slug":"furnishing-cushions-floorcushions","subcategories":[]}]},{"id":"curtains-blinds","name":"Curtains & Blinds","slug":"furnishing-curtains","subcategories":[{"id":"door-curtains","name":"Door Curtains","slug":"furnishing-curtains-doorcurtains","subcategories":[]},{"id":"window-curtains","name":"Window Curtains","slug":"furnishing-curtains-windowcurtains","subcategories":[]},{"id":"blinds","name":"Blinds","slug":"furnishing-curtains-blinds","subcategories":[]},{"id":"rods-accessories","name":"Rods & Accessories","slug":"furnishing-curtains-rodsandaccessories","subcategories":[]}]},{"id":"accessories","name":"Accessories","slug":"furnishing-accessories","subcategories":[{"id":"bags","name":"Bags","slug":"furnishing-accessories-bags","subcategories":[]},{"id":"pads-mats","name":"Pads & Mats","slug":"furnishing-accessories-padsandmats","subcategories":[]},{"id":"sofa-covers","name":"Sofa Covers","slug":"furnishing-accessories-sofacovers","subcategories":[]}]},{"id":"floor-coverings","name":"Floor Coverings","slug":"furnishing-floorcoverings","subcategories":[{"id":"carpets-rugs","name":"Carpets & Rugs","slug":"furnishing-floorcoverings-carpets","subcategories":[]},{"id":"dhurries","name":"Dhurries","slug":"furnishing-floorcoverings-dhurries","subcategories":[]},{"id":"doormats","name":"Doormats","slug":"furnishing-floorcoverings-doormats","subcategories":[]}]}]},{"id":"tableware","name":"Tableware","slug":"dining","subcategories":[{"id":"serving","name":"Serving","slug":"dining-serving","subcategories":[{"id":"trays-platters","name":"Trays & Platters","slug":"dining-serving-traysandplatters","subcategories":[]},{"id":"glasses-jugs","name":"Glasses & Jugs","slug":"dining-serving-glassesandjugs","subcategories":[]},{"id":"bar-accessories","name":"Bar Accessories","slug":"dining-serving-baraccessories","subcategories":[]},{"id":"salt-pepper-shakers","name":"Salt & Pepper Shakers","slug":"dining-serving-saltandpeppershakers","subcategories":[]},{"id":"chip-dip","name":"Chip & Dip","slug":"dining-serving-chipanddip","subcategories":[]}]},{"id":"crockery","name":"Crockery","slug":"dining-crockery","subcategories":[{"id":"bowls","name":"Bowls","slug":"dining-crockery-bowls","subcategories":[]},{"id":"plates","name":"Plates","slug":"dining-crockery-plates","subcategories":[]},{"id":"mugs","name":"Mugs","slug":"dining-crockery-mugsandcups","subcategories":[]},{"id":"cups-saucers","name":"Cups & Saucers","slug":"dining-crockery-cupsandsaucers","subcategories":[]},{"id":"pots-kettles","name":"Pots & Kettles","slug":"dining-crockery-potsandkettles","subcategories":[]},{"id":"dinner-sets","name":"Dinner Sets","slug":"dining-crockery-dinnersets","subcategories":[]}]},{"id":"cutlery","name":"Cutlery","slug":"dining-cutlery","subcategories":[{"id":"spoons","name":"Spoons","slug":"dining-cutlery-spoons","subcategories":[]},{"id":"cutlery-sets","name":"Cutlery & Cutlery Sets","slug":"dining-cutlery-cutlerysets","subcategories":[]},{"id":"cutlery-holders","name":"Cutlery Holders","slug":"dining-cutlery-cutleryholders","subcategories":[]}]},{"id":"table-linens","name":"Table Linens","slug":"dining-tableaccessories","subcategories":[{"id":"placemats","name":"Placemats","slug":"dining-tableaccessories-placemats","subcategories":[]},{"id":"table-runners","name":"Table Runners","slug":"dining-tableaccessories-tablerunners","subcategories":[]},{"id":"table-cloths","name":"Table Cloths","slug":"dining-tableaccessories-tablecloths","subcategories":[]},{"id":"trivets-coasters","name":"Trivets & Coasters","slug":"dining-tableaccessories-trivetandcoasters","subcategories":[]},{"id":"tissue-holders","name":"Tissue Holders","slug":"dining-tableaccessories-tissueholders","subcategories":[]}]}]},{"id":"bath-laundry","name":"Bath & Laundry","slug":"bathandlaundry","subcategories":[{"id":"bath-linen","name":"Bath Linen","slug":"bathandlaundry-bath","subcategories":[{"id":"towels","name":"Towels","slug":"bathandlaundry-bath-towel","subcategories":[]},{"id":"robes","name":"Robes","slug":"bathandlaundry-bath-robes","subcategories":[]},{"id":"bathmats","name":"Bathmats","slug":"bathandlaundry-bath-bathmats","subcategories":[]}]},{"id":"bath-accessories","name":"Bath Accessories","slug":"bathandlaundry-bathaccessories","subcategories":[{"id":"holders-tumblers","name":"Holders & Tumblers","slug":"bathandlaundry-bathaccessories-holdersandtumblers","subcategories":[]},{"id":"soap-dispensers","name":"Soap Dispensers","slug":"bathandlaundry-bathaccessories-soapdispensers","subcategories":[]},{"id":"soap-dishes","name":"Soap Dishes","slug":"bathandlaundry-bathaccessories-soapdishes","subcategories":[]},{"id":"bath-sets","name":"Bath Sets","slug":"bathandlaundry-bathaccessories-accessorysets","subcategories":[]},{"id":"storage-mirrors","name":"Storage & Mirrors","slug":"bathandlaundry-bathaccessories-storageandmirrors","subcategories":[]},{"id":"towel-holders","name":"Towel Holders","slug":"bathandlaundry-bathaccessories-towelholders","subcategories":[]},{"id":"toilet-accessories","name":"Toilet Accessories","slug":"bathandlaundry-bathaccessories-toiletpaperandbrushholders","subcategories":[]},{"id":"shower-curtains","name":"Shower Curtains","slug":"bathandlaundry-bathaccessories-showercurtains","subcategories":[]},{"id":"bath-stools","name":"Bath Stools","slug":"bathandlaundry-bathaccessories-bathstools","subcategories":[]}]},{"id":"laundry","name":"Laundry","slug":"bathandlaundry-laundry","subcategories":[{"id":"laundry-storage-baskets","name":"Laundry Storage & Baskets","slug":"bathandlaundry-laundry-storage","subcategories":[]},{"id":"cleaning-accessories","name":"Cleaning Accessories","slug":"bathandlaundry-laundry-cleaningaccessories","subcategories":[]},{"id":"dustbins","name":"Dustbins","slug":"bathandlaundry-laundry-dustbins","subcategories":[]},{"id":"cloth-dryers","name":"Cloth Dryers","slug":"bathandlaundry-laundry-clothdryers","subcategories":[]},{"id":"hangers-hooks","name":"Hangers & Hooks","slug":"bathandlaundry-laundry-hangersandhooks","subcategories":[]}]}]},{"id":"gifting","name":"Gifting","slug":"gifts","subcategories":[{"id":"housewarming-gifts","name":"Housewarming Gifts","slug":"gifts-housewarminggifts","subcategories":[]},{"id":"wedding-gifts","name":"Wedding Gifts","slug":"gifts-weddinggifts","subcategories":[]},{"id":"anniversary-gifts","name":"Anniversary Gifts","slug":"gifts-anniversarygifts","subcategories":[]},{"id":"birthday-gifts","name":"Birthday Gifts","slug":"gifts-birthdaygifts","subcategories":[]},{"id":"gifts-for-him","name":"Gifts for Him","slug":"gifts-giftsforhim","subcategories":[]},{"id":"gifts-for-her","name":"Gifts for Her","slug":"gifts-giftsforher","subcategories":[]},{"id":"festive-gifts","name":"Festive Gifts","slug":"gifts-festivegifts","subcategories":[{"id":"ganesh-chaturthi","name":"Ganesh Chaturthi","slug":"gifts-festivegifts-ganeshchaturthigifts","subcategories":[]}]},{"id":"special-occasions","name":"Special Occasions","slug":"gifts-specialoccasiongifts","subcategories":[]}]}];
-const BUILD = "13 Nov 20:50";
+const BUILD = "13 Nov 23:20";
 let TAXONOMY = DEFAULT_TAX;
 const bySlug = {}; // slug -> {cat,sub,type}
 function reindex(){
@@ -501,7 +501,7 @@ const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",inv
   products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",dim:"",loc:"",vendor:"",stock:"all",sort:"name",limit:100},sel:null,
   lists:{...DEFAULT_LISTS},vendors:[],purchases:[],vpays:[],pcart:[],pchg:[],pq:"",vf:{q:"",cat:"",pay:false},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:"",bal:""},bf:{q:"",status:"booked",due:false},detailCust:null,detailBk:null,
   bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bpays:null,bdisc:0,bdiscType:"amt",bdate:"",bnotes:"",bq:"",saleOn:"",bookedOn:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",pays:null,
-  nav:[],shop:null,brands:[],enquiries:[],ecart:[],ecustId:"",ephone:"",ename:"",edisc:0,ediscType:"amt",enote:"",eq:"",efollow:"",esrc:"",
+  nav:[],shop:null,brands:[],salesReturns:[],enquiries:[],ecart:[],ecustId:"",ephone:"",ename:"",edisc:0,ediscType:"amt",enote:"",eq:"",efollow:"",esrc:"",
   ef:{q:"",status:"open",due:false},detailEnq:null,fromEnq:"",
   detailSale:null,detailPur:null,es:null,puEdit:"",unsub:[]};
 
@@ -621,6 +621,7 @@ function startListeners(){
   on(collection(db,"customers"),s=>{S.customers=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(collection(db,"vendors"),s=>{S.vendors=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(collection(db,"brands"),s=>{S.brands=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
+  on(collection(db,"salesReturns"),s=>{S.salesReturns=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"purchases"),orderBy("createdAt","desc"),limit(1000)),s=>{S.purchases=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"vendorPayments"),orderBy("createdAt","desc"),limit(1000)),s=>{S.vpays=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
   on(query(collection(db,"bookings"),orderBy("createdAt","desc"),limit(500)),s=>{S.bookings=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
@@ -651,17 +652,17 @@ else onAuthStateChanged(auth,async u=>{
 });
 
 /* ---------- Shell ---------- */
-const NAV=[["dashboard","Dashboard","▦"],["products","Products","▤"],["sell","Sell","₹",true],["enquiries","Enquiries","💬",true],["bookings","Bookings","🔖",true],["customers","Customers","👤",true],["stock","Stock","⇅"],["sales","Sales","☰",true],["categories","Categories","⌗"],["vendors","Vendors","🏭",false,false,"vendorsTab"],["approvals","Approvals","✓"],["team","Staff","👥",false,true],["settings","Settings","⚙"]];
+const NAV=[["dashboard","Dashboard","▦"],["products","Products","▤"],["sell","Sell","₹",true],["enquiries","Enquiries","💬",true],["bookings","Bookings","🔖",true],["customers","Customers","👤",true],["stock","Stock","⇅"],["sales","Sales","☰",true],["returns","Returns","↩",true],["categories","Categories","⌗"],["vendors","Vendors","🏭",false,false,"vendorsTab"],["approvals","Approvals","✓"],["team","Staff","👥",false,true],["settings","Settings","⚙"]];
 const SALES_VIEWS=["sell","sales","bookings","customers","newbooking","booking","customer","sale","enquiries","newenquiry","enquiry"];
 function navItems(){return NAV.filter(n=>(!n[3]||fullMode())&&(!n[4]||isAdmin())&&(!n[5]||can(n[5])))}
-const DETAIL={product:"products",customer:"customers",booking:"bookings",vendor:"vendors",sale:"sales",purchase:"vendors",enquiry:"enquiries"};
+const DETAIL={product:"products",customer:"customers",booking:"bookings",vendor:"vendors",sale:"sales",purchase:"vendors",enquiry:"enquiries",return:"returns"};
 /* ---------- Back, including the phone's own Back button ---------- */
 /* Installed on a phone, the app is handed Android's Back as a history pop. Screens used to
    change without leaving a history entry behind, so the very first press popped straight past
    the app and closed it — mid-bill, taking the cart with it. Every move forward now leaves an
    entry carrying a snapshot of the screen, Back restores it, and only the first screen's Back
    closes the app, which is how every other app on the phone behaves. */
-const SNAPIDS=["detailId","detailCust","detailBk","detailSale","detailPur","detailEnq","detailVendor"];
+const SNAPIDS=["detailId","detailCust","detailBk","detailSale","detailPur","detailEnq","detailVendor","detailRet"];
 const histSnap=()=>({view:S.view,shop:S.shop||null,nav:S.nav.slice(-20),
   ids:Object.fromEntries(SNAPIDS.map(k=>[k,S[k]]))});
 let histN=0;
@@ -713,12 +714,12 @@ function setView(v){
 }
 const navOn=k=>S.view===k||DETAIL[S.view]===k||(S.view==="newbooking"&&k==="bookings")||(S.view==="newenquiry"&&k==="enquiries");
 function routeFromHash(){
-  const m=location.hash.match(/^#(product|customer|booking|vendor|sale|purchase|enquiry)\/(.+)$/);
+  const m=location.hash.match(/^#(product|customer|booking|vendor|sale|purchase|enquiry|return)\/(.+)$/);
   if(m&&S.profile){
     const id=decodeURIComponent(m[2]);
     S.view=m[1];
     if(m[1]==="product")S.detailId=id;else if(m[1]==="customer")S.detailCust=id;else if(m[1]==="vendor")S.detailVendor=id;
-    else if(m[1]==="sale")S.detailSale=id;else if(m[1]==="purchase")S.detailPur=id;else if(m[1]==="enquiry")S.detailEnq=id;else S.detailBk=id;
+    else if(m[1]==="sale")S.detailSale=id;else if(m[1]==="purchase")S.detailPur=id;else if(m[1]==="enquiry")S.detailEnq=id;else if(m[1]==="return")S.detailRet=id;else S.detailBk=id;
   }
   else if(DETAIL[S.view])S.view=DETAIL[S.view];
 }
@@ -751,7 +752,7 @@ function render(soft){
     <div class="sp"></div><div class="me">${esc(S.profile.name)} · ${esc(ROLE_LABEL[ROLE()]||S.profile.role)}<br><a href="#" style="color:#fff" onclick="doSignOut();return false">Sign out</a><br><span class="bld" title="Which version of the app this device is running">build ${esc(BUILD)}</span></div></nav>
    <main id="main"></main></div>
    <div class="bottom">${items.slice(0,4).map(n=>`<button class="${navOn(n[0])?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}${items.length>4?`<button class="${items.slice(4).some(n=>navOn(n[0]))?"on":""}" onclick="openMore()"><span>⋯</span>More</button>`:""}</div>`;
-  const v={dashboard:vDash,products:vProducts,product:vProduct,sell:vSell,stock:vStock,sales:vSales,categories:vCats,settings:vSettings,
+  const v={dashboard:vDash,products:vProducts,product:vProduct,sell:vSell,stock:vStock,sales:vSales,returns:vReturns,return:vReturn,categories:vCats,settings:vSettings,
     customers:vCustomers,customer:vCustomer,bookings:vBookings,booking:vBooking,newbooking:vNewBooking,team:vTeam,approvals:vApprovals,
     vendors:vVendors,vendor:vVendor,sale:vSale,purchase:vPurchase,
     enquiries:vEnquiries,newenquiry:vNewEnquiry,enquiry:vEnquiry}[S.view]||vDash;
@@ -845,7 +846,7 @@ const locKeys=p=>[...new Set([...Object.keys(locMapOf(p)),String(p.location||"")
 const plink=(pid,text)=>pid&&S.products.some(x=>x.id===pid)
   ?`<a href="#product/${encodeURIComponent(pid)}">${esc(text)}</a>`:esc(text);
 const allVendorNames=()=>[...new Set([...S.vendors.filter(v=>v.active!==false).map(v=>v.name),...S.products.map(vend).filter(Boolean)])].sort(natcmp);
-const allLocations=()=>{const m=new Map();[...S.lists.locations,...S.products.map(p=>p.location)].forEach(x=>{x=String(x||"").trim();if(x&&!m.has(x.toLowerCase()))m.set(x.toLowerCase(),x)});return[...m.values()].sort(natcmp)};
+const allLocations=()=>{const m=new Map();[...S.lists.locations,SR_LOC,...S.products.map(p=>p.location)].forEach(x=>{x=String(x||"").trim();if(x&&!m.has(x.toLowerCase()))m.set(x.toLowerCase(),x)});return[...m.values()].sort(natcmp)};
 const withCur=(arr,cur)=>cur===undefined||cur===null||cur===""||arr.some(x=>String(x)===String(cur))?arr:[...arr,cur];
 function cardImg(p){
   if(p.imageUrl)return `<img class="pim" alt="" loading="lazy" src="${esc(p.imageUrl)}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'pim',textContent:'▣'}))">`;
@@ -1662,16 +1663,235 @@ function vSales(el){
   if($("#sm"))$("#sm").onchange=e=>{S.salesMonth=e.target.value;setTimeout(render,0)};
 }
 window.reprint=id=>{const s=S.sales.find(x=>x.id===id);if(s)printReceipt(s)};
+/* ---------- Sales returns ---------- */
+const SR_LOC="Sales Return";
+const srOf=sid=>S.salesReturns.filter(r=>r.saleId===sid&&r.status!=="cancelled").sort((a,b)=>tms(a.createdAt)-tms(b.createdAt));
+const srTotals=sid=>{const L=srOf(sid);return {value:r2(L.reduce((a,r)=>a+num(r.value),0)),refund:r2(L.reduce((a,r)=>a+num(r.refundAmount),0))}};
+/* Pieces back per product, every live voucher together — kept on the bill so a second return
+   can't take back more than was sold, even from two counters at once. */
+const backOf=s=>s.returned||{};
+/* What one piece of a line comes back at: the line's price after its own discount, less its
+   share of the discount on the bill — what the customer actually paid for it. */
+const unitBack=(s,i)=>{const net=netOf(s.items),f=net>0?Math.min(1,num(s.total)/net):1;return r2(lineNet(i)/Math.max(1,num(i.qty))*f)};
+/* The red note on an invoice line: how many came back, and on which vouchers. */
+const retNote=(s,pid)=>{const L=srOf(s.id).filter(r=>(r.items||[]).some(i=>i.pid===pid));
+  const n=L.reduce((a,r)=>a+(r.items||[]).filter(i=>i.pid===pid).reduce((x,i)=>x+num(i.qty),0),0);
+  return n?{n,nos:L.map(r=>r.returnNo)}:null};
+
+window.openSalesReturn=function(sid){
+  if(!can("voidSale"))return toast("Only someone allowed to void bills can take goods back",1);
+  const s=S.sales.find(x=>x.id===sid);if(!s)return toast("That bill no longer exists",1);
+  if(s.status==="void")return toast("This bill is void — its goods are already back",1);
+  const sold=qtyByPid(s.items),back=backOf(s),leftOf={...sold};Object.keys(back).forEach(k=>leftOf[k]=Math.max(0,(leftOf[k]||0)-back[k]));
+  // pieces still returnable, given out line by line in bill order
+  const pool={...leftOf};
+  /* The return that brings a line's last piece back takes exactly what is left of what was paid
+     for that line, so the vouchers on a bill always add up to the bill — not a paisa off. */
+  const f=netOf(s.items)>0?Math.min(1,num(s.total)/netOf(s.items)):1;
+  const lines=s.items.map((i,ix)=>{const can=Math.min(Math.floor(num(i.qty)),pool[i.pid]||0);pool[i.pid]=(pool[i.pid]||0)-can;
+    const prev=r2(srOf(s.id).reduce((a,r)=>a+(r.items||[]).filter(x=>x.line===ix||(x.line===undefined&&x.pid===i.pid)).reduce((y,x)=>y+num(x.value),0),0));
+    return {ix,i,left:can,n:0,unit:unitBack(s,i),lineVal:r2(lineNet(i)*f),prev}});
+  const lv=l=>l.n>0&&l.n===l.left?r2(l.lineVal-l.prev):r2(l.unit*l.n);
+  window.srLineVal=lv;
+  if(!lines.some(l=>l.left>0))return toast("Everything on this bill has already come back",1);
+  const bk=s.bookingId?S.bookings.find(b=>b.id===s.bookingId):null;
+  const owing=bk?Math.max(0,bkDue(bk)):salePending(s),hasAcct=!!(s.customerId||bk?.customerId);
+  S.srx={sid,lines,refund:"",mode:"Cash",why:"",touched:false};
+  const draw=()=>{
+    const R=S.srx,val=r2(R.lines.reduce((a,l)=>a+lv(l),0));
+    const adj=Math.min(val,owing),defRefund=hasAcct?r2(Math.max(0,val-adj)):val;
+    if(!R.touched)R.refund=val?defRefund:"";
+    const refund=Math.min(val,Math.max(0,num(R.refund))),credit=r2(val-refund-Math.min(owing,r2(val-refund)));
+    $("#sr-body").innerHTML=`
+     <table class="resp"><thead><tr><th>Item</th><th class="n">On the bill</th><th class="n">Already back</th><th class="n">Coming back</th><th class="n">Value</th></tr></thead><tbody>
+     ${R.lines.map((l,k)=>{const already=Math.floor(num(l.i.qty))-l.left;
+       return `<tr${l.n?' style="background:color-mix(in srgb,var(--bad) 7%,transparent)"':""}><td data-l="Item"><div style="text-align:left">${plink(l.i.pid,l.i.name)}<br><span class="small mute">${esc(l.i.sku)} · ${inr(l.unit)} each, as paid</span></div></td>
+        <td data-l="On the bill" class="n">${l.i.qty}</td><td data-l="Already back" class="n">${already||"—"}</td>
+        <td data-l="Coming back" class="n">${l.left?`<span class="qty"><button type="button" onclick="srQty(${k},-1)">−</button><input type="number" min="0" max="${l.left}" value="${l.n}" onchange="srSet(${k},this.value)"><button type="button" onclick="srQty(${k},1)">+</button></span>`
+          :`<span class="small mute">all back</span>`}</td>
+        <td data-l="Value" class="n" style="${l.n?"color:var(--bad);font-weight:700":""}">${l.n?inr(lv(l)):"—"}</td></tr>`}).join("")}
+     </tbody></table>
+     <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">
+      <div class="row" style="justify-content:space-between;font-size:18px;font-weight:700"><span>Value of goods coming back</span><span style="color:var(--bad)">${inr(val)}</span></div>
+      ${val&&owing?`<div class="row" style="justify-content:space-between"><span class="mute">Set against what is still due${bk?` on ${esc(bk.bookingNo)}`:""}</span><span>${inr(Math.min(owing,r2(val-refund)))}</span></div>`:""}</div>
+     <div class="f" style="margin-top:10px">
+      <div><label>Refund to the customer now (₹)</label><input id="sr-refund" type="number" min="0" step="0.01" value="${R.refund===""?"":R.refund}" ${val?"":"disabled"}></div>
+      <div><label>Refunded by</label><select id="sr-mode">${S.lists.payModes.filter(m=>!/credit/i.test(m)).map(m=>`<option ${R.mode===m?"selected":""}>${esc(m)}</option>`).join("")}</select></div></div>
+     ${val&&credit>0?`<p class="small" style="margin:6px 0 0;color:var(--ok)">${inr(credit)} stays as credit with the shop, on the customer's ledger.</p>`:""}
+     ${!hasAcct&&val&&refund<val?`<p class="small" style="margin:6px 0 0;color:var(--warn)">This bill has no customer account to hold credit — refund the full ${inr(val)}.</p>`:""}
+     <div style="margin-top:10px"><label>Reason</label><input id="sr-why" placeholder="Damaged in transit, wrong colour, customer changed their mind…" value="${esc(R.why)}"></div>
+     <p class="small mute" style="margin:8px 0 0">The goods go into stock at <b>${SR_LOC}</b>, where they can be checked and moved back to a rack. A numbered return voucher is made, and the invoice shows them as returned.</p>`;
+    const keep=()=>{const r=$("#sr-refund");if(r&&r.value!==String(R.refund)){R.refund=r.value;R.touched=true}R.mode=$("#sr-mode").value;R.why=$("#sr-why").value};
+    $("#sr-refund").onchange=()=>{keep();draw()};$("#sr-mode").onchange=keep;$("#sr-why").oninput=keep;
+    $("#sr-go").disabled=!val;$("#sr-go").textContent=val?`Take back · ${inr(val)}`:"Take back";
+  };
+  window.srDraw=draw;
+  $("#modal").innerHTML=`<div class="modal-bg"><div class="modal" style="max-width:720px"><h3>Sales return · ${esc(s.invoiceNo)}</h3>
+   <p class="mute small">${esc(s.customer?.name||"Walk-in")}${s.customer?.phone?" · "+esc(s.customer.phone):""} · billed ${fdt(tms(s.createdAt))}${bk?` · booking ${esc(bk.bookingNo)}`:""}</p>
+   <div id="sr-body"></div>
+   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Cancel</button><button class="btn" id="sr-go" disabled>Take back</button></div></div></div>`;
+  $("#sr-go").onclick=saveSalesReturn;
+  draw();
+};
+window.srQty=(k,d)=>{const l=S.srx.lines[k];l.n=Math.min(l.left,Math.max(0,l.n+d));srDraw()};
+window.srSet=(k,v)=>{const l=S.srx.lines[k];l.n=Math.min(l.left,Math.max(0,Math.floor(num(v))));srDraw()};
+async function saveSalesReturn(){
+  const R=S.srx,s=S.sales.find(x=>x.id===R.sid),btn=$("#sr-go");if(!s)return;
+  R.why=$("#sr-why").value.trim();R.mode=$("#sr-mode").value;
+  const pick=R.lines.filter(l=>l.n>0);
+  if(!pick.length)return toast("Choose what is coming back",1);
+  if(!R.why)return toast("Say why the goods came back — it goes on the voucher",1);
+  const items=pick.map(l=>({pid:l.i.pid,sku:l.i.sku,name:l.i.name,qty:l.n,price:num(l.i.price),gst:num(l.i.gst),unitValue:l.unit,value:srLineVal(l),line:l.ix}));
+  const value=r2(items.reduce((a,i)=>a+i.value,0));
+  const gst=r2(items.reduce((a,i)=>a+i.value-i.value/(1+num(i.gst)/100),0));
+  const refund=r2(Math.min(value,Math.max(0,num(R.refund))));
+  const want={};items.forEach(i=>want[i.pid]=(want[i.pid]||0)+i.qty);
+  const pids=Object.keys(want);
+  btn.disabled=true;btn.textContent="Saving…";
+  let no="",rid="";
+  try{
+    await runTransaction(db,async tx=>{
+      const sr=doc(db,"sales",s.id),sd=await tx.get(sr);
+      if(!sd.exists()||sd.data().status!=="completed")throw new Error("This bill has just been voided or changed — open it again");
+      const sold=qtyByPid(sd.data().items),back={...(sd.data().returned||{})};
+      for(const pid of pids)if((back[pid]||0)+want[pid]>(sold[pid]||0)){
+        const nm=items.find(i=>i.pid===pid).name;
+        throw new Error(`Only ${Math.max(0,(sold[pid]||0)-(back[pid]||0))} of ${nm} left to take back on this bill`)}
+      const cr=doc(db,"counters","salesReturn"),cs=await tx.get(cr);
+      const refs=pids.map(pid=>doc(db,"products",pid)),snaps=[];for(const r of refs)snaps.push(await tx.get(r));
+      const n=(cs.exists()?cs.data().n:0)+1;no="SR-"+String(n).padStart(5,"0");tx.set(cr,{n});
+      snaps.forEach((p,ix)=>{if(!p.exists())return;const pid=pids[ix],k=want[pid],d=p.data(),cur=+d.qty||0;
+        const map=addTo(locMapOf(d),SR_LOC,k);
+        tx.update(refs[ix],{qty:cur+k,locQty:map,location:d.location&&map[d.location]>0?d.location:primaryLoc(map),updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+        tx.set(doc(collection(db,"movements")),{...mv(pid,d.name,d.sku,"return",k,cur,cur+k,`Sales return ${no} · ${s.invoiceNo} · ${R.why}`),toLoc:SR_LOC});
+        back[pid]=(back[pid]||0)+k});
+      tx.update(sr,{returned:back,updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+      const vr=doc(collection(db,"salesReturns"));rid=vr.id;
+      tx.set(vr,{returnNo:no,status:"active",saleId:s.id,invoiceNo:s.invoiceNo,saleDate:s.dateKey||"",
+        bookingId:s.bookingId||"",bookingNo:s.bookingNo||"",customerId:s.customerId||"",customer:{name:s.customer?.name||"",phone:s.customer?.phone||""},
+        items,value,gstAmount:gst,refundAmount:refund,refundMode:refund?R.mode:"",reason:R.why,location:SR_LOC,
+        dateKey:dkey(),createdAt:serverTimestamp(),createdBy:S.user.uid,createdByName:S.profile.name});
+    });
+    closeModal();toast(`Return ${no} saved — goods are at ${SR_LOC}`);
+    openHash("return/"+rid);
+  }catch(e){toast(emsg(e),1);btn.disabled=false;btn.textContent=`Take back · ${inr(value)}`}
+}
+/* An admin can cancel a voucher made by mistake. The pieces come out of stock again — out of
+   Sales Return first — and the bill is as it was. */
+window.cancelReturn=async id=>{
+  if(!isAdmin())return toast("Only an admin can cancel a return voucher",1);
+  const r=S.salesReturns.find(x=>x.id===id);if(!r||r.status==="cancelled")return;
+  const why=(prompt(`Cancel ${r.returnNo}? The ${r.items.reduce((a,i)=>a+i.qty,0)} piece(s) come out of stock again and ${r.invoiceNo} goes back to how it was.\n\nReason:`)||"").trim();
+  if(!why)return;
+  const want={};r.items.forEach(i=>want[i.pid]=(want[i.pid]||0)+num(i.qty));const pids=Object.keys(want);
+  try{
+    await runTransaction(db,async tx=>{
+      const vr=doc(db,"salesReturns",id),vs=await tx.get(vr);
+      if(!vs.exists()||vs.data().status==="cancelled")throw new Error("Already cancelled");
+      const sr=doc(db,"sales",r.saleId),sd=await tx.get(sr);
+      const refs=pids.map(pid=>doc(db,"products",pid)),snaps=[];for(const x of refs)snaps.push(await tx.get(x));
+      snaps.forEach((p,ix)=>{if(!p.exists())return;const pid=pids[ix],k=want[pid],d=p.data(),cur=+d.qty||0,free=cur-Math.max(0,+d.booked||0);
+        if(free<k&&!S.settings.allowNegative)throw new Error(`Only ${Math.max(0,free)} of ${d.name} still in stock — the returned pieces have been sold again`);
+        const map=takeAt(locMapOf(d),k,SR_LOC).map;
+        tx.update(refs[ix],{qty:cur-k,locQty:map,location:primaryLoc(map)||d.location||"",updatedAt:serverTimestamp(),updatedBy:S.user.uid});
+        tx.set(doc(collection(db,"movements")),{...mv(pid,d.name,d.sku,"return cancelled",-k,cur,cur-k,`${r.returnNo} cancelled · ${why}`),fromLoc:SR_LOC})});
+      if(sd.exists()){const back={...(sd.data().returned||{})};pids.forEach(pid=>{back[pid]=Math.max(0,(back[pid]||0)-want[pid]);if(!back[pid])delete back[pid]});
+        tx.update(sr,{returned:back,updatedAt:serverTimestamp(),updatedBy:S.user.uid})}
+      tx.update(vr,{status:"cancelled",cancelledAt:serverTimestamp(),cancelledBy:S.profile.name,cancelReason:why});
+    });
+    toast(`${r.returnNo} cancelled`);
+  }catch(e){toast(emsg(e),1)}
+};
+/* ---- the voucher ---- */
+function vReturn(el){
+  const r=S.salesReturns.find(x=>x.id===S.detailRet);
+  if(!r){el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="goBack('returns')">← Back</button><h2>Return not found</h2></div></div>`;return}
+  const dead=r.status==="cancelled",s=S.sales.find(x=>x.id===r.saleId),adj=r2(num(r.value)-num(r.refundAmount));
+  const R=[["Voucher no.",`<b>${esc(r.returnNo)}</b>`],["Date",fdt(tms(r.createdAt))],
+   ["Against invoice",`<a href="#sale/${r.saleId}">${esc(r.invoiceNo)}</a>${r.saleDate?` <span class="small mute">· billed ${esc(r.saleDate)}</span>`:""}`],
+   ...(r.bookingNo?[["Booking",`<a href="#booking/${r.bookingId}">${esc(r.bookingNo)}</a>`]]:[]),
+   ["Customer",`${esc(r.customer?.name||"Walk-in")}${r.customer?.phone?" · "+esc(r.customer.phone):""}${r.customerId?` · <a href="#customer/${r.customerId}">open ledger</a>`:""}`],
+   ["Reason",esc(r.reason||"—")],["Goods went to",`<b>${esc(r.location||SR_LOC)}</b>`],["Taken back by",esc(r.createdByName||"—")],
+   ["Status",dead?`<span class="tag out">cancelled</span> <span class="small mute">by ${esc(r.cancelledBy||"")}${r.cancelReason?" · "+esc(r.cancelReason):""}</span>`:`<span class="tag ok">active</span>`]];
+  const T=[["Value of goods returned",`<b style="color:var(--bad);font-size:18px">${inr(r.value)}</b>`],["GST included",inr(r.gstAmount)],
+   ["Refunded",num(r.refundAmount)?`${inr(r.refundAmount)} <span class="small mute">· ${esc(r.refundMode||"")}</span>`:"—"],
+   ...(adj>0?[["Adjusted in the customer's account",inr(adj)]]:[])];
+  el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="goBack('returns')">← Back</button><h2>${esc(r.returnNo)}</h2>${dead?`<span class="tag out">cancelled</span>`:""}</div>
+   <div class="row"><button class="btn sec" onclick="printReturn('${r.id}')">Print voucher</button>${!dead&&isAdmin()?`<button class="btn sec" onclick="cancelReturn('${r.id}')">Cancel voucher</button>`:""}</div></div>
+  ${dead?`<div class="card" style="margin-bottom:12px"><b>This voucher is cancelled.</b> <span class="mute">Its goods came out of stock again and it counts for nothing on the bill or the ledger.</span></div>`:""}
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+   <div class="card" style="padding:6px 14px"><table>${R.map(x=>`<tr><td class="mute" style="width:40%">${x[0]}</td><td>${x[1]}</td></tr>`).join("")}</table></div>
+   <div class="card" style="padding:6px 14px"><table>${T.map(x=>`<tr><td class="mute" style="width:55%">${x[0]}</td><td class="n">${x[1]}</td></tr>`).join("")}</table></div></div>
+  <div class="card" style="margin-top:12px;padding:6px 12px"><h3 style="margin:10px 2px 4px">Returned (${r.items.length})</h3>
+   <table class="resp"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Price per unit</th><th class="n">Value each, as paid</th><th class="n">Value</th></tr></thead><tbody>
+   ${r.items.map(i=>{const p=S.products.find(x=>x.id===i.pid);return `<tr><td data-l="Item"><span class="row" style="flex-wrap:nowrap">${p?thumb(p,38):""}<span>${plink(i.pid,i.name)}<br><span class="small mute">${esc(i.sku)}</span></span></span></td>
+    <td data-l="Qty" class="n">${i.qty}</td><td data-l="Price per unit" class="n">${inr(i.price)}</td><td data-l="Value each" class="n">${inr(i.unitValue)}</td><td data-l="Value" class="n" style="color:var(--bad)">${inr(i.value)}</td></tr>`}).join("")}
+   </tbody><tfoot><tr><th colspan="4">Total returned</th><th class="n" style="color:var(--bad)">${inr(r.value)}</th></tr></tfoot></table></div>`;
+}
+/* ---- every voucher, and where to start a new one ---- */
+function vReturns(el){
+  const q=(S.srq||"").trim().toLowerCase();
+  const L=S.salesReturns.slice().sort((a,b)=>tms(b.createdAt)-tms(a.createdAt))
+    .filter(r=>!q||`${r.returnNo} ${r.invoiceNo} ${r.customer?.name||""} ${r.customer?.phone||""} ${(r.items||[]).map(i=>i.name+" "+i.sku).join(" ")}`.toLowerCase().includes(q));
+  const live=S.salesReturns.filter(r=>r.status!=="cancelled");
+  el.innerHTML=`<div class="top"><div><h2>Sales returns</h2><div class="mute small">Goods customers brought back, each on a numbered voucher. Returned goods wait at <b>${SR_LOC}</b>.</div></div></div>
+  <div class="grid stats">
+   <div class="card stat"><div class="k">Vouchers</div><div class="v">${live.length}</div></div>
+   <div class="card stat"><div class="k">Value returned</div><div class="v" style="color:var(--bad)">${inr(live.reduce((a,r)=>a+num(r.value),0))}</div></div>
+   <div class="card stat"><div class="k">Refunded</div><div class="v">${inr(live.reduce((a,r)=>a+num(r.refundAmount),0))}</div></div></div>
+  ${can("voidSale")?`<div class="card" style="margin-bottom:12px"><label>Take goods back on an invoice</label>
+   <div class="row" style="flex-wrap:nowrap"><input id="sr-inv" placeholder="Invoice number, e.g. ${esc((S.settings.invoicePrefix||"INV")+"-00012")}" inputmode="text"><button class="btn" id="sr-start">Start return</button></div></div>`:""}
+  <div class="card" style="padding:6px 12px"><input id="sr-q" placeholder="Search voucher, invoice, customer or item…" value="${esc(S.srq||"")}" style="margin:8px 0">
+   <table class="resp"><thead><tr><th>Voucher</th><th>Date</th><th>Invoice</th><th>Customer</th><th>Items</th><th class="n">Value</th><th class="n">Refunded</th></tr></thead><tbody>
+   ${L.map(r=>`<tr${r.status==="cancelled"?' style="opacity:.55"':""}><td data-l="Voucher"><a href="#return/${r.id}"><b>${esc(r.returnNo)}</b></a>${r.status==="cancelled"?` <span class="tag out">cancelled</span>`:""}</td>
+     <td data-l="Date">${fdt(tms(r.createdAt))}</td><td data-l="Invoice"><a href="#sale/${r.saleId}">${esc(r.invoiceNo)}</a></td>
+     <td data-l="Customer">${r.customerId?`<a href="#customer/${r.customerId}">${esc(r.customer?.name||"")}</a>`:esc(r.customer?.name||"Walk-in")}</td>
+     <td data-l="Items" class="small">${(r.items||[]).map(i=>`${esc(i.name)} ×${i.qty}`).join(", ")}</td>
+     <td data-l="Value" class="n" style="color:var(--bad)">${inr(r.value)}</td><td data-l="Refunded" class="n">${num(r.refundAmount)?inr(r.refundAmount):"—"}</td></tr>`).join("")
+    ||`<tr><td colspan="7" class="mute">${q?"Nothing matches.":"No returns yet."}</td></tr>`}</tbody></table></div>`;
+  const sq=$("#sr-q");sq.oninput=()=>{S.srq=sq.value;clearTimeout(vReturns.t);vReturns.t=setTimeout(()=>{render();const n=$("#sr-q");if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},200)};
+  const go=()=>{const v=($("#sr-inv").value||"").trim().toLowerCase();if(!v)return;
+    const hit=S.sales.find(s=>String(s.invoiceNo).toLowerCase()===v)||S.sales.find(s=>String(s.invoiceNo).toLowerCase().endsWith(v.replace(/^0+/,"")));
+    if(!hit)return toast("No invoice "+v.toUpperCase(),1);openSalesReturn(hit.id)};
+  if($("#sr-start")){$("#sr-start").onclick=go;$("#sr-inv").onkeydown=e=>{if(e.key==="Enter")go()}}
+}
+window.printReturn=id=>{
+  const r=S.salesReturns.find(x=>x.id===id);if(!r)return;
+  const st=S.settings,adj=r2(num(r.value)-num(r.refundAmount));
+  const w=window.open("","_blank","width=820,height=900");if(!w)return toast("Allow pop-ups to print",1);
+  w.document.write(`<html><head><title>${esc(r.returnNo)}</title><style>
+  body{font:12px Arial,Helvetica,sans-serif;max-width:760px;margin:16px auto;color:#000}
+  h2,h3{margin:0}table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border-bottom:1px solid #ccc;padding:6px 5px;text-align:left;vertical-align:top}
+  th{background:#7a1f1f;color:#fff;font-size:11px;text-transform:uppercase}
+  .n{text-align:right;white-space:nowrap}.c{text-align:center}.m{color:#555;font-size:11px}.r{color:#b00020}
+  tfoot th{background:#f6e7e7;color:#000}.sig{display:flex;justify-content:space-between;margin-top:46px}.sig div{border-top:1px solid #000;padding-top:4px;width:40%;text-align:center}</style></head><body>
+  <h2>${esc(st.storeName)}</h2><div class="m">${esc(st.address||"")}${st.phone?" · Ph "+esc(st.phone):""}${st.gstin?" · GSTIN "+esc(st.gstin):""}</div>
+  <h3 style="margin-top:14px">Sales Return Voucher ${esc(r.returnNo)}${r.status==="cancelled"?' <span class="r">(CANCELLED)</span>':""}</h3>
+  <div class="m">Credit note against invoice <b>${esc(r.invoiceNo)}</b>${r.saleDate?" dated "+esc(r.saleDate):""}${r.bookingNo?" · booking "+esc(r.bookingNo):""}<br>
+   ${esc(r.customer?.name||"Walk-in")}${r.customer?.phone?" · "+esc(r.customer.phone):""} · ${fdt(tms(r.createdAt))} · taken back by ${esc(r.createdByName||"")}</div>
+  <table><thead><tr><th>#</th><th>Item returned</th><th class="n">Qty</th><th class="n">Price per unit</th><th class="n">Value each, as paid</th><th class="n">Value</th></tr></thead><tbody>
+  ${r.items.map((i,ix)=>`<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}</span></td><td class="n">${i.qty}</td><td class="n">${inr(i.price)}</td><td class="n">${inr(i.unitValue)}</td><td class="n r">${inr(i.value)}</td></tr>`).join("")}
+  </tbody><tfoot>
+   <tr><th colspan="5" class="n">Total value returned</th><th class="n r" style="font-size:14px">${inr(r.value)}</th></tr>
+   ${num(r.gstAmount)?`<tr><td colspan="2"></td><th class="n" colspan="3">of which GST</th><th class="n">${inr(r.gstAmount)}</th></tr>`:""}
+   ${num(r.refundAmount)?`<tr><td colspan="2"></td><th class="n" colspan="3">Refunded · ${esc(r.refundMode||"")}</th><th class="n">${inr(r.refundAmount)}</th></tr>`:""}
+   ${adj>0?`<tr><td colspan="2"></td><th class="n" colspan="3">Adjusted in the customer's account</th><th class="n">${inr(adj)}</th></tr>`:""}</tfoot></table>
+  <p><b>Reason:</b> ${esc(r.reason||"—")}</p>
+  <div class="sig"><div>Customer's signature</div><div>For ${esc(st.storeName||"the store")}</div></div>
+  <div class="c m" style="margin-top:20px">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close();
+};
 window.voidSale=async id=>{
   if(!can("voidSale"))return toast("You don't have permission to void a bill",1);
   const s=S.sales.find(x=>x.id===id);if(!s)return;
+  if(srOf(id).length)return toast(`Some goods on this bill already came back (${srOf(id).map(r=>r.returnNo).join(", ")}). Take the rest back as a sales return, or cancel those vouchers before voiding.`,1);
   const bk0=s.bookingId?S.bookings.find(b=>b.id===s.bookingId):null;
   if(s.bookingId&&!isAdmin())return toast("Only an admin can void a bill made from a booking — use Request instead",1);
   const coll=bk0?r2(num(bk0.collectedOnDelivery)):0;
   const msg=bk0&&bk0.status==="delivered"&&bk0.saleId===id
-    ?`Void ${s.invoiceNo}?\n\nThe goods go back into stock, reserved again for booking ${bk0.bookingNo}, and the booking reopens — so you can change it, deliver it again, or cancel it.`
+    ?`Void ${s.invoiceNo}?\n\nThe goods go back into stock at ${SR_LOC}, reserved again for booking ${bk0.bookingNo}, and the booking reopens — so you can change it, deliver it again, or cancel it.`
       +(coll?`\n\nThe ${inr(coll).replace("₹","Rs ")} collected on delivery stays recorded as a payment against the booking.`:"")
-    :"Void "+s.invoiceNo+"? Stock will be returned.";
+    :`Void ${s.invoiceNo}?\n\nEverything on it goes back into stock at ${SR_LOC}.`;
   if(!confirm(msg))return;
   try{const re=await doVoidSale(id);toast(re?`Sale voided — booking ${re} is open again`:"Sale voided");render()}catch(e){toast(emsg(e),1)}
 };
@@ -1731,13 +1951,15 @@ function reopenWrites(tx,br,bd,sale){
 async function doVoidSale(id){
   const s=S.sales.find(x=>x.id===id);
   if(!s)throw new Error("That bill no longer exists");
-  const want=qtyByPid(s.items),pids=Object.keys(want),locOf={};
-  s.items.forEach(i=>{if(!locOf[i.pid])locOf[i.pid]=i.takenFrom||""});
+  if(srOf(id).length)throw new Error("Some goods on this bill already came back on a return voucher — cancel it before voiding");
+  // a voided bill's goods come back like any other return: to Sales Return, to be checked
+  const want=qtyByPid(s.items),pids=Object.keys(want),locOf={};pids.forEach(pid=>locOf[pid]=SR_LOC);
   let reopened="";
   await runTransaction(db,async tx=>{
     const sr=doc(db,"sales",id),sd=await tx.get(sr);
     if(!sd.exists())throw new Error("That bill no longer exists");
     if(sd.data().status==="void")throw new Error("Already void");
+    if(Object.values(sd.data().returned||{}).some(n=>n>0))throw new Error("Some goods on this bill already came back on a return voucher — cancel it before voiding");
     let br=null,bd=null;
     if(s.bookingId){br=doc(db,"bookings",s.bookingId);const bs=await tx.get(br);bd=bs.exists()?bs.data():null}
     const reopen=!!(bd&&bd.status==="delivered"&&bd.saleId===id);
@@ -1839,22 +2061,29 @@ function vSale(el){
   const dead=s.status==="void",adv=num(s.advance),got=r2(num(s.balancePaid??(num(s.total)-adv)));
   const left=s.bookingId?r2(num(s.total)-adv-got):salePending(s);
   const bg=s.bookingId?S.bookings.find(b=>b.id===s.bookingId):null,log=s.editLog||[];
+  const rets=srOf(s.id),rt=srTotals(s.id),sold=qtyByPid(s.items),bk=backOf(s);
+  const canTake=!dead&&can("voidSale")&&Object.keys(sold).some(pid=>(sold[pid]||0)>(bk[pid]||0));
   const R=[["Invoice no.",`<b>${esc(s.invoiceNo)}</b>`],["Billed on",fdt(tms(s.createdAt))+backTag(s)],
    ...(s.backdated?[["Entered",`${s.enteredAt?fdt(tms(s.enteredAt)):"later"}${s.enteredBy?" by "+esc(s.enteredBy):""} — the bill is dated ${esc(s.dateKey||"")}`]]:[]),
    ["Customer",`${esc(s.customer?.name||"Walk-in")}${s.customer?.phone?` · <a href="tel:${esc(s.customer.phone)}">${esc(s.customer.phone)}</a>`:""}${s.customerId?` · <a href="#customer/${s.customerId}">open ledger</a>`:""}`],
    ["Payment",esc(s.payment||"—")],["Billed by",esc(s.soldByName||"—")],
    ...(bg?[["Against booking",`<a href="#booking/${bg.id}">${esc(bg.bookingNo)}</a> <span class="small mute">· goods were charged when the booking was taken</span>`]]:[]),
    ["Status",dead?`<span class="tag out">void</span>${s.voidedBy?` <span class="small mute">by ${esc(s.voidedBy)}</span>`:""}`:`<span class="tag ok">completed</span>`],
-   ...(s.editedBy?[["Last corrected",`${esc(s.editedBy)} · ${fdt(tms(s.editedAt))}`]]:[])];
+   ...(s.editedBy?[["Last corrected",`${esc(s.editedBy)} · ${fdt(tms(s.editedAt))}`]]:[]),
+   ...(rets.length?[["Sales returns",rets.map(r=>`<a href="#return/${r.id}" style="color:var(--bad)"><b>${esc(r.returnNo)}</b></a> <span class="small mute">${inr(r.value)}</span>`).join("<br>")]]:[])];
   const T=[["Subtotal",inr(s.subtotal)],...(num(s.itemDiscount)?[["Item discounts","− "+inr(s.itemDiscount)]]:[]),
    ...(num(s.discount)?[["Discount on the bill","− "+inr(s.discount)]]:[]),
    ["GST included",inr(s.gstAmount)],["Bill total",`<b style="font-size:18px">${inr(s.total)}</b>`],
    ...(adv?[["Already received before this bill",inr(adv)],["Collected on this bill",inr(got)]]:[]),
    ...(!adv&&saleReceipts(s).length>1?[["Received in parts",saleReceipts(s).map(r=>`${esc(r.mode)} <b>${inr(num(r.amount))}</b>`).join("<br>")],
      ["Received in total",inr(saleReceived(s))]]:[]),
+   ...(rt.value?[["Goods returned",`<span style="color:var(--bad)">− ${inr(rt.value)}</span>`],
+     ...(rt.refund?[["Refunded",`<span style="color:var(--bad)">${inr(rt.refund)}</span>`]]:[]),
+     ["Bill after returns",`<b>${inr(r2(num(s.total)-rt.value))}</b>`]]:[]),
    ...(left>0?[["Still pending",`<span style="color:var(--bad)">${inr(left)}</span>`]]:[])];
   el.innerHTML=`<div class="top"><div class="row"><button class="btn sec" onclick="goBack('sales')">← Back</button><h2>${esc(s.invoiceNo)}</h2>${dead?`<span class="tag out">void</span>`:""}</div>
    <div class="row"><button class="btn sec" onclick="printInvoice('${s.id}')">Print bill</button><button class="btn sec" onclick="reprint('${s.id}')">Print receipt</button>
+   ${canTake?`<button class="btn sec" onclick="openSalesReturn('${s.id}')">Sales return</button>`:""}
    ${dead?"":isAdmin()?(s.bookingId?`<button class="btn" onclick="openBookingItems('${s.bookingId}')">Modify booking</button><button class="btn sec" onclick="openSaleEdit('${s.id}')">Collected on delivery</button>`
        :`<button class="btn" onclick="openSaleEdit('${s.id}')">Edit bill</button>`)+`<button class="btn sec" onclick="voidSale('${s.id}')">Void</button>`
      :(can("voidSale")&&!s.bookingId?`<button class="btn sec" onclick="voidSale('${s.id}')">Void</button>`:rqBtn("sale.void",s.id,`Invoice ${s.invoiceNo} · ${inr(s.total)}`,{}))}</div></div>
@@ -1865,9 +2094,10 @@ function vSale(el){
    <div class="card" style="padding:6px 14px"><table>${T.map(r=>`<tr><td class="mute" style="width:55%">${r[0]}</td><td class="n">${r[1]}</td></tr>`).join("")}</table></div></div>
   <div class="card" style="margin-top:12px;padding:6px 12px"><h3 style="margin:10px 2px 4px">Items (${s.items.length})</h3>
    <table class="resp"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Price per unit</th><th class="n">Total price</th><th class="n">Discount</th><th class="n">GST</th><th>Taken from</th><th class="n">Amount</th></tr></thead><tbody>
-   ${s.items.map(i=>{const p=S.products.find(x=>x.id===i.pid);
-     return `<tr><td data-l="Item"><span class="row" style="flex-wrap:nowrap">${p?thumb(p,38):""}<span>${plink(i.pid,i.name)}<br><span class="small mute">${esc(i.sku)}${p&&dimText(p)?" · 📐 "+esc(dimText(p)):""}${lineCat(i)?" · "+esc(lineCat(i)):""}</span></span></span></td>
-    <td data-l="Qty" class="n">${qtyText(i.qty,p?p.unit:"pcs")}</td><td data-l="Price per unit" class="n">${inr(i.price)}</td>
+   ${s.items.map(i=>{const p=S.products.find(x=>x.id===i.pid),rn=retNote(s,i.pid),all=rn&&rn.n>=num(i.qty);
+     return `<tr${all?' style="color:var(--bad)"':""}><td data-l="Item"><span class="row" style="flex-wrap:nowrap">${p?thumb(p,38):""}<span>${plink(i.pid,i.name)}<br><span class="small mute">${esc(i.sku)}${p&&dimText(p)?" · 📐 "+esc(dimText(p)):""}${lineCat(i)?" · "+esc(lineCat(i)):""}</span>
+      ${rn?`<br><span class="small" style="color:var(--bad);font-weight:700">↩ ${all?"Returned":rn.n+" returned"} · ${rn.nos.map(esc).join(", ")}</span>`:""}</span></span></td>
+    <td data-l="Qty" class="n">${qtyText(i.qty,p?p.unit:"pcs")}${rn?`<div class="small" style="color:var(--bad);font-weight:700">−${rn.n} back</div>`:""}</td><td data-l="Price per unit" class="n">${inr(i.price)}</td>
     <td data-l="Total price" class="n">${inr(lineGross(i))}</td><td data-l="Discount" class="n">${lineDisc(i)?"− "+inr(lineDisc(i)):"—"}</td>
     <td data-l="GST" class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td data-l="Taken from" class="small">${esc(i.takenFrom||"—")}</td>
     <td data-l="Amount" class="n">${inr(i.lineTotal??lineNet(i))}</td></tr>`}).join("")
@@ -1884,6 +2114,7 @@ window.openSaleEdit=function(id){
   if(!s)return toast("That bill no longer exists",1);
   if(s.status==="void")return toast("This bill is void — there is nothing to correct",1);
   const linked=!!s.bookingId;
+  if(!linked&&srOf(id).length)return toast(`Goods on this bill came back on ${srOf(id).map(r=>r.returnNo).join(", ")}. Cancel those vouchers to correct it, or take more back as a return.`,1);
   S.es={id,linked,items:s.items.map(i=>({...i})),disc:num(s.discount),pay:s.payment||"",q:"",date:s.dateKey||dkey(new Date(tms(s.createdAt))),
         collect:r2(num(s.balancePaid??(num(s.total)-num(s.advance))))};
   const draw=()=>{
@@ -2085,9 +2316,10 @@ window.printEstimate=async(src,id)=>{
 window.printInvoice=id=>{
   const s=S.sales.find(x=>x.id===id);if(!s)return;
   const st=S.settings,adv=num(s.advance),got=r2(num(s.balancePaid??(num(s.total)-adv)));
-  const left=s.bookingId?r2(num(s.total)-adv-got):salePending(s);
+  const left=s.bookingId?r2(num(s.total)-adv-got):salePending(s),rets=srOf(s.id),rt=srTotals(s.id);
   const w=window.open("","_blank","width=820,height=900");if(!w)return toast("Allow pop-ups to print",1);
   w.document.write(`<html><head><title>${esc(s.invoiceNo)}</title><style>
+  .ret{color:#b00020;font-weight:700}
   body{font:12px Arial,Helvetica,sans-serif;max-width:760px;margin:16px auto;color:#000}
   h2,h3{margin:0}table{width:100%;border-collapse:collapse;margin-top:10px}
   th,td{border-bottom:1px solid #ccc;padding:6px 5px;text-align:left;vertical-align:top}
@@ -2099,8 +2331,8 @@ window.printInvoice=id=>{
   <div class="m">${esc(s.customer?.name||"Walk-in")}${s.customer?.phone?" · "+esc(s.customer.phone):""}<br>
    ${fdt(tms(s.createdAt))} · ${esc(s.payment||"")}${s.bookingNo?" · against booking "+esc(s.bookingNo):""} · billed by ${esc(s.soldByName||"")}</div>
   <table><thead><tr><th>#</th><th>Item</th><th class="n">Qty</th><th class="n">Price per unit</th><th class="n">Total price</th><th class="n">Discount</th><th class="n">GST</th><th class="n">Amount</th></tr></thead><tbody>
-  ${s.items.map((i,ix)=>`<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span></td><td class="n">${i.qty}</td>
-   <td class="n">${inr(i.price)}</td><td class="n">${inr(lineGross(i))}</td><td class="n">${lineDisc(i)?"− "+inr(lineDisc(i)):"—"}</td><td class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td class="n">${inr(i.lineTotal??lineNet(i))}</td></tr>`).join("")}
+  ${s.items.map((i,ix)=>{const rn=retNote(s,i.pid);return `<tr><td>${ix+1}</td><td>${esc(i.name)}<br><span class="m">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span>${rn?`<br><span class="ret">Returned: ${rn.n} · ${rn.nos.map(esc).join(", ")}</span>`:""}</td><td class="n">${i.qty}${rn?`<br><span class="ret">−${rn.n}</span>`:""}</td>
+   <td class="n">${inr(i.price)}</td><td class="n">${inr(lineGross(i))}</td><td class="n">${lineDisc(i)?"− "+inr(lineDisc(i)):"—"}</td><td class="n">${num(i.gst)?num(i.gst)+"%":"—"}</td><td class="n">${inr(i.lineTotal??lineNet(i))}</td></tr>`}).join("")}
   </tbody><tfoot>
    <tr><th colspan="4" class="n">Total</th><th class="n">${inr(s.subtotal)}</th>
     <th class="n">${num(s.itemDiscount)?"− "+inr(s.itemDiscount):"—"}</th><th></th>
@@ -2111,6 +2343,9 @@ window.printInvoice=id=>{
    ${adv?`<tr><td colspan="3"></td><th class="n" colspan="4">Already received</th><th class="n">− ${inr(adv)}</th></tr>
     <tr><td colspan="3"></td><th class="n" colspan="4">Paid on this bill</th><th class="n">${inr(got)}</th></tr>`
    :saleReceipts(s).map(r=>`<tr><td colspan="3"></td><th class="n" colspan="4">Received · ${esc(r.mode)}</th><th class="n">− ${inr(num(r.amount))}</th></tr>`).join("")}
+   ${rt.value?`<tr><td colspan="3"></td><th class="n ret" colspan="4">Less goods returned · ${rets.map(r=>esc(r.returnNo)).join(", ")}</th><th class="n ret">− ${inr(rt.value)}</th></tr>
+    ${rt.refund?`<tr><td colspan="3"></td><th class="n ret" colspan="4">Refunded on return</th><th class="n ret">${inr(rt.refund)}</th></tr>`:""}
+    <tr><td colspan="3"></td><th class="n" colspan="4">Bill after returns</th><th class="n" style="font-size:14px">${inr(r2(num(s.total)-rt.value))}</th></tr>`:""}
    ${left>0?`<tr><td colspan="3"></td><th class="n" colspan="4">Still pending</th><th class="n">${inr(left)}</th></tr>`:""}</tfoot></table>
   ${num(s.gstAmount)?`<p class="m">GST shown is included in the prices above.</p>`:""}
   <div class="c m" style="margin-top:20px">${esc(st.footer||"")}</div><script>setTimeout(()=>print(),400)<\/script></body></html>`);w.document.close();
@@ -2184,7 +2419,8 @@ function saleReceived(s){
   if(s.received!==undefined)return r2(num(s.received));
   return isCredit(s.payment)?0:num(s.total);
 }
-const salePending=s=>s.status==="void"||s.bookingId?0:Math.max(0,r2(num(s.total)-saleReceived(s)));
+const salePending=s=>{if(s.status==="void"||s.bookingId)return 0;
+  const t=srTotals(s.id);return Math.max(0,r2(num(s.total)-t.value-(saleReceived(s)-t.refund)))};
 const payLine=rs=>rs.map(r=>`${esc(r.mode)} ${inr(num(r.amount))}`).join(" · ");
 const payRowsTable=(id,rows,fn)=>`<table id="${id}" class="resp"><thead><tr><th>Mode</th><th class="n">Amount received</th></tr></thead><tbody>
  ${rows.map((p,ix)=>`<tr data-ix="${ix}">
@@ -2244,6 +2480,13 @@ function custLedger(c){
         :salePending(s)>0?` · ${inr(saleReceived(s))} received, ${inr(salePending(s))} still pending`:""),
       charge:dead?0:(linked?0:num(s.total)),
       paid:dead?0:saleReceived(s)});
+  });
+  S.salesReturns.filter(r=>r.status!=="cancelled"&&(r.customerId===c.id||(custKey(c.phone)&&custKey(r.customer?.phone)===custKey(c.phone)))).forEach(r=>{
+    const rf=num(r.refundAmount);
+    ev.push({ms:tms(r.createdAt),kind:"return",ref:r.returnNo,link:`#return/${r.id}`,
+      what:`Sales return ${r.returnNo} · ${r.invoiceNo}`,
+      detail:[(r.items||[]).map(i=>`${i.name} ×${i.qty}`).join(", "),r.reason||"",rf?`${inr(rf)} refunded · ${r.refundMode||""}`:"credited to the account"].filter(Boolean).join(" · "),
+      charge:-num(r.value),paid:-rf});
   });
   S.payments.filter(p=>p.customerId===c.id||(custKey(c.phone)&&custKey(p.customerPhone)===custKey(c.phone))).forEach(p=>{
     const adj=p.kind==="adjustment",chg=adj&&p.adjust==="charge",amt=num(p.amount);
@@ -3634,6 +3877,7 @@ window.openBookingItems=function(id){
   const sale=b.saleId?S.sales.find(x=>x.id===b.saleId):null;
   if(b.status==="cancelled")return toast("This booking is cancelled",1);
   if(b.status==="delivered"&&(!sale||sale.status==="void"))return toast("Its invoice was voided — reopen the booking first",1);
+  if(b.status==="delivered"&&srOf(sale.id).length)return toast(`Goods on its invoice came back on ${srOf(sale.id).map(r=>r.returnNo).join(", ")}. Cancel those vouchers to change the booking, or take more back as a return.`,1);
   const live=b.status==="delivered";
   const locs={};(sale?.items||[]).forEach(i=>{if(i.takenFrom&&!locs[i.pid])locs[i.pid]=i.takenFrom});
   S.eb={id,live,items:b.items.map(i=>({...i,disc:num(i.disc)||"",takenFrom:locs[i.pid]||i.takenFrom||""})),disc:num(b.discount),q:"",why:""};
