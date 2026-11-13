@@ -24,13 +24,13 @@ label{font-size:14px;color:#555}
 <div id="st">Not connected</div>
 
 <h2>2. Label roll loaded, printer in label mode</h2>
-<p>Labels sent the way the receipt was (ESC/POS). Try each once. Look for two things: does it print, and does the paper stop at the next label's edge.</p>
-<button class="t" id="p-c" disabled>Label C</button>
-<button class="t" id="p-d" disabled>Label D</button>
-<button class="t" id="p-e" disabled>Label E (picture)</button>
-<button class="t" id="p-f" disabled>Label F (no feed)</button>
-<p>Earlier tests, which did not print: <button class="t" id="p-tspl" disabled>A (TSPL)</button><button class="t" id="p-cpcl" disabled>B (CPCL)</button>
-<select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select></p>
+<p>Pick your label size first. Before <b>each</b> test, press the printer's feed button once so the roll lines up, then tap one button. Each label prints its own letter.</p>
+<p>Label size <select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select> mm</p>
+<button class="t" id="p-g" disabled>Label G</button>
+<button class="t" id="p-h" disabled>Label H</button>
+<button class="t" id="p-i" disabled>Label I</button>
+<button class="t" id="p-i3" disabled>Label I &times; 3</button>
+<p>Already tried: <button class="t" id="p-e" disabled>E</button></p>
 
 <h2>3. Receipt roll loaded, printer in receipt mode</h2>
 <button class="t" id="p-rcpt" disabled>Receipt (ESC/POS)</button>
@@ -180,7 +180,7 @@ const RawPrint = (() => {
       const i = (y * w + x) * 4;
       if (px[i + 3] > 127 && px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114 < 140) bits[y * bw + (x >> 3)] |= 0x80 >> (x & 7);
     }
-    return cat([ESC, 0x40], [GS, 0x76, 0x30, 0, bw & 255, bw >> 8, h & 255, h >> 8], bits, FEEDS[o.feed || "ff"]);
+    return cat(o.pre || [ESC, 0x40], [GS, 0x76, 0x30, 0, bw & 255, bw >> 8, h & 255, h >> 8], bits, o.post || FEEDS[o.feed || "ff"]);
   }
 
   /* ---------- transports ---------- */
@@ -277,16 +277,22 @@ async function send(what,data){
   catch(e){log("Send failed: "+e.message)}
 }
 const sz=()=>{const[w,h]=$("size").value.split("x").map(Number);return{w,h}};
-$("p-tspl").onclick=()=>send("label A (TSPL)",RawPrint.label(item,sz()));
-$("p-cpcl").onclick=()=>send("label B (CPCL)",RawPrint.label(item,{...sz(),lang:"cpcl"}));
-$("p-c").onclick=()=>send("label C (text, feed 0C)",RawPrint.labelEsc(item,{feed:"ff"}));
-$("p-d").onclick=()=>send("label D (text, feed 1D 0C)",RawPrint.labelEsc(item,{feed:"gsff"}));
-$("p-f").onclick=()=>send("label F (text, no feed)",RawPrint.labelEsc(item,{feed:"none"}));
-$("p-e").onclick=()=>{const c=document.createElement("canvas");c.width=384;c.height=200;const g=c.getContext("2d");
-  g.fillStyle="#fff";g.fillRect(0,0,384,200);g.fillStyle="#000";g.strokeStyle="#000";g.lineWidth=3;g.strokeRect(4,4,376,192);
-  g.textAlign="center";g.font="bold 26px sans-serif";g.fillText(item.name,192,48);g.font="22px sans-serif";g.fillText(item.sku,192,84);
-  g.fillText("MRP \u20B924,999",192,124);g.font="bold 40px sans-serif";g.fillText("\u20B918,999",192,174);
-  send("label E (picture, feed 0C)",RawPrint.raster(c,{feed:"ff"}))};
+// A sample label drawn at the roll's size, 8 dots per mm, with a letter to tell prints apart.
+function pic(tag,n){const{w,h}=sz(),W=Math.min(w*8,384),H=h*8,c=document.createElement("canvas");c.width=W;c.height=H;
+  const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,W,H);g.fillStyle="#000";g.lineWidth=3;g.strokeRect(3,3,W-6,H-6);
+  g.textAlign="center";g.font="bold 24px sans-serif";g.fillText("Label "+tag+(n?" #"+n:""),W/2,36);
+  g.font="20px sans-serif";g.fillText(item.sku,W/2,H*0.42);g.fillText("MRP ₹24,999",W/2,H*0.62);
+  g.font="bold "+Math.round(H*0.17)+"px sans-serif";g.fillText("₹18,999",W/2,H-16);return c}
+const R=RawPrint;
+$("p-e").onclick=()=>send("label E (picture, feed 0C)",R.raster(pic("E"),{feed:"ff"}));
+// G: the gap-label commands used by Phomemo-family mini label printers.
+$("p-g").onclick=()=>send("label G (1F 11 0A ... 1F F0 05 00 1F F0 03 00)",
+  R.raster(pic("G"),{pre:[0x1b,0x4e,0x0d,0x03,0x1b,0x4e,0x04,0x0a,0x1f,0x11,0x0a],post:[0x1f,0xf0,0x05,0x00,0x1f,0xf0,0x03,0x00]}));
+$("p-h").onclick=()=>send("label H (feed 1D 0C)",R.raster(pic("H"),{feed:"gsff"}));
+// I: no sensor at all. The picture is exactly one label tall and the paper is then moved the 2 mm gap.
+const one=n=>R.raster(pic("I",n),{post:[0x1b,0x4a,16]});
+$("p-i").onclick=()=>send("label I (exact length + 2 mm)",one());
+$("p-i3").onclick=()=>send("label I x 3",R.cat(one(1),one(2),one(3)));
 $("p-rcpt").onclick=()=>send("receipt (ESC/POS)",RawPrint.receipt({title:"B-HOME",header:["Printer test"],
   meta:[["Bill","TEST-1"],["Date",new Date().toLocaleDateString("en-IN")]],
   items:[{name:item.name,qty:1,rate:18999}],totals:[["Total",18999,true]],barcode:"TEST-1",footer:["Thank you"]}));
