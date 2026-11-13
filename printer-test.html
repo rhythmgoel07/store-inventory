@@ -26,10 +26,12 @@ label{font-size:14px;color:#555}
 
 <h2>2. Label roll loaded, printer in label mode (power button 3 times)</h2>
 <p>Label size <select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select> mm</p>
-<p>Full-height label, drawn to exactly one sticker pitch (label + gap), so a run does not creep. Gap <select id="gap"><option>2</option><option>3</option><option>4</option></select> mm</p>
-<button class="t go" id="p-r1" disabled>R1 one label</button>
-<button class="t" id="p-r2" disabled>R2 three labels, one job</button>
-<p>For R1: press feed once, tap R1, then <b>without pressing feed</b> tap R1 again. Do both land right?</p>
+<p>TSPL, the way a label app would send it: the label as one picture inside a TSPL job.</p>
+<button class="t go" id="p-t1" disabled>T1 TSPL picture</button>
+<button class="t" id="p-t2" disabled>T2 TSPL picture (LF only)</button>
+<button class="t" id="p-t3" disabled>T3 TSPL picture &times; 3</button>
+<button class="t" id="p-t4" disabled>T4 TSPL blank label</button>
+<p>Gap <select id="gap"><option>2</option><option>3</option><option>4</option></select> mm</p>
 <p>Earlier: <button class="t" id="p-n" disabled>Label N</button> <button class="t" id="p-tspl" disabled>A (TSPL)</button></p>
 
 <h2>3. Receipt roll loaded, printer in receipt mode</h2>
@@ -183,6 +185,19 @@ const RawPrint = (() => {
     return cat(o.pre || [ESC, 0x40], [GS, 0x76, 0x30, 0, bw & 255, bw >> 8, h & 255, h >> 8], bits, o.post || FEEDS[o.feed || "ff"]);
   }
 
+  /* A canvas as a TSPL label: SIZE/GAP, then the picture as one BITMAP (in TSPL a 1 bit is
+     white, the opposite of ESC/POS), then PRINT. For TSPL printers that have no fonts. */
+  function tsplBitmap(canvas, o = {}) {
+    const W = o.w || 50, H = o.h || 30, w = Math.min(canvas.width, HEAD), h = canvas.height, bw = Math.ceil(w / 8);
+    const px = canvas.getContext("2d").getImageData(0, 0, w, h).data, bits = new Uint8Array(bw * h).fill(0xff);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      if (px[i + 3] > 127 && px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114 < 140) bits[y * bw + (x >> 3)] &= ~(0x80 >> (x & 7));
+    }
+    const nl = o.lf ? "\n" : "\r\n";
+    return cat(`SIZE ${W} mm,${H} mm${nl}GAP ${o.gap ?? 2} mm,0 mm${nl}DIRECTION ${o.direction ?? 1}${nl}CLS${nl}BITMAP 0,0,${bw},${h},0,`, bits, `${nl}PRINT 1,${o.copies || 1}${nl}`);
+  }
+
   /* ---------- transports ---------- */
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   // Write services seen on small thermal printers. The first writable characteristic wins.
@@ -259,7 +274,7 @@ const RawPrint = (() => {
   const supported = () => typeof navigator === "undefined" ? {} :
     ({ ble: !!navigator.bluetooth, serial: !!navigator.serial, usb: !!navigator.usb });
 
-  return { connect, supported, label, labels, labelEsc, raster, receipt, cat };
+  return { connect, supported, label, labels, labelEsc, raster, tsplBitmap, receipt, cat };
 })();
 if (typeof window !== "undefined") window.RawPrint = RawPrint;
 if (typeof module !== "undefined") module.exports = RawPrint;
@@ -306,6 +321,11 @@ $("p-q4").onclick=()=>send("Q4 full picture x 3 + ESC d 1 each",R.cat([1,2,3].ma
 const pitchpic=(tag,n)=>R.raster(pic(tag,n,0,Number($("gap").value||2)),{post:[]});
 $("p-r1").onclick=()=>send("R1 one label at pitch",pitchpic("R1"));
 $("p-r2").onclick=()=>send("R2 three labels at pitch",R.cat([1,2,3].map(n=>pitchpic("R2",n))));
+const tpic=(tag,n,o)=>R.tsplBitmap(pic(tag,n,0,0),{...sz(),gap:Number($("gap").value||2),...o});
+$("p-t1").onclick=()=>send("T1 TSPL picture",tpic("T1"));
+$("p-t2").onclick=()=>send("T2 TSPL picture, LF",tpic("T2",0,{lf:true}));
+$("p-t3").onclick=()=>send("T3 TSPL picture x 3",R.cat([1,2,3].map(n=>tpic("T3",n))));
+$("p-t4").onclick=()=>{const{w,h}=sz();send("T4 TSPL blank label",R.cat(`SIZE ${w} mm,${h} mm\r\nGAP ${$("gap").value} mm,0 mm\r\nCLS\r\nPRINT 1,1\r\n`))};
 $("p-rcpt").onclick=()=>send("receipt (ESC/POS)",RawPrint.receipt({title:"B-HOME",header:["Printer test"],
   meta:[["Bill","TEST-1"],["Date",new Date().toLocaleDateString("en-IN")]],
   items:[{name:item.name,qty:1,rate:18999}],totals:[["Total",18999,true]],barcode:"TEST-1",footer:["Thank you"]}));
