@@ -26,7 +26,7 @@ label{font-size:14px;color:#555}
 
 <h2>2. Label roll loaded, printer in label mode (power button 3 times)</h2>
 <p>Label size <select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select> mm</p>
-<p>TSPL, the way a label app would send it: the label as one picture inside a TSPL job.</p>
+<p>TSPL exactly as Open Label+ sends it: the label as picture strips of about 1 KB each inside a TSPL job.</p>
 <button class="t go" id="p-t1" disabled>T1 TSPL picture</button>
 <button class="t" id="p-t2" disabled>T2 TSPL picture (LF only)</button>
 <button class="t" id="p-t3" disabled>T3 TSPL picture &times; 3</button>
@@ -195,7 +195,14 @@ const RawPrint = (() => {
       if (px[i + 3] > 127 && px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114 < 140) bits[y * bw + (x >> 3)] &= ~(0x80 >> (x & 7));
     }
     const nl = o.lf ? "\n" : "\r\n";
-    return cat(`SIZE ${W} mm,${H} mm${nl}GAP ${o.gap ?? 2} mm,0 mm${nl}DIRECTION ${o.direction ?? 1}${nl}CLS${nl}BITMAP 0,0,${bw},${h},0,`, bits, `${nl}PRINT 1,${o.copies || 1}${nl}`);
+    /* In strips, as label apps do: this printer takes a BITMAP of about a kilobyte, and the
+       rest of a bigger one spills out as text. Each strip is at most o.strip rows. */
+    const rows = o.strip || Math.max(1, Math.floor(1000 / bw)), strips = [];
+    for (let y = 0; y < h; y += rows) {
+      const n = Math.min(rows, h - y);
+      strips.push(`BITMAP ${o.x || 0},${y},${bw},${n},0,`, bits.subarray(y * bw, (y + n) * bw), nl);
+    }
+    return cat(`SIZE ${W} mm,${H} mm${nl}GAP ${o.gap ?? 2} mm,0 mm${nl}DIRECTION ${o.direction ?? 1}${nl}CLS${nl}`, strips, `SET CUTTER OFF${nl}PRINT 1,${o.copies || 1}${nl}`);
   }
 
   /* ---------- transports ---------- */
