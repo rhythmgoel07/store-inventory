@@ -26,13 +26,18 @@ label{font-size:14px;color:#555}
 
 <h2>2. Label roll loaded, printer in label mode (power button 3 times)</h2>
 <p>Label size <select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select> mm</p>
-<p>Label mode, after the 3-second calibration. Gap between stickers <select id="gap"><option>4</option><option>3</option><option>2</option><option>5</option></select> mm. Full-height 30 mm picture, ended four ways. For each: press feed once, tap the button, then tap it again <b>without</b> feed.</p>
-<button class="t go" id="p-s1" disabled>S1 picture + gap rows</button>
-<button class="t" id="p-s2" disabled>S2 picture + FF</button>
-<button class="t" id="p-s3" disabled>S3 picture + GS FF</button>
-<button class="t" id="p-s4" disabled>S4 picture + ESC d</button>
-<p>Feed to the next sticker only, no picture: <button class="t" id="p-f1" disabled>FF</button> <button class="t" id="p-f2" disabled>GS FF</button> <button class="t" id="p-f3" disabled>ESC d 1</button></p>
-<p><button class="t" id="p-r2" disabled>R2 three labels, one job</button></p>
+<p>Without TSPL: full-height picture drawn to exactly one sticker pitch (label + gap), ESC/POS, label mode. Press feed once, tap R1, then tap R1 again <b>without</b> pressing feed, then R2.</p>
+<button class="t go" id="p-r1" disabled>R1 one label</button>
+<button class="t" id="p-r2" disabled>R2 three labels, one job</button>
+<p>TSPL exactly as Open Label+ sends it: one command per Bluetooth write, the label as picture strips. Pause between writes <select id="pause"><option>30</option><option>100</option><option>300</option></select> ms</p>
+<button class="t go" id="p-t0" disabled>T0 exact Open Label+ job shape</button>
+<button class="t go" id="p-t1" disabled>T1 TSPL picture</button>
+<button class="t" id="p-t2" disabled>T2 TSPL picture (LF only)</button>
+<button class="t" id="p-t3" disabled>T3 TSPL picture &times; 3</button>
+<button class="t" id="p-t4" disabled>T4 TSPL blank label</button>
+<p>Gap <select id="gap"><option>2</option><option>3</option><option>4</option></select> mm</p>
+<p>Earlier: <button class="t" id="p-n" disabled>Label N</button> <button class="t" id="p-tspl" disabled>A (TSPL)</button></p>
+
 <h2>3. Receipt roll loaded, printer in receipt mode</h2>
 <button class="t" id="p-rcpt" disabled>Receipt (ESC/POS)</button>
 
@@ -329,15 +334,25 @@ function pic(tag,n,top,pad){const{w,h}=sz(),W=Math.min(w*8,384),H=(h-(top||0))*8
   g.font="20px sans-serif";g.fillText(item.sku,W/2,H*0.42);g.fillText("MRP ₹24,999",W/2,H*0.62);
   g.font="bold "+Math.round(H*0.17)+"px sans-serif";g.fillText("₹18,999",W/2,H-20);return c}
 const R=RawPrint;
-const full=(tag,n)=>pic(tag,n,0,0);
-const pitchpic=(tag,n)=>R.raster(pic(tag,n,0,Number($("gap").value||4)),{post:[]});
-$("p-s1").onclick=()=>send("S1 picture + gap rows",pitchpic("S1"));
-$("p-s2").onclick=()=>send("S2 picture + FF",R.raster(full("S2"),{post:[0x0c]}));
-$("p-s3").onclick=()=>send("S3 picture + GS FF",R.raster(full("S3"),{post:[0x1d,0x0c]}));
-$("p-s4").onclick=()=>send("S4 picture + ESC d 1",R.raster(full("S4"),{post:[0x1b,0x64,1]}));
-$("p-f1").onclick=()=>send("FF alone",R.cat([0x0c]));
-$("p-f2").onclick=()=>send("GS FF alone",R.cat([0x1d,0x0c]));
-$("p-f3").onclick=()=>send("ESC d 1 alone",R.cat([0x1b,0x64,1]));
+$("p-tspl").onclick=()=>send("label A (TSPL)",R.label({...item,name:"Label A "+item.name},sz()));
+$("p-n").onclick=()=>send("label N (picture)",R.raster(pic("N",0,8,10),{post:[]}));
+const fullpic=(tag,n)=>R.raster(pic(tag,n,0,0),{post:[]});
+$("p-q1").onclick=()=>send("Q1 full picture",fullpic("Q1"));
+$("p-q2").onclick=()=>send("Q2 full picture + ESC d 1",R.cat(fullpic("Q2"),[0x1b,0x64,1]));
+$("p-q3").onclick=()=>send("Q3 full picture + GS FF",R.cat(fullpic("Q3"),[0x1d,0x0c]));
+$("p-q4").onclick=()=>send("Q4 full picture x 3 + ESC d 1 each",R.cat([1,2,3].map(n=>R.cat(fullpic("Q4",n),[0x1b,0x64,1]))));
+const tpic=(tag,n,o)=>R.tsplBitmap(pic(tag,n,0,0),{...sz(),gap:Number($("gap").value||2),parts:true,...o});
+// T0: the geometry seen in the Open Label+ log - SIZE 35 mm, 25 mm, picture 34 bytes wide at x=8 in 30-row strips.
+$("p-t0").onclick=()=>{const c=document.createElement("canvas");c.width=272;c.height=200;const g=c.getContext("2d");
+  g.fillStyle="#fff";g.fillRect(0,0,272,200);g.fillStyle="#000";g.lineWidth=3;g.strokeRect(3,3,266,194);g.textAlign="center";
+  g.font="bold 24px sans-serif";g.fillText("Label T0",136,36);g.font="20px sans-serif";g.fillText(item.sku,136,90);g.font="bold 34px sans-serif";g.fillText("₹18,999",136,170);
+  send("T0 Open Label+ shape",R.tsplBitmap(c,{w:35,h:25,gap:2,strip:30,x:8,parts:true}))};
+$("p-t1").onclick=()=>send("T1 TSPL picture",tpic("T1"));
+$("p-t2").onclick=()=>send("T2 TSPL picture, LF",tpic("T2",0,{lf:true}));
+$("p-t3").onclick=()=>send("T3 TSPL picture x 3",[1,2,3].flatMap(n=>tpic("T3",n)));
+$("p-t4").onclick=()=>{const{w,h}=sz();send("T4 TSPL blank label",[`SIZE ${Math.min(48,w)} mm, ${h} mm\r\n`,`GAP ${$("gap").value} mm,0 mm\r\n`,"CLS\r\n","PRINT 1,1\r\n"].map(x=>R.cat(x)))};
+const pitchpic=(tag,n)=>R.raster(pic(tag,n,0,Number($("gap").value||2)),{post:[]});
+$("p-r1").onclick=()=>send("R1 one label at pitch",pitchpic("R1"));
 $("p-r2").onclick=()=>send("R2 three labels at pitch",R.cat([1,2,3].map(n=>pitchpic("R2",n))));
 $("p-rcpt").onclick=()=>send("receipt (ESC/POS)",RawPrint.receipt({title:"B-HOME",header:["Printer test"],
   meta:[["Bill","TEST-1"],["Date",new Date().toLocaleDateString("en-IN")]],
