@@ -26,6 +26,9 @@ label{font-size:14px;color:#555}
 
 <h2>2. Label roll loaded, printer in label mode (power button 3 times)</h2>
 <p>Label size <select id="size"><option>50x30</option><option>50x25</option><option>40x30</option><option>40x20</option></select> mm</p>
+<p>Without TSPL: full-height picture drawn to exactly one sticker pitch (label + gap), ESC/POS, label mode. Press feed once, tap R1, then tap R1 again <b>without</b> pressing feed, then R2.</p>
+<button class="t go" id="p-r1" disabled>R1 one label</button>
+<button class="t" id="p-r2" disabled>R2 three labels, one job</button>
 <p>TSPL exactly as Open Label+ sends it: one command per Bluetooth write, the label as picture strips. Pause between writes <select id="pause"><option>30</option><option>100</option><option>300</option></select> ms</p>
 <button class="t go" id="p-t0" disabled>T0 exact Open Label+ job shape</button>
 <button class="t go" id="p-t1" disabled>T1 TSPL picture</button>
@@ -351,6 +354,9 @@ $("p-t1").onclick=()=>send("T1 TSPL picture",tpic("T1"));
 $("p-t2").onclick=()=>send("T2 TSPL picture, LF",tpic("T2",0,{lf:true}));
 $("p-t3").onclick=()=>send("T3 TSPL picture x 3",[1,2,3].flatMap(n=>tpic("T3",n)));
 $("p-t4").onclick=()=>{const{w,h}=sz();send("T4 TSPL blank label",[`SIZE ${Math.min(48,w)} mm, ${h} mm\r\n`,`GAP ${$("gap").value} mm,0 mm\r\n`,"CLS\r\n","PRINT 1,1\r\n"].map(x=>R.cat(x)))};
+const pitchpic=(tag,n)=>R.raster(pic(tag,n,0,Number($("gap").value||2)),{post:[]});
+$("p-r1").onclick=()=>send("R1 one label at pitch",pitchpic("R1"));
+$("p-r2").onclick=()=>send("R2 three labels at pitch",R.cat([1,2,3].map(n=>pitchpic("R2",n))));
 $("p-rcpt").onclick=()=>send("receipt (ESC/POS)",RawPrint.receipt({title:"B-HOME",header:["Printer test"],
   meta:[["Bill","TEST-1"],["Date",new Date().toLocaleDateString("en-IN")]],
   items:[{name:item.name,qty:1,rate:18999}],totals:[["Total",18999,true]],barcode:"TEST-1",footer:["Thank you"]}));
