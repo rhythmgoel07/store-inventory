@@ -190,6 +190,9 @@ table td.c,table th.c{text-align:center}
 .pcard .dim{color:var(--accent);font-weight:600}
 .pcard .locs{line-height:1.35}.pcard .locs b{color:var(--ink);font-weight:600}
 .pcard .sku{font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+.pcard .pdates{font-size:12px;margin-top:2px}
+.scanrow{display:flex;gap:8px}.scanrow input{flex:1}
+.datef{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}.datef input{width:auto;flex:1 1 140px}
 .me .bld{opacity:.55;font-size:10.5px;letter-spacing:.2px}
 .pcard .pr{font-size:13.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pcard .mrp{font-size:11.5px;color:var(--mute)}
@@ -258,7 +261,7 @@ import {firebaseConfig} from "./firebase-config.js";
 
 /* ---------- Taxonomy (embedded from homecentre_taxonomy.json) ---------- */
 const DEFAULT_TAX = [{"id":"living-room","name":"Living Room","slug":"livingroom","subcategories":[{"id":"sofas","name":"Sofas","slug":"livingroom-sofas","subcategories":[{"id":"3-seater-sofas","name":"3 Seater Sofas","slug":"livingroom-sofas-3seatersofas","subcategories":[]},{"id":"2-seater-sofas","name":"2 Seater Sofas","slug":"livingroom-sofas-2seatersofas","subcategories":[]},{"id":"1-seater-sofas","name":"1 Seater Sofas","slug":"livingroom-sofas-1seatersofas","subcategories":[]},{"id":"sofa-sets","name":"Sofa Sets","slug":"livingroom-sofas-sofasets","subcategories":[]},{"id":"sofa-cum-beds","name":"Sofa Cum Beds","slug":"livingroom-sofas-sofacumbeds","subcategories":[]},{"id":"corner-sofas","name":"Corner Sofas","slug":"livingroom-sofas-cornersofa","subcategories":[]}]},{"id":"customised-furniture","name":"Customised Furniture","slug":"customizedfurniture","subcategories":[]},{"id":"recliners","name":"Recliners","slug":"livingroom-recliners","subcategories":[{"id":"3-seater-recliners","name":"3 Seater Recliners","slug":"livingroom-recliners-3seaterrecliners","subcategories":[]},{"id":"2-seater-recliners","name":"2 Seater Recliners","slug":"livingroom-recliners-2seaterrecliners","subcategories":[]},{"id":"1-seater-recliners","name":"1 Seater Recliners","slug":"livingroom-recliners-1seaterrecliners","subcategories":[]},{"id":"recliner-sets","name":"Recliner Sets","slug":"livingroom-recliners-reclinersets","subcategories":[]}]},{"id":"occasional-chairs","name":"Occasional Chairs","slug":"livingroom-occasionalchairs","subcategories":[{"id":"accent-chairs","name":"Accent Chairs","slug":"livingroom-occasionalchairs-accentchairs","subcategories":[]},{"id":"folding-chairs","name":"Folding Chairs","slug":"livingroom-occasionalchairs-foldingchairs","subcategories":[]},{"id":"cafe-chairs","name":"Cafe Chairs","slug":"livingroom-occasionalchairs-cafechairs","subcategories":[]},{"id":"plastic-chairs","name":"Plastic Chairs","slug":"livingroom-occasionalchairs-plasticchairs","subcategories":[]}]},{"id":"benches-stools","name":"Benches & Stools","slug":"livingroom-benchandstools","subcategories":[{"id":"benches","name":"Benches","slug":"livingroom-benchandstools-benches","subcategories":[]},{"id":"stools","name":"Stools","slug":"livingroom-benchandstools-stools","subcategories":[]}]},{"id":"bean-bags-pouffes","name":"Bean Bags & Pouffes","slug":"livingroom-beanbagsandpouffes","subcategories":[{"id":"pouffes","name":"Pouffes","slug":"livingroom-beanbagsandpouffes-pouffes","subcategories":[]},{"id":"bean-bags","name":"Bean Bags","slug":"livingroom-beanbagsandpouffes-beanbags","subcategories":[]}]},{"id":"tables","name":"Tables","slug":"livingroom-tables","subcategories":[{"id":"centre-tables","name":"Centre Tables","slug":"livingroom-tables-centertables","subcategories":[]},{"id":"end-tables","name":"End Tables","slug":"livingroom-tables-endtables","subcategories":[]},{"id":"console-tables","name":"Console Tables","slug":"livingroom-tables-consoletables","subcategories":[]},{"id":"nesting-tables","name":"Nesting Tables","slug":"livingroom-tables-nestingtables","subcategories":[]}]},{"id":"tv-media-units","name":"TV & Media Units","slug":"livingroom-tvandmediaunits","subcategories":[{"id":"tv-consoles","name":"TV Consoles","slug":"livingroom-tvandmediaunits-tvconsoles","subcategories":[]},{"id":"tv-units","name":"TV Units","slug":"livingroom-tvandmediaunits-tvunits","subcategories":[]}]},{"id":"shelves","name":"Shelves","slug":"livingroom-shelves","subcategories":[{"id":"wall-shelves","name":"Wall Shelves","slug":"livingroom-shelves-wallshelves","subcategories":[]},{"id":"corner-shelves","name":"Corner Shelves","slug":"livingroom-shelves-cornershelves","subcategories":[]},{"id":"home-mandir","name":"Home Mandir","slug":"livingroom-shelves-homemandir","subcategories":[]}]},{"id":"shoe-racks","name":"Shoe Racks","slug":"livingroom-shoeracks","subcategories":[{"id":"shoe-cabinets","name":"Shoe Cabinets","slug":"livingroom-shoeracks-shoecabinets","subcategories":[]},{"id":"open-shoe-racks","name":"Open Shoe Racks","slug":"livingroom-shoeracks-shoeopenshelves","subcategories":[]}]},{"id":"study-work","name":"Study & Work","slug":"livingroom-studyandwork","subcategories":[{"id":"study-office-tables","name":"Study & Office Tables","slug":"livingroom-studyandwork-studyandofficetables","subcategories":[]},{"id":"study-office-chairs","name":"Study & Office Chairs","slug":"livingroom-studyandwork-studyandofficechairs","subcategories":[]}]},{"id":"book-cases-cabinets","name":"Book Cases & Cabinets","slug":"livingroom-bookcaseandcabinets","subcategories":[{"id":"book-cabinets","name":"Book Cabinets","slug":"livingroom-bookcaseandcabinets-bookcabinets","subcategories":[]},{"id":"open-book-shelves","name":"Open Book Shelves","slug":"livingroom-bookcaseandcabinets-openbookshelves","subcategories":[]}]},{"id":"outdoor-furniture","name":"Outdoor Furniture","slug":"outdoor","subcategories":[{"id":"outdoor-seating-tables","name":"Outdoor Seating & Tables","slug":"outdoor-outdoorseatingandtables","subcategories":[]}]},{"id":"ottomans","name":"Ottomans","slug":"livingroom-ottomans","subcategories":[]},{"id":"tea-table-sets","name":"Tea Table Sets","slug":"livingroom-teasets","subcategories":[]}]},{"id":"bedroom","name":"Bedroom","slug":"bedroom","subcategories":[{"id":"beds","name":"Beds","slug":"bedroom-beds","subcategories":[{"id":"king-beds","name":"King Beds","slug":"bedroom-beds-kingbeds","subcategories":[]},{"id":"queen-beds","name":"Queen Beds","slug":"bedroom-beds-queenbeds","subcategories":[]},{"id":"single-beds","name":"Single Beds","slug":"bedroom-beds-singlebeds","subcategories":[]},{"id":"bunk-beds","name":"Bunk Beds","slug":"bedroom-beds-bunkbeds","subcategories":[]}]},{"id":"wardrobes","name":"Wardrobes","slug":"bedroom-wardrobes","subcategories":[{"id":"2-door-wardrobes","name":"2 Door Wardrobes","slug":"bedroom-wardrobes-2doorswingwardrobes","subcategories":[]},{"id":"3-door-wardrobes","name":"3 Door Wardrobes","slug":"bedroom-wardrobes-3doorswingwardrobes","subcategories":[]},{"id":"4-door-wardrobes","name":"4 Door Wardrobes","slug":"bedroom-wardrobes-4doorswingwardrobes","subcategories":[]},{"id":"sliding-wardrobes","name":"Sliding Wardrobes","slug":"bedroom-wardrobes-2doorslidingwardrobes","subcategories":[]}]},{"id":"mattresses","name":"Mattresses","slug":"bedroom-mattresses","subcategories":[{"id":"king-mattresses","name":"King Mattresses","slug":"bedroom-mattresses-kingmattresses","subcategories":[]},{"id":"queen-mattresses","name":"Queen Mattresses","slug":"bedroom-mattresses-queenmattresses","subcategories":[]},{"id":"single-mattresses","name":"Single Mattresses","slug":"bedroom-mattresses-singlemattresses","subcategories":[]}]},{"id":"bed-side-tables","name":"Bed Side Tables","slug":"bedroom-bedsidetables","subcategories":[]},{"id":"chest-of-drawers","name":"Chest of Drawers","slug":"bedroom-chestofdrawers","subcategories":[]},{"id":"dresser-mirrors","name":"Dresser Mirrors","slug":"bedroom-dressermirrors","subcategories":[]}]},{"id":"dining-room","name":"Dining Room","slug":"diningroom","subcategories":[{"id":"dining-sets","name":"Dining Sets","slug":"diningroom-diningtablesets","subcategories":[{"id":"4-seater-dining-sets","name":"4 Seater Dining Sets","slug":"diningroom-diningtablesets-4seaterdiningtablesets","subcategories":[]},{"id":"6-seater-dining-sets","name":"6 Seater Dining Sets","slug":"diningroom-diningtablesets-6seaterdiningtablesets","subcategories":[]},{"id":"8-seater-dining-sets","name":"8 Seater Dining Sets","slug":"diningroom-diningtablesets-8seaterdiningtablesets","subcategories":[]}]},{"id":"dining-tables","name":"Dining Tables","slug":"diningroom-diningtables","subcategories":[{"id":"4-seater-dining-tables","name":"4 Seater Dining Tables","slug":"diningroom-diningtables-4seatertables","subcategories":[]},{"id":"6-seater-dining-tables","name":"6 Seater Dining Tables","slug":"diningroom-diningtables-6seatertables","subcategories":[]},{"id":"8-seater-dining-tables","name":"8 Seater Dining Tables","slug":"diningroom-diningtables-8seatertables","subcategories":[]}]},{"id":"bar-furniture","name":"Bar Furniture","slug":"diningroom-bar","subcategories":[{"id":"bar-cabinet-curios","name":"Bar Cabinet-Curios","slug":"diningroom-bar-barcabinetcurios","subcategories":[]},{"id":"bar-stools-chairs","name":"Bar Stools & Chairs","slug":"diningroom-bar-barstools","subcategories":[]},{"id":"serving-trolleys","name":"Serving Trolleys","slug":"diningroom-bar-servingtrolleys","subcategories":[]}]},{"id":"dining-chairs","name":"Dining Chairs","slug":"diningroom-diningchairs","subcategories":[]},{"id":"dining-benches","name":"Dining Benches","slug":"diningroom-diningbenches","subcategories":[]},{"id":"crockery-units","name":"Crockery Units","slug":"diningroom-crockeryunits","subcategories":[]}]},{"id":"decor","name":"Decor","slug":"decor","subcategories":[{"id":"home-accessories","name":"Home Accessories","slug":"decor-homeaccessories","subcategories":[{"id":"figurines","name":"Figurines","slug":"decor-homeaccessories-figurines","subcategories":[]},{"id":"vases","name":"Vases","slug":"decor-homeaccessories-vases","subcategories":[]},{"id":"table-accents","name":"Table Accents","slug":"decor-homeaccessories-tableaccents","subcategories":[]},{"id":"candle-holders-lanterns","name":"Candle Holders & Lanterns","slug":"decor-homeaccessories-candleholdersandlanterns","subcategories":[]},{"id":"potpourri-bowls-platters","name":"Potpourri Bowls & Platters","slug":"decor-homeaccessories-bowls","subcategories":[]},{"id":"clocks","name":"Clocks","slug":"decor-homeaccessories-clocks","subcategories":[]},{"id":"desk-accessories","name":"Desk Accessories","slug":"decor-homeaccessories-deskaccessories","subcategories":[]},{"id":"gift-accessories","name":"Gift Accessories","slug":"decor-homeaccessories-giftaccessories","subcategories":[]}]},{"id":"lighting","name":"Lighting","slug":"decor-lighting","subcategories":[{"id":"table-lamps","name":"Table Lamps","slug":"decor-lighting-tablelamps","subcategories":[]},{"id":"wall-lamps","name":"Wall Lamps","slug":"decor-lighting-walllamps","subcategories":[]},{"id":"hanging-lamps","name":"Hanging Lamps","slug":"decor-lighting-ceilinglamps","subcategories":[]},{"id":"floor-lamps","name":"Floor Lamps","slug":"decor-lighting-floorlamps","subcategories":[]},{"id":"decorative-lights","name":"Decorative Lights","slug":"decor-lighting-decorativelights","subcategories":[]},{"id":"string-lights","name":"String Lights","slug":"decor-lighting-stringlights","subcategories":[]},{"id":"bulbs","name":"Bulbs","slug":"decor-lighting-bulbs","subcategories":[]}]},{"id":"wall-decor","name":"Wall Decor","slug":"decor-wallaccent","subcategories":[{"id":"wall-accents","name":"Wall Accents","slug":"decor-wallaccent-walldecor","subcategories":[]},{"id":"decorative-mirrors","name":"Decorative Mirrors","slug":"decor-wallaccent-decorativemirrors","subcategories":[]},{"id":"photo-frames","name":"Photo Frames","slug":"decor-wallaccent-photoframes","subcategories":[]},{"id":"posters-paintings","name":"Posters & Paintings","slug":"decor-wallaccent-pictureframes","subcategories":[]}]},{"id":"home-fragrances","name":"Home Fragrances","slug":"decor-homefragrance","subcategories":[{"id":"candles","name":"Candles","slug":"decor-homefragrance-candles","subcategories":[]},{"id":"fragrances-potpourris","name":"Fragrances & Potpourris","slug":"decor-homefragrance-fragranceandpotpourri","subcategories":[]},{"id":"diffusers","name":"Diffusers","slug":"decor-homefragrance-diffusers","subcategories":[]},{"id":"aroma-oils","name":"Aroma Oils","slug":"decor-homefragrance-aromaoil","subcategories":[]},{"id":"room-car-sprays","name":"Room & Car Sprays","slug":"decor-homefragrance-roomsprays","subcategories":[]}]},{"id":"garden","name":"Garden","slug":"decor-garden","subcategories":[{"id":"artificial-plants-flowers","name":"Artificial Plants & Flowers","slug":"decor-garden-artificialplantsandflowers","subcategories":[]},{"id":"pots-planters","name":"Pots & Planters","slug":"decor-garden-potsandplanters","subcategories":[]},{"id":"fountains","name":"Fountains","slug":"decor-garden-indoorandoutdoorfountains","subcategories":[]}]}]},{"id":"kitchen","name":"Kitchen","slug":"kitchen","subcategories":[{"id":"storage-containers","name":"Storage & Containers","slug":"kitchen-storageandcontainers","subcategories":[{"id":"containers-jars","name":"Containers & Jars","slug":"kitchen-storageandcontainers-containersandjars","subcategories":[]},{"id":"bottles","name":"Bottles","slug":"kitchen-storageandcontainers-bottles","subcategories":[]},{"id":"flasks","name":"Flasks","slug":"kitchen-storageandcontainers-flask","subcategories":[]},{"id":"lunch-boxes-bags","name":"Lunch Boxes & Bags","slug":"kitchen-storageandcontainers-lunchboxandbags","subcategories":[]},{"id":"kitchen-organisers","name":"Kitchen Organisers","slug":"kitchen-storageandcontainers-organisers","subcategories":[]}]},{"id":"cookware","name":"Cookware","slug":"kitchen-cooking","subcategories":[{"id":"cookware-sets","name":"Cookware Sets","slug":"kitchen-cooking-cookwaresets","subcategories":[]},{"id":"induction-cookware","name":"Induction Cookware","slug":"kitchen-cooking-inductioncookware","subcategories":[]},{"id":"pots-pans","name":"Pots & Pans","slug":"kitchen-cooking-potsandpans","subcategories":[]},{"id":"kadhai-woks","name":"Kadhai & Woks","slug":"kitchen-cooking-kadhaiandwoks","subcategories":[]},{"id":"cooking-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-cooking-toolsandgadgets","subcategories":[]},{"id":"pressure-cookers","name":"Pressure Cookers","slug":"kitchen-cooking-pressurecookers","subcategories":[]},{"id":"tawas","name":"Tawas","slug":"kitchen-cooking-tawas","subcategories":[]}]},{"id":"kitchenware","name":"Kitchenware","slug":"kitchen-kitchenware","subcategories":[{"id":"kitchen-trolleys","name":"Kitchen Trolleys","slug":"kitchen-kitchenware-kitchentrolley","subcategories":[]},{"id":"knives-scissors","name":"Knives & Scissors","slug":"kitchen-kitchenware-knivesandscissors","subcategories":[]},{"id":"casseroles","name":"Casseroles","slug":"kitchen-kitchenware-casseroles","subcategories":[]},{"id":"oil-vinegar-servers","name":"Oil & Vinegar Servers","slug":"kitchen-kitchenware-oilandvinegarserver","subcategories":[]},{"id":"utensil-holders","name":"Utensil Holders","slug":"kitchen-kitchenware-utensilholders","subcategories":[]},{"id":"chopping-boards","name":"Chopping Boards","slug":"kitchen-kitchenware-choppingboards","subcategories":[]},{"id":"dish-racks","name":"Dish Racks","slug":"kitchen-kitchenware-dishracks","subcategories":[]},{"id":"fruit-baskets","name":"Fruit Baskets","slug":"kitchen-kitchenware-fruitstands","subcategories":[]},{"id":"strainers-colanders","name":"Strainers & Colanders","slug":"kitchen-kitchenware-strainersandcolanders","subcategories":[]},{"id":"kitchenware-tools-gadgets","name":"Tools & Gadgets","slug":"kitchen-kitchenware-toolsandgadgets","subcategories":[]}]},{"id":"kitchen-linen","name":"Kitchen Linen","slug":"kitchen-kitchenlinens","subcategories":[{"id":"aprons","name":"Aprons","slug":"kitchen-kitchenlinens-aprons","subcategories":[]},{"id":"pot-holders-mittens","name":"Pot Holders & Mittens","slug":"kitchen-kitchenlinens-potholders","subcategories":[]},{"id":"kitchen-towels","name":"Kitchen Towels","slug":"kitchen-kitchenlinens-kitchentowels","subcategories":[]}]},{"id":"bakeware","name":"Bakeware","slug":"kitchen-bakeware","subcategories":[]},{"id":"kitchen-appliances","name":"Kitchen Appliances","slug":"kitchen-appliances","subcategories":[]}]},{"id":"furnishings","name":"Furnishings","slug":"furnishing","subcategories":[{"id":"bedding","name":"Bedding","slug":"furnishing-bedding","subcategories":[{"id":"double-bedsheets","name":"Double Bedsheets","slug":"furnishing-bedding-doublebedsheets","subcategories":[]},{"id":"single-bedsheets","name":"Single Bedsheets","slug":"furnishing-bedding-singlebedsheets","subcategories":[]},{"id":"bedding-sets","name":"Bedding Sets","slug":"furnishing-bedding-beddingsets","subcategories":[]},{"id":"pillows-pillow-covers","name":"Pillows & Pillow Covers","slug":"furnishing-bedding-pillowsandpillowcovers","subcategories":[]},{"id":"blankets-quilts","name":"Blankets & Quilts","slug":"furnishing-bedding-blanketsandquilts","subcategories":[]},{"id":"comforters","name":"Comforters","slug":"furnishing-bedding-comforters","subcategories":[]},{"id":"throws","name":"Throws","slug":"furnishing-bedding-throws","subcategories":[]},{"id":"duvets-duvet-covers","name":"Duvets & Duvet Covers","slug":"furnishing-bedding-duvetandduvetcovers","subcategories":[]},{"id":"dohars","name":"Dohars","slug":"furnishing-bedding-dohars","subcategories":[]},{"id":"bed-covers","name":"Bed Covers","slug":"furnishing-bedding-bedcovers","subcategories":[]}]},{"id":"cushions","name":"Cushions","slug":"furnishing-cushions","subcategories":[{"id":"cushion-covers","name":"Cushion Covers","slug":"furnishing-cushions-cushioncovers","subcategories":[]},{"id":"filled-cushions","name":"Filled Cushions","slug":"furnishing-cushions-filledcushions","subcategories":[]},{"id":"cushion-fillers","name":"Cushion Fillers","slug":"furnishing-cushions-cushionfilling","subcategories":[]},{"id":"floor-cushions","name":"Floor Cushions","slug":"furnishing-cushions-floorcushions","subcategories":[]}]},{"id":"curtains-blinds","name":"Curtains & Blinds","slug":"furnishing-curtains","subcategories":[{"id":"door-curtains","name":"Door Curtains","slug":"furnishing-curtains-doorcurtains","subcategories":[]},{"id":"window-curtains","name":"Window Curtains","slug":"furnishing-curtains-windowcurtains","subcategories":[]},{"id":"blinds","name":"Blinds","slug":"furnishing-curtains-blinds","subcategories":[]},{"id":"rods-accessories","name":"Rods & Accessories","slug":"furnishing-curtains-rodsandaccessories","subcategories":[]}]},{"id":"accessories","name":"Accessories","slug":"furnishing-accessories","subcategories":[{"id":"bags","name":"Bags","slug":"furnishing-accessories-bags","subcategories":[]},{"id":"pads-mats","name":"Pads & Mats","slug":"furnishing-accessories-padsandmats","subcategories":[]},{"id":"sofa-covers","name":"Sofa Covers","slug":"furnishing-accessories-sofacovers","subcategories":[]}]},{"id":"floor-coverings","name":"Floor Coverings","slug":"furnishing-floorcoverings","subcategories":[{"id":"carpets-rugs","name":"Carpets & Rugs","slug":"furnishing-floorcoverings-carpets","subcategories":[]},{"id":"dhurries","name":"Dhurries","slug":"furnishing-floorcoverings-dhurries","subcategories":[]},{"id":"doormats","name":"Doormats","slug":"furnishing-floorcoverings-doormats","subcategories":[]}]}]},{"id":"tableware","name":"Tableware","slug":"dining","subcategories":[{"id":"serving","name":"Serving","slug":"dining-serving","subcategories":[{"id":"trays-platters","name":"Trays & Platters","slug":"dining-serving-traysandplatters","subcategories":[]},{"id":"glasses-jugs","name":"Glasses & Jugs","slug":"dining-serving-glassesandjugs","subcategories":[]},{"id":"bar-accessories","name":"Bar Accessories","slug":"dining-serving-baraccessories","subcategories":[]},{"id":"salt-pepper-shakers","name":"Salt & Pepper Shakers","slug":"dining-serving-saltandpeppershakers","subcategories":[]},{"id":"chip-dip","name":"Chip & Dip","slug":"dining-serving-chipanddip","subcategories":[]}]},{"id":"crockery","name":"Crockery","slug":"dining-crockery","subcategories":[{"id":"bowls","name":"Bowls","slug":"dining-crockery-bowls","subcategories":[]},{"id":"plates","name":"Plates","slug":"dining-crockery-plates","subcategories":[]},{"id":"mugs","name":"Mugs","slug":"dining-crockery-mugsandcups","subcategories":[]},{"id":"cups-saucers","name":"Cups & Saucers","slug":"dining-crockery-cupsandsaucers","subcategories":[]},{"id":"pots-kettles","name":"Pots & Kettles","slug":"dining-crockery-potsandkettles","subcategories":[]},{"id":"dinner-sets","name":"Dinner Sets","slug":"dining-crockery-dinnersets","subcategories":[]}]},{"id":"cutlery","name":"Cutlery","slug":"dining-cutlery","subcategories":[{"id":"spoons","name":"Spoons","slug":"dining-cutlery-spoons","subcategories":[]},{"id":"cutlery-sets","name":"Cutlery & Cutlery Sets","slug":"dining-cutlery-cutlerysets","subcategories":[]},{"id":"cutlery-holders","name":"Cutlery Holders","slug":"dining-cutlery-cutleryholders","subcategories":[]}]},{"id":"table-linens","name":"Table Linens","slug":"dining-tableaccessories","subcategories":[{"id":"placemats","name":"Placemats","slug":"dining-tableaccessories-placemats","subcategories":[]},{"id":"table-runners","name":"Table Runners","slug":"dining-tableaccessories-tablerunners","subcategories":[]},{"id":"table-cloths","name":"Table Cloths","slug":"dining-tableaccessories-tablecloths","subcategories":[]},{"id":"trivets-coasters","name":"Trivets & Coasters","slug":"dining-tableaccessories-trivetandcoasters","subcategories":[]},{"id":"tissue-holders","name":"Tissue Holders","slug":"dining-tableaccessories-tissueholders","subcategories":[]}]}]},{"id":"bath-laundry","name":"Bath & Laundry","slug":"bathandlaundry","subcategories":[{"id":"bath-linen","name":"Bath Linen","slug":"bathandlaundry-bath","subcategories":[{"id":"towels","name":"Towels","slug":"bathandlaundry-bath-towel","subcategories":[]},{"id":"robes","name":"Robes","slug":"bathandlaundry-bath-robes","subcategories":[]},{"id":"bathmats","name":"Bathmats","slug":"bathandlaundry-bath-bathmats","subcategories":[]}]},{"id":"bath-accessories","name":"Bath Accessories","slug":"bathandlaundry-bathaccessories","subcategories":[{"id":"holders-tumblers","name":"Holders & Tumblers","slug":"bathandlaundry-bathaccessories-holdersandtumblers","subcategories":[]},{"id":"soap-dispensers","name":"Soap Dispensers","slug":"bathandlaundry-bathaccessories-soapdispensers","subcategories":[]},{"id":"soap-dishes","name":"Soap Dishes","slug":"bathandlaundry-bathaccessories-soapdishes","subcategories":[]},{"id":"bath-sets","name":"Bath Sets","slug":"bathandlaundry-bathaccessories-accessorysets","subcategories":[]},{"id":"storage-mirrors","name":"Storage & Mirrors","slug":"bathandlaundry-bathaccessories-storageandmirrors","subcategories":[]},{"id":"towel-holders","name":"Towel Holders","slug":"bathandlaundry-bathaccessories-towelholders","subcategories":[]},{"id":"toilet-accessories","name":"Toilet Accessories","slug":"bathandlaundry-bathaccessories-toiletpaperandbrushholders","subcategories":[]},{"id":"shower-curtains","name":"Shower Curtains","slug":"bathandlaundry-bathaccessories-showercurtains","subcategories":[]},{"id":"bath-stools","name":"Bath Stools","slug":"bathandlaundry-bathaccessories-bathstools","subcategories":[]}]},{"id":"laundry","name":"Laundry","slug":"bathandlaundry-laundry","subcategories":[{"id":"laundry-storage-baskets","name":"Laundry Storage & Baskets","slug":"bathandlaundry-laundry-storage","subcategories":[]},{"id":"cleaning-accessories","name":"Cleaning Accessories","slug":"bathandlaundry-laundry-cleaningaccessories","subcategories":[]},{"id":"dustbins","name":"Dustbins","slug":"bathandlaundry-laundry-dustbins","subcategories":[]},{"id":"cloth-dryers","name":"Cloth Dryers","slug":"bathandlaundry-laundry-clothdryers","subcategories":[]},{"id":"hangers-hooks","name":"Hangers & Hooks","slug":"bathandlaundry-laundry-hangersandhooks","subcategories":[]}]}]},{"id":"gifting","name":"Gifting","slug":"gifts","subcategories":[{"id":"housewarming-gifts","name":"Housewarming Gifts","slug":"gifts-housewarminggifts","subcategories":[]},{"id":"wedding-gifts","name":"Wedding Gifts","slug":"gifts-weddinggifts","subcategories":[]},{"id":"anniversary-gifts","name":"Anniversary Gifts","slug":"gifts-anniversarygifts","subcategories":[]},{"id":"birthday-gifts","name":"Birthday Gifts","slug":"gifts-birthdaygifts","subcategories":[]},{"id":"gifts-for-him","name":"Gifts for Him","slug":"gifts-giftsforhim","subcategories":[]},{"id":"gifts-for-her","name":"Gifts for Her","slug":"gifts-giftsforher","subcategories":[]},{"id":"festive-gifts","name":"Festive Gifts","slug":"gifts-festivegifts","subcategories":[{"id":"ganesh-chaturthi","name":"Ganesh Chaturthi","slug":"gifts-festivegifts-ganeshchaturthigifts","subcategories":[]}]},{"id":"special-occasions","name":"Special Occasions","slug":"gifts-specialoccasiongifts","subcategories":[]}]}];
-const BUILD = "14 Nov 02:19";
+const BUILD = "14 Nov 15:46";
 let TAXONOMY = DEFAULT_TAX;
 const bySlug = {}; // slug -> {cat,sub,type}
 function reindex(){
@@ -498,8 +501,8 @@ window.openCamera=async function(onShot){
 const configured = firebaseConfig && firebaseConfig.apiKey && !/YOUR_/.test(firebaseConfig.apiKey);
 let app,auth,db;
 const S = {user:null,profile:null,settings:{storeName:"My Store",mode:"full",invoicePrefix:"INV",address:"",phone:"",gstin:"",footer:"Thank you for shopping with us!",allowNegative:false},
-  products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",type:"",dim:"",loc:"",vendor:"",stock:"all",sort:"name",limit:100},sel:null,
-  lists:{...DEFAULT_LISTS},vendors:[],purchases:[],vpays:[],pcart:[],pchg:[],pq:"",vf:{q:"",cat:"",pay:false},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:"",bal:""},bf:{q:"",status:"booked",due:false},detailCust:null,detailBk:null,
+  products:[],sales:[],moves:[],users:[],view:"dashboard",pf:{q:"",cat:"",sub:"",type:"",dim:"",cf:"",ct:"",mf:"",mt:"",loc:"",vendor:"",stock:"all",sort:"name",limit:100},sel:null,
+  lists:{...DEFAULT_LISTS},labelLayouts:{},vendors:[],purchases:[],vpays:[],pcart:[],pchg:[],pq:"",vf:{q:"",cat:"",pay:false},detailVendor:null,perms:JSON.parse(JSON.stringify(DEFAULT_PERMS)),detailId:null,customers:[],bookings:[],payments:[],requests:[],rq:{status:"pending"},cf:{q:"",bal:""},bf:{q:"",status:"booked",due:false},detailCust:null,detailBk:null,
   bcart:[],bcustId:"",bphone:"",bname:"",badv:0,bpays:null,bdisc:0,bdiscType:"amt",bdate:"",bnotes:"",bq:"",saleOn:"",bookedOn:"",cart:[],cartDiscount:0,cartDiscType:"amt",posQ:"",pays:null,
   nav:[],shop:null,brands:[],salesReturns:[],enquiries:[],ecart:[],ecustId:"",ephone:"",ename:"",edisc:0,ediscType:"amt",enote:"",eq:"",efollow:"",esrc:"",
   ef:{q:"",status:"open",due:false},detailEnq:null,fromEnq:"",
@@ -614,6 +617,8 @@ function startListeners(){
   on(doc(db,"settings","store"),s=>{if(s.exists())S.settings={...S.settings,...s.data()};render()});
   on(doc(db,"settings","taxonomy"),s=>{let t=DEFAULT_TAX;if(s.exists()){try{t=JSON.parse(s.data().json)}catch(e){}}TAXONOMY=t;reindex();render(true)});
   on(doc(db,"settings","lists"),s=>{S.lists={...DEFAULT_LISTS,...(s.exists()?s.data():{})};render(true)});
+  // label layouts saved per type, sub-category or category (admin writes; staff read)
+  on(doc(db,"settings","labelLayouts"),s=>{S.labelLayouts=s.exists()?s.data():{}});
   on(doc(db,"settings","perms"),s=>{const d=s.exists()?s.data():{};
     S.perms={manager:{...DEFAULT_PERMS.manager,...(d.manager||{})},sales:{...DEFAULT_PERMS.sales,...(d.sales||{})}};render(true)});
   on(collection(db,"products"),s=>{S.products=s.docs.map(d=>({id:d.id,...d.data()}));render(true)});
@@ -767,8 +772,8 @@ window.enqTo=(what)=>{S.ef={q:"",status:what==="won"?"won":"open",due:what==="du
 window.custTo=(what)=>{S.cf={...S.cf,q:"",bal:what||""};setView("customers")};
 window.vendTo=(what)=>{
   if(what==="pay"){S.vf={...S.vf,q:"",pay:true};return setView("vendors")}
-  if(what==="low"){S.pf={...S.pf,q:"",cat:"",sub:"",type:"",dim:"",loc:"",vendor:"",stock:"lowout",limit:100};return setView("products")}
-  S.pf={...S.pf,q:"",cat:"",sub:"",type:"",dim:"",loc:"",vendor:"",stock:"all",limit:100};setView("products");
+  if(what==="low"){S.pf={...S.pf,q:"",cat:"",sub:"",type:"",dim:"",cf:"",ct:"",mf:"",mt:"",loc:"",vendor:"",stock:"lowout",limit:100};return setView("products")}
+  S.pf={...S.pf,q:"",cat:"",sub:"",type:"",dim:"",cf:"",ct:"",mf:"",mt:"",loc:"",vendor:"",stock:"all",limit:100};setView("products");
 };
 /* Tiles whose detail is further down the same page just take you to it. */
 window.scrollToCard=title=>{
@@ -776,8 +781,8 @@ window.scrollToCard=title=>{
   if(c)c.scrollIntoView({behavior:"smooth",block:"start"});
 };
 window.dashTo=what=>{
-  if(what==="products"){S.pf={...S.pf,q:"",cat:"",sub:"",type:"",dim:"",loc:"",vendor:"",stock:"all",limit:100};return setView("products")}
-  if(what==="out"){S.pf={...S.pf,q:"",cat:"",sub:"",type:"",dim:"",loc:"",vendor:"",stock:"out",limit:100};return setView("products")}
+  if(what==="products"){S.pf={...S.pf,q:"",cat:"",sub:"",type:"",dim:"",cf:"",ct:"",mf:"",mt:"",loc:"",vendor:"",stock:"all",limit:100};return setView("products")}
+  if(what==="out"){S.pf={...S.pf,q:"",cat:"",sub:"",type:"",dim:"",cf:"",ct:"",mf:"",mt:"",loc:"",vendor:"",stock:"out",limit:100};return setView("products")}
   if(what==="bookings"){S.bf={q:"",status:"booked"};return setView("bookings")}
   if(what==="enquiries"){S.ef={q:"",status:"open"};return setView("enquiries")}
   if(what==="today"){S.salesRange="day";S.salesDay=dkey();return setView("sales")}
@@ -819,6 +824,44 @@ function vDash(el){
 }
 
 /* ---------- Products ---------- */
+/* Day keys and display dates for when a product was created and last changed (stock moves count as a change). */
+const pdk=ts=>ts?dkey(new Date(tms(ts))):"";
+const pdd=ts=>ts?new Date(tms(ts)).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):"—";
+/* A barcode, QR code or SKU typed or scanned into the search box: an exact match is the product itself. */
+const findByCode=v=>{const lc=String(v||"").trim().toLowerCase();if(!lc)return null;
+  return S.products.find(p=>(p.barcode&&String(p.barcode).toLowerCase()===lc)||String(p.sku||"").toLowerCase()===lc)||null};
+/* Enter in the search box (a hardware scanner sends Enter after the code). Exact code: open the product,
+   or add it when a cart is being filled. Anything else stays as a search. */
+function codeEnter(v){
+  const code=String(v||"").trim();if(!code)return;
+  const p=findByCode(code);
+  if(p&&!S.shop){openHash("product/"+encodeURIComponent(p.id));return}
+  if(p){window[SHOP[S.shop].add](p.id);toast(`${p.name} added`);S.pf.q=""}
+  else S.pf.q=code;
+  render();
+}
+/* Camera barcode/QR reading, where the browser offers the Barcode Detector. */
+window.scanCode=async function(){
+  if(!window.BarcodeDetector||!navigator.mediaDevices?.getUserMedia)
+    return toast("This browser can't read barcodes with the camera. Type the code, or use a barcode scanner in the search box.",1);
+  let det;try{det=new BarcodeDetector({formats:["qr_code","code_128","code_39","ean_13","ean_8","upc_a","upc_e"]})}
+  catch(e){return toast("Barcode reading isn't available here",1)}
+  $("#modal2").innerHTML=`<div class="modal-bg top"><div class="modal" style="max-width:520px"><h3>Scan a barcode or QR code</h3>
+   <div class="cam-wrap"><video id="cam-v" playsinline muted autoplay></video></div>
+   <p class="small mute" id="cam-msg" style="margin-top:8px">Point the camera at the code. The product is found as soon as it is read.</p>
+   <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn sec" onclick="closeCamera()">Cancel</button></div></div></div>`;
+  try{await camStart()}
+  catch(e){const m=$("#cam-msg");if(m)m.innerHTML=`<span style="color:var(--bad)">Couldn't open the camera (${esc(e?.name||"error")}). Type the code or use a barcode scanner instead.</span>`;return}
+  const v=$("#cam-v");
+  const tick=async()=>{
+    if(!$("#cam-v"))return;                       // Cancel closed the camera
+    let code="";
+    try{if(v.readyState>=2){const hits=await det.detect(v);if(hits.length)code=hits[0].rawValue||""}}catch(e){}
+    if(code){closeCamera();codeEnter(code);return}
+    setTimeout(tick,250);
+  };
+  tick();
+};
 function filteredProducts(){
   const f=S.pf,q=dimNorm(f.q).toLowerCase();
   let L=S.products.filter(p=>{
@@ -827,6 +870,9 @@ function filteredProducts(){
     if(f.vendor&&norm(vend(p))!==norm(f.vendor))return false;
     if(f.dim&&dimText(p).toLowerCase()!==dimNorm(f.dim).toLowerCase())return false;
     if(f.cat&&p.categoryId!==f.cat)return false;if(f.sub&&p.subcategoryId!==f.sub)return false;if(f.type&&p.typeId!==f.type)return false;
+    // date created / date modified, as day keys so a range is a plain string comparison; no date means it fails a date filter
+    if(f.cf||f.ct){const d=pdk(p.createdAt);if(!d||(f.cf&&d<f.cf)||(f.ct&&d>f.ct))return false}
+    if(f.mf||f.mt){const d=pdk(p.updatedAt);if(!d||(f.mf&&d<f.mf)||(f.mt&&d>f.mt))return false}
     if(f.stock==="low"&&!lowStock(p))return false;if(f.stock==="out"&&!outStock(p))return false;if(f.stock==="in"&&outStock(p))return false;
     if(f.stock==="lowout"&&!(lowStock(p)||outStock(p)))return false;
     return true});
@@ -876,6 +922,7 @@ function pcard(p){
    <div class="pwrap">${picking?`<span class="pcheck">${on?"✓":""}</span>`:""}${cardImg(p)}${np>1?`<span class="pcount">📷 ${np}</span>`:""}</div><div class="pb">
    ${picking?`<span class="pn">${esc(p.name)}</span>`:`<a class="pn" href="${href}" onclick="event.stopPropagation()">${esc(p.name)}</a>`}
    <div class="sku">${esc(p.sku)}</div>
+   <div class="small mute pdates">Created ${pdd(p.createdAt)} · Modified ${pdd(p.updatedAt)}</div>
    ${S.settings.cardSale===false?"":`<div class="pr"><b>Sale ${inr(p.price)}</b></div>`}
    ${S.settings.cardMrp===false?"":`<div class="pr mrp">MRP ${inr(p.mrp??p.price)}</div>`}
    ${can("seeCost")&&S.settings.cardCost!==false?`<div class="pr cost">Cost ${inr(p.cost)}</div>`:""}
@@ -910,7 +957,10 @@ function vProducts(el){
       <button class="btn sm sec" onclick="selOff()">Done</button></span></div>`})()
    :""}
   <div class="card" style="margin-bottom:12px"><div class="f filters">
-   <div class="full"><input id="pf-q" placeholder="Search name, SKU, barcode, ${can("seeVendor")?"vendor, ":""}size, location…" value="${esc(f.q)}"></div>
+   <div class="full scanrow"><input id="pf-q" placeholder="Search name, SKU, barcode or QR, ${can("seeVendor")?"vendor, ":""}size, location…" value="${esc(f.q)}"><button class="btn sec" type="button" onclick="scanCode()" title="Read a barcode or QR code with the camera">📷 Scan</button></div>
+   <div class="full datef"><span class="small mute">Created</span><input type="date" id="pf-cf" value="${esc(f.cf)}" title="Created from"><span class="small mute">to</span><input type="date" id="pf-ct" value="${esc(f.ct)}" title="Created to">
+    <span class="small mute">Modified</span><input type="date" id="pf-mf" value="${esc(f.mf)}" title="Modified from"><span class="small mute">to</span><input type="date" id="pf-mt" value="${esc(f.mt)}" title="Modified to">
+    ${f.cf||f.ct||f.mf||f.mt?`<button class="btn sm sec" type="button" onclick="S.pf={...S.pf,cf:'',ct:'',mf:'',mt:'',limit:100};render()">Clear dates</button>`:""}</div>
    <select id="pf-cat">${catOptions(f.cat)}</select><select id="pf-sub">${subOptions(f.cat,f.sub)}</select>
    ${tOpts?`<select id="pf-type">${tOpts}</select>`:""}
    <select id="pf-loc"><option value="">All locations</option>${locs.map(x=>`<option ${f.loc.toLowerCase()===x.toLowerCase()?"selected":""}>${esc(x)}</option>`).join("")}</select>
@@ -927,7 +977,10 @@ function vProducts(el){
     if(k==="type"&&e.value){const tp=typePath(e.value);if(tp){S.pf.cat=tp.cat;S.pf.sub=tp.sub}} // a type brings its category and subcategory
     render()}};
   const q=$("#pf-q");q.oninput=()=>{S.pf.q=q.value;S.pf.limit=100;clearTimeout(vProducts.t);vProducts.t=setTimeout(()=>{render();const n=$("#pf-q");n.focus();n.setSelectionRange(n.value.length,n.value.length)},180)};
+  // Enter comes straight after a scanner's last character, so it must cancel the pending search render
+  q.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();clearTimeout(vProducts.t);codeEnter(q.value)}};
   bind("#pf-cat","cat",1);bind("#pf-sub","sub",2);if($("#pf-type"))bind("#pf-type","type");bind("#pf-loc","loc");if($("#pf-vend"))bind("#pf-vend","vendor");if($("#pf-dim"))bind("#pf-dim","dim");bind("#pf-stock","stock");bind("#pf-sort","sort");
+  bind("#pf-cf","cf");bind("#pf-ct","ct");bind("#pf-mf","mf");bind("#pf-mt","mt");
 }
 function vProduct(el){
   const p=S.products.find(x=>x.id===S.detailId);
@@ -1051,9 +1104,9 @@ window.openLogoUpload=(id,title)=>{
     $("#lg-body").classList.remove("hide");$("#lg-save").disabled=false;
     $("#lg-col").innerHTML=`<img src="${cur.color}" alt="">`;
     $("#lg-mono").innerHTML=`<img src="${await fitLogo({color:cur.color,threshold:thr},labelGeom({w:50,h:30}).box)}" alt="" style="image-rendering:pixelated;width:100%">`;
-    try{await loadJsBarcode()}catch(e){}
+    try{await loadQR()}catch(e){}
     const so={layout:"roll",w:50,h:30,price:true},lgx=await fitLogo({color:cur.color,threshold:thr},labelGeom(so).box);
-    drawLabelPreview($("#lg-prev"),"lg-frame",labelsHTML([sample],{...so,logo:lgx,noprint:true},barcodeSVG),50,30,true);
+    drawLabelPreview($("#lg-prev"),"lg-frame",labelsHTML([sample],{...so,logo:lgx,noprint:true},qrSVG),50,30,true);
   };
   $("#lg-f").onchange=async e=>{const f=e.target.files[0];if(!f)return;
     if(f.size>8e6)return toast("That file is over 8 MB — use a smaller one",1);
@@ -1145,7 +1198,7 @@ window.openProduct=function(id,preset){
    <div><label>Brand</label><div class="row" style="flex-wrap:nowrap"><select id="p-brand"><option value="">—</option>${
      brandsSorted().map(b=>`<option value="${b.id}" ${brandOf(p)?.id===b.id?"selected":""}>${esc(b.name)}</option>`).join("")
    }</select><button class="btn sec sm" type="button" id="p-brandadd" title="Add a brand">＋</button></div></div>
-   <div><label>MRP (₹)</label><input id="p-mrp" type="number" step="0.01" value="${p.mrp??""}"></div>
+   <div><label>MRP (₹)</label><input id="p-mrp" type="number" step="0.01" value="${p.mrp??""}" data-auto="${p.mrp==null||p.mrp===""||+p.mrp===+p.price?1:0}"><div id="p-mrpmsg" class="small mute" style="margin-top:3px"></div></div>
    <div><label>Selling price (₹) *</label><input id="p-price" type="number" step="0.01" value="${p.price??""}"></div>
    <div><label>Cost price (₹)</label><input id="p-cost" type="number" step="0.01" value="${p.cost??""}"></div>
    <div><label>GST % (included in price)</label><select id="p-gst">${withCur(S.lists.gstRates.map(Number),p.gst==null?p.gst:+p.gst).map(g=>`<option ${+p.gst===+g?"selected":""}>${g}</option>`).join("")}</select></div>
@@ -1215,6 +1268,18 @@ window.openProduct=function(id,preset){
     sel.value=have?have.value:v;
     if(!S.lists.locations.some(x=>String(x).toLowerCase()===v.toLowerCase())){try{await saveList("locations",[...S.lists.locations,v].sort(natcmp));toast("Location added")}catch(e){toast(emsg(e),1)}}
   };
+  /* MRP follows the selling price until an MRP of its own is typed. It can be the same as the price
+     or higher, never lower: a lower MRP is shown here and the product is not saved. */
+  const mrpIn=$("#p-mrp"),priceIn=$("#p-price");
+  const mrpCheck=()=>{const m=mrpIn.value,pr=priceIn.value,msg=$("#p-mrpmsg");
+    const bad=m!==""&&pr!==""&&+m<+pr;
+    mrpIn.style.borderColor=bad?"var(--warn)":"";
+    msg.style.color=bad?"var(--warn)":"";
+    msg.textContent=bad?"MRP cannot be lower than the selling price":(m===""||m===pr?"Copied from the selling price until you enter an MRP":"");
+    return !bad};
+  priceIn.oninput=()=>{if(mrpIn.dataset.auto==="1")mrpIn.value=priceIn.value;mrpCheck()};
+  mrpIn.oninput=()=>{mrpIn.dataset.auto=(mrpIn.value===""||+mrpIn.value===+priceIn.value)?"1":"0";mrpCheck()};
+  mrpCheck();
   $("#p-save").onclick=()=>saveProduct(id);
   $("#p-del")&&($("#p-del").onclick=async()=>{if(!confirm("Delete this product permanently? Sales history is kept."))return;const gone=S.products.find(x=>x.id===id)||{};
     await deleteDoc(doc(db,"products",id));
@@ -1227,6 +1292,7 @@ async function saveProduct(id){
   if(!name||!sku||!cid)return toast("Name, SKU and category are required",1);
   if(S.products.some(x=>x.sku.toLowerCase()===sku.toLowerCase()&&x.id!==id))return toast("SKU already exists",1);
   if(v("#p-price")==="")return toast("Selling price is required",1);
+  if(v("#p-mrp")!==""&&+v("#p-mrp")<+v("#p-price"))return toast("MRP cannot be lower than the selling price",1);
   const old=S.products.find(x=>x.id===id)||{};
   const cat=TAXONOMY.find(c=>c.id===cid),sub=cat.subcategories.find(s=>s.id===v("#p-sub")),type=sub?.subcategories.find(t=>t.id===v("#p-type"));
   const imageUrl=v("#p-imgurl");
@@ -1246,7 +1312,7 @@ async function saveProduct(id){
     subcategoryId:sub?.id||"",subcategoryName:sub?.name||"",subcategorySlug:sub?.slug||"",
     typeId:type?.id||"",typeName:type?.name||"",typeSlug:type?.slug||"",
     fullSlug:(type||sub||cat).slug,imageUrl,hasImage,photoCount:nPhotos,
-    mrp:num(v("#p-mrp"))||num(v("#p-price")),price:num(v("#p-price")),cost:num(v("#p-cost")),gst:num(v("#p-gst")),
+    mrp:v("#p-mrp")===""?num(v("#p-price")):num(v("#p-mrp")),price:num(v("#p-price")),cost:num(v("#p-cost")),gst:num(v("#p-gst")),
     dimension:dimNorm(v("#p-dim")),dimUnit:dimNorm(v("#p-dim"))?v("#p-dimunit"):"",
     reorder:$("#p-re")?num(v("#p-re")):num(old.reorder),unit:v("#p-unit"),location:v("#p-loc"),description:v("#p-desc"),active:true,
     updatedAt:serverTimestamp(),updatedBy:S.user.uid};
@@ -4232,7 +4298,7 @@ window.scanInto=(k,v)=>{
   const hits=exact?[exact]:S.products.filter(p=>`${p.name} ${p.sku} ${p.barcode||""}`.toLowerCase().includes(lc));
   if(hits.length===1){window[SHOP[k].add](hits[0].id);toast(`${hits[0].name} added`);return true}
   if(!hits.length){toast("Nothing matches "+q,1);return false}
-  S.pf={...S.pf,q,cat:"",sub:"",type:"",dim:"",loc:"",vendor:"",stock:"all",limit:100};
+  S.pf={...S.pf,q,cat:"",sub:"",type:"",dim:"",cf:"",ct:"",mf:"",mt:"",loc:"",vendor:"",stock:"all",limit:100};
   shopStart(k);
   return false;
 };
@@ -4340,11 +4406,11 @@ async function applyBulkLocation(ids,to,mode){
   }catch(e){toast(emsg(e),1);if(btn){btn.disabled=false;btn.textContent="Apply"}}
 }
 window.filterToVendor=(name,stock)=>{
-  S.pf={...S.pf,q:"",cat:"",sub:"",type:"",dim:"",loc:"",vendor:name,stock:stock||"all",limit:100};
+  S.pf={...S.pf,q:"",cat:"",sub:"",type:"",dim:"",cf:"",ct:"",mf:"",mt:"",loc:"",vendor:name,stock:stock||"all",limit:100};
   setView("products");
 };
 window.filterTo=(key,id)=>{
-  S.pf={q:"",cat:"",sub:"",type:"",dim:"",loc:"",vendor:"",stock:"all",sort:"name",limit:100};
+  S.pf={q:"",cat:"",sub:"",type:"",dim:"",cf:"",ct:"",mf:"",mt:"",loc:"",vendor:"",stock:"all",sort:"name",limit:100};
   for(const c of TAXONOMY){if(c.id===id&&key==="categoryId")S.pf.cat=c.id;
     for(const s of c.subcategories){if(s.id===id&&key==="subcategoryId"){S.pf.cat=c.id;S.pf.sub=s.id}
       for(const t of s.subcategories)if(t.id===id){S.pf.cat=c.id;S.pf.sub=s.id;S.pf.type=t.id}}}
@@ -4841,6 +4907,8 @@ window.openImport=(kind="products")=>{
         if(/^example\b/i.test(r.name||"")){skipped++;return}
         if(!r.sku||!r.name)return bad.push(`Row ${r._row}: sku and name are required`);
         if(r.price===undefined||r.price==="")return bad.push(`Row ${r._row} (${r.sku}): price is missing`);
+        const hasMrp=!(r.mrp==null||r.mrp==="");
+        if(hasMrp&&num(r.mrp)<num(r.price))return bad.push(`Row ${r._row} (${r.sku}): MRP is lower than the selling price`);
         if(r.barcode){const o=S.products.find(p=>p.barcode===r.barcode&&p.sku.toLowerCase()!==String(r.sku).toLowerCase());if(o)return bad.push(`Row ${r._row} (${r.sku}): barcode already used by ${o.sku}`)}
         const m=resolveCategory(r);if(m.err)return bad.push(`Row ${r._row} (${r.sku}): ${m.err}`);
         good.push({r,m});
@@ -4862,7 +4930,7 @@ window.openImport=(kind="products")=>{
           const d={sku:r.sku,name:r.name,vendor:r.vendor||"",vendorId:vr?.id||"",barcode:r.barcode||"",categoryId:c.id,categoryName:c.name,categorySlug:c.slug,
             subcategoryId:s?.id||"",subcategoryName:s?.name||"",subcategorySlug:s?.slug||"",typeId:t?.id||"",typeName:t?.name||"",typeSlug:t?.slug||"",fullSlug:(t||s||c).slug,
             dimension:dimNorm(r.dimension),dimUnit:String(r.dimUnit||"").trim(),
-            mrp:num(r.mrp)||num(r.price),price:num(r.price),cost:num(r.cost),gst:r.gst===undefined||r.gst===""?0:num(r.gst),reorder:r.reorder===undefined||r.reorder===""?0:num(r.reorder),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+            mrp:(r.mrp==null||r.mrp==="")?num(r.price):num(r.mrp),price:num(r.price),cost:num(r.cost),gst:r.gst===undefined||r.gst===""?0:num(r.gst),reorder:r.reorder===undefined||r.reorder===""?0:num(r.reorder),unit:r.unit||"pcs",location:r.location||"",description:r.description||"",active:true,updatedAt:serverTimestamp(),updatedBy:S.user.uid};
           if(r.imageUrl)d.imageUrl=r.imageUrl;
           if(String(r.brandName||"").trim()){const br=S.brands.find(b=>norm(b.name)===norm(r.brandName));if(br){d.brandId=br.id;d.brandName=br.name}}
           const ex=bySku[key]||seen[key];
@@ -4931,15 +4999,18 @@ async function nextBarcodes(n){
   });
   return out;
 }
-const loadJsBarcode=()=>window.JsBarcode?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js";s.onload=ok;s.onerror=()=>no(new Error("Couldn't load the barcode generator — check your internet"));document.head.appendChild(s)});
-const _bcMemo=new Map();
-function barcodeSVG(code){
-  if(_bcMemo.has(code))return _bcMemo.get(code);
-  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
-  JsBarcode(svg,code,{format:isEAN13(code)?"EAN13":"CODE128",displayValue:false,margin:0,height:60,width:2});
-  svg.setAttribute("preserveAspectRatio","none");svg.removeAttribute("style");
-  svg.setAttribute("data-m",String(Math.round(parseFloat(svg.getAttribute("width"))/2)||0));
-  const s=svg.outerHTML;_bcMemo.set(code,s);return s;
+/* The label code is a QR code of the same number, so the number still prints under it and a
+   phone camera reads it. qrcode.js (MIT) is vendored beside this page. */
+const loadQR=()=>window.qrcode?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement("script");s.src="qrcode.js";s.onload=ok;s.onerror=()=>no(new Error("Couldn't load the QR generator — check that qrcode.js is with the app"));document.head.appendChild(s)});
+const QR_QUIET=2;   // modules of white round the code, as scanners expect
+const _qrMemo=new Map();
+function qrSVG(code){
+  if(_qrMemo.has(code))return _qrMemo.get(code);
+  const q=qrcode(0,"M");q.addData(String(code));q.make();
+  const n=q.getModuleCount(),m=n+2*QR_QUIET;let d="";
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+QR_QUIET} ${r+QR_QUIET}h1v1h-1z`;
+  const s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${m} ${m}" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" data-m="${m}"><rect width="${m}" height="${m}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+  _qrMemo.set(code,s);return s;
 }
 /* Rolls a 2-inch printer takes, width x height in mm. The first is the default. */
 const LABEL_SIZES=[[50,30],[50,25],[40,30],[40,20],[58,40]];
@@ -4971,14 +5042,19 @@ function labelsHTML(items,o,svgFn){
    - 203 dpi is 8 dots to the mm, and a bar that is not a whole number of dots prints with a
      ragged edge that scanners trip on, so the barcode is sized in whole dots, not stretched;
    - a scanner needs clear white either side of the bars, so the barcode is centred with room. */
-/* Whole printer dots per bar that a barcode of m bars gets on a label W mm wide. Under 2 it
-   cannot be printed dependably: the code is too long for the label. */
-const labelDots=(W,m)=>Math.min(4,Math.floor((Math.min(W,48)-6)*8/m));
+/* Whole printer dots per module of a code m modules across, on a label W x H mm. The code is square
+   and has to fit the room a label leaves under its text, measured with every field on (the worst
+   case: a two-line name, price, GST note and number): about half the height less 8 mm on a normal
+   label, and 0.7 H less 10.5 mm on a short one. Under 2 dots it cannot be printed dependably, so
+   the label is too small for the code. */
+const qrDots=(W,H,m)=>{const side=Math.max(2,(W-48)/2+1),width=Math.min(W,48)-2*side,room=H<28?.7*H-10.5:H*.5-8;return Math.min(4,Math.floor(Math.floor(Math.max(0,Math.min(width,room))*8)/m))};
 function labelGeom(o){
   const W=Math.min(110,Math.max(20,+o.w||LABEL_SIZES[0][0])),H=Math.min(150,Math.max(12,+o.h||LABEL_SIZES[0][1]));
   const side=Math.max(2,(W-48)/2+1),big=(o.fields||{}).barcode===false,short=H<28;
-  // the logo corner, in whole dots
-  const lgW=Math.floor(Math.min(16,(W-2*side)*.3)*8)/8,lgH=short?5:big?8:6.5;
+  // the logo corner, in whole dots; a designed label sets its own corner
+  const lgW0=Math.floor(Math.min(16,(W-2*side)*.3)*8)/8,lgH0=short?5:big?8:6.5;
+  const dl=o.design&&o.design.logo;
+  const lgW=dl?+dl.w:lgW0,lgH=dl?+dl.h:lgH0;
   return {W,H,side,big,short,lgW,lgH,box:{w:Math.round(lgW*8),h:Math.round(lgH*8)}};
 }
 const LOGOFIT=new Map();
@@ -4999,15 +5075,17 @@ async function fitLogo(rec,box){
   const out=c.toDataURL("image/png");LOGOFIT.set(key,out);return out;
 }
 function rollLabelsHTML(items,o,svgFn){
+  if(o.design)return designLabelsHTML(items,o,svgFn);
   const G=labelGeom(o),W=G.W,H=G.H;
   const side=Math.max(2,(W-48)/2+1),f=Math.min(1.2,Math.max(.72,H/30))*Math.min(1,Math.max(.8,W/50));
   const rs=n=>inr(n).replace(/\.00$/,"");      // a label has no room to spend on ".00"
+  /* Square, centred, on the dot grid: a module that starts between two dots is smeared across
+     both, and at two dots a module is the difference between reading and not. Too small a room
+     hides the code, and the number still prints under it. */
   const bcw=svg=>{const m=+((/data-m="(\d+)"/.exec(svg)||[])[1]||0);if(!m)return "";
-    const d=labelDots(W,m);if(d<2)return "";
-    /* Centred, but on the dot grid: a barcode that starts between two dots is smeared across
-       both, and at two dots a bar that is the difference between reading and not. */
+    const d=qrDots(W,H,m);if(d<2)return ' style="display:none"';
     const bw=m*d/8,ml=Math.round((W-2*side-bw)/2*8)/8;
-    return ` style="width:${bw.toFixed(3)}mm;margin-left:${ml.toFixed(3)}mm"`};
+    return ` style="width:${bw.toFixed(3)}mm;height:${bw.toFixed(3)}mm;margin-left:${ml.toFixed(3)}mm"`};
   const F={logo:true,name:true,sku:true,size:true,barcode:true,mrp:!!o.price,price:!!o.price,disc:!!o.price,tax:!!o.price,...(o.fields||{})};
   /* Without bars there is room to spare, so the words grow into it rather than float. */
   /* pt(n,min): scaled with the label, but never below what a 203 dpi head prints legibly —
@@ -5059,10 +5137,147 @@ function rollLabelsHTML(items,o,svgFn){
     const nm=F.name?`<div class="nm">${esc(p.name)}</div>`:"";
     const pz=money(p);
     return `<div class="lb">${logo||nm?`<div class="hd">${logo}<div class="tx">${nm}${logo?sk:""}</div></div>`:""}${logo?"":sk}
-   ${bar?`<div class="bc"><div${bcw(svg)||' style="width:100%"'}>${svg}</div></div><div class="no">${esc(p.barcode)}</div>`:""}
+   ${bar?`<div class="bc"><div${bcw(svg)}>${svg}</div></div><div class="no">${esc(p.barcode)}</div>`:""}
    ${pz}${pz&&F.tax?`<div class="gst">GST &amp; other charges extra as applicable</div>`:""}</div>`}).join("");
   return `<!doctype html><html><head><meta charset="utf-8"><title>Barcode labels</title><style>${css}</style></head><body><div class="sheet">${body}</div>${o.noprint?"":"<script>onload=()=>setTimeout(()=>print(),500)<\/script>"}</body></html>`;
 }
+/* ---- Designed labels ----
+   A roll label laid out field by field: each field is a box in mm from the label's top-left
+   corner, with its font size in points. The layout is either the automatic one for the label size
+   (defaultDesign) or one saved for a type, sub-category or category (settings/labelLayouts). It is
+   previewed and printed by the same HTML as the rest of the labels. */
+const DESIGN_FIELDS=["logo","name","sku","size","barcode","mrp","disc","price"];
+const DZ_LABEL={logo:"Logo",name:"Name",sku:"SKU",size:"Size",barcode:"Code and number",mrp:"MRP",disc:"Discount %",price:"Selling price"};
+/* ---- Designed labels ----
+   A roll label laid out field by field. Each printed field is a box in mm from the label's top-left
+   corner. Text fields keep the size they were drawn at and are stretched to the box they are moved
+   or resized to. A text field is any box with text of its own: the GST note is one by default, and
+   more can be added in Edit layout. The layout is either the default for the label size
+   (defaultDesign) or one saved for a type, sub-category or category (settings/labelLayouts). It is
+   previewed and printed by the same HTML. */
+const labelRs=n=>inr(n).replace(/\.00$/,"");
+const labelOff=p=>{const m=num(p.mrp),s=num(p.price);return m>0&&s>0&&m>s?Math.floor((m-s)/m*100):0};
+// When the selling price is the MRP there is nothing to strike out or discount: the label shows one price.
+const samePrice=p=>{const m=num(p.mrp??p.price),s=num(p.price);return m>0&&m===s};
+function defaultDesign(W,H){
+  const short=H<24,f=Math.min(1.2,Math.max(.72,H/30))*Math.min(1,Math.max(.8,W/50));
+  const pt=(n,min)=>+Math.max(min,n*f).toFixed(1);
+  const lh=fs=>+(fs*.3528*1.2+.2).toFixed(2);     // one line of text at this size, with a little air
+  const pad=Math.max(2,(W-48)/2+1),iw=W-2*pad;
+  const nameFs=pt(7.5,5.5),mrpFs=pt(6.5,5),sizeFs=pt(6.5,5),numFs=pt(6,4.5);
+  const pzRow=Math.max(lh(mrpFs),lh(pt(11,8)));
+  if(short){
+    // a small label: the name runs across the top above the code, the logo and SKU under it; the code is
+    // at the right, and the prices stand on the bottom of the code's number, with the note under them
+    const taxFs=pt(4,4),taxH=lh(taxFs);
+    const bw=+Math.min(H*.66,iw*.4).toFixed(2),tcol=iw-bw-1.5,lgW=+Math.min(12,tcol*.3).toFixed(2),lgH=5;
+    const qrY=1.8,numH=Math.max(1.8,numFs*.3528*1.3),codeH=12.5+numH+.3,codeX=W-pad-bw;
+    const line=qrY+12.5+.05+numH;               // the bottom of the code's number: the prices stand on it
+    const tx=pad+lgW+1.2,tw=codeX-1.2-tx,rowY=3.4;
+    const colW=mmWidth("MRP ₹99,999",mrpFs,false)+.8,colX=codeX-1.2-colW;
+    const priceX=pad,priceW=colX-1.2-priceX,priceFs=Math.max(6,Math.min(pt(9,7),(priceW-.8)/mmWidth("₹99,999",1,true)));
+    const discY=line-lh(mrpFs),mrpY=discY-lh(mrpFs)-.2;
+    return {
+      name:{x:pad,y:.3,w:W-2*pad,h:lh(nameFs),fs:nameFs,a:"left"},
+      logo:{x:pad,y:rowY,w:lgW,h:lgH,fs:0,a:"left"},
+      sku:{x:tx,y:rowY,w:tw*.62,h:lh(nameFs),fs:nameFs,a:"left"},
+      size:{x:tx+tw*.62,y:rowY,w:tw*.38,h:lh(sizeFs),fs:sizeFs,a:"right"},
+      barcode:{x:codeX,y:qrY,w:bw,h:codeH,fs:numFs,a:"center"},
+      mrp:{x:colX,y:mrpY,w:colW,h:lh(mrpFs),fs:mrpFs,a:"right"},
+      disc:{x:colX,y:discY,w:colW,h:lh(mrpFs),fs:mrpFs,a:"right"},
+      price:{x:priceX,y:line-lh(priceFs),w:priceW,h:lh(priceFs),fs:priceFs,a:"left"},
+      txtGst:{x:pad,y:line+.4,w:iw,h:taxH,fs:taxFs,a:"left",label:"GST note",text:"GST & other charges extra as applicable"}
+    };
+  }
+  // a normal label: the logo at the top left, the SKU at the top right with the name under it, the
+  // product features under the logo; the code at the right, the selling price left of it, the MRP and
+  // discount stacked above the price, and the note at the bottom left. Everything that stands on the
+  // code's bottom edge is level with it.
+  const skuY=1,nameY=skuY+lh(nameFs)+.2,lgW=+Math.min(14.5,iw*.315).toFixed(2),lgH=+(nameY+lh(nameFs)-1).toFixed(2);
+  const skuX=pad+lgW+1.2,nameX=skuX,sizeY=1+lgH+lh(nameFs);   // one row clear under the logo
+  const taxFs=pt(4.8,4.5),taxH=lh(taxFs),numH=Math.max(1.8,numFs*.3528*1.3);
+  const cw=H>=36?15.625:12.5,codeH=cw+numH+.3;                  // whole dots at 25 modules: 12.5 or 15.6 mm
+  const codeX=W-pad-cw,codeY=H-.3-codeH,leftW=codeX-1.2-pad,qrB=codeY+cw;
+  // the MRP and discount column is as wide as its widest text; the price takes what is left and shrinks if it must
+  // the MRP and discount sit against the code; the selling price is at the left, filling the rest
+  const colW=Math.max(leftW*.4,mmWidth("MRP ₹99,999",mrpFs,false)+.8),colX=codeX-1.2-colW,priceX=pad,priceW=colX-1.2-pad;
+  const priceFs=Math.max(6,Math.min(pt(11,8),(priceW-.8)/mmWidth("₹99,999",1,true)));
+  const discY=qrB-lh(mrpFs),mrpY=discY-lh(mrpFs)-.2,priceY=qrB-lh(priceFs);
+  return {
+    logo:{x:pad,y:1,w:lgW,h:lgH,fs:0,a:"left"},
+    sku:{x:skuX,y:skuY,w:W-pad-skuX,h:lh(nameFs),fs:nameFs,a:"right"},
+    size:{x:pad,y:sizeY,w:lgW,h:lh(sizeFs),fs:sizeFs,a:"left"},
+    name:{x:nameX,y:nameY,w:W-pad-nameX,h:lh(nameFs),fs:nameFs,a:"right"},
+    barcode:{x:codeX,y:codeY,w:cw,h:codeH,fs:numFs,a:"center"},
+    mrp:{x:colX,y:mrpY,w:colW,h:lh(mrpFs),fs:mrpFs,a:"right"},
+    disc:{x:colX,y:discY,w:colW,h:lh(mrpFs),fs:mrpFs,a:"right"},
+    price:{x:priceX,y:priceY,w:priceW,h:lh(priceFs),fs:priceFs,a:"left"},
+    txtGst:{x:pad,y:H-taxH-.6,w:leftW,h:taxH,fs:taxFs,a:"left",label:"GST note",text:"GST & other charges extra as applicable"}
+  };
+}
+/* How many lines the text takes when it wraps at the given width in mm, word by word. */
+function wrapLines(t,fs,w){const words=String(t).split(/\s+/).filter(Boolean);if(!words.length)return 1;
+  let lines=1,cur="";
+  for(const wd of words){const test=cur?cur+" "+wd:wd;if(!cur||mmWidth(test,fs,false)<=w)cur=test;else{lines++;cur=wd}}
+  return lines}
+/* Width in mm of a line of text at a size in points, as Arial sets it. */
+let MCTX=null;
+function mmWidth(t,fs,bold){MCTX=MCTX||document.createElement("canvas").getContext("2d");
+  MCTX.font=`${bold?"700 ":""}${(fs*96/72).toFixed(2)}px Arial, Helvetica, sans-serif`;return MCTX.measureText(t).width/(96/25.4)}
+/* The smallest code that prints dependably, in mm. */
+const CODE_MIN_MM=12;
+/* The side in mm of the code in a barcode box: as large as the box's width and height allow, in whole
+   dots, and never below CODE_MIN_MM. m is the code's size in modules. */
+function codeSide(b,m){const numH=Math.max(1.8,b.fs*.3528*1.3);
+  const dMin=Math.ceil(CODE_MIN_MM*8/m);
+  const d=Math.max(dMin,Math.floor(Math.floor(Math.min(b.w,b.h-numH-.3)*8+1e-6)/m));
+  return d*m/8}
+/* The code and its number in the barcode box. The code is a square as large as the box allows
+   (whole dots), centred across the box; its number sits directly under it at its own height. The
+   number is squeezed sideways only if the box is narrower than the number. */
+function codeAt(code,b,svgFn){
+  const numH=Math.max(1.8,b.fs*.3528*1.3),m=+((/data-m="(\d+)"/.exec(svgFn(code))||[])[1]||0);
+  const side=m?codeSide(b,m):0;
+  const x=Math.round((b.x+(b.w-side)/2)*8)/8,y=Math.round(b.y*8)/8;
+  const qr=side?`<div class="f" style="left:${x}mm;top:${y}mm;width:${side}mm;height:${side}mm">${svgFn(code)}</div>`:"";
+  // the number is as wide as the box, but no narrower than the code: below that the code itself is what shrinks
+  const sc=Math.min(1,Math.max(b.w,side)/Math.max(mmWidth(code,b.fs,false),.01));
+  const txt=`<div class="f" style="left:${(b.x+b.w/2).toFixed(2)}mm;top:${(y+side-.3).toFixed(2)}mm;height:${numH.toFixed(2)}mm;font-size:${b.fs}pt;transform:translateX(-50%) scaleX(${sc.toFixed(4)});transform-origin:50% 0">${esc(code)}</div>`;
+  return qr+txt;
+}
+function designLabelsHTML(items,o,svgFn){
+  const G=labelGeom(o),W=G.W,H=G.H,L=o.design,F=o.fields||{};
+  const css=`@page{size:${W}mm ${H}mm;margin:0}
+*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.lb{position:relative;width:${W}mm;height:${H}mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid;page-break-after:always;break-after:page}
+.lb:last-child{page-break-after:auto;break-after:auto}
+.f{position:absolute;overflow:hidden;line-height:1.12;white-space:nowrap}
+.f.wrap{white-space:normal}.f.b{font-weight:700}
+.f img{display:block;width:100%;height:100%;object-fit:contain}
+.f.ph{outline:.25mm dashed #aaa;outline-offset:-.25mm;color:#999;font-size:5pt;display:flex;align-items:center;justify-content:center}
+.f svg{display:block;width:100%;height:100%}`;
+  // A text box keeps the size it was drawn at (ref) and is stretched to the box it now has.
+  const boxHTML=(b,inner,cls="")=>{const r=b.ref,pos=`left:${b.x}mm;top:${b.y}mm;font-size:${b.fs}pt;text-align:${b.a||"left"}`;
+    return r?`<div class="f ${cls}" style="${pos};width:${r.w}mm;height:${r.h}mm;transform:scale(${(b.w/r.w).toFixed(4)},${(b.h/r.h).toFixed(4)});transform-origin:0 0">${inner}</div>`
+      :`<div class="f ${cls}" style="${pos};width:${b.w}mm;height:${b.h}mm">${inner}</div>`};
+  const at=(k,inner,cls="")=>L[k]?boxHTML(L[k],inner,cls):"";
+  const texts=Object.keys(L).filter(k=>typeof L[k].text==="string"&&L[k].text!=="").map(k=>boxHTML(L[k],esc(L[k].text),"wrap")).join("");
+  const body=items.map(p=>{
+    const m=num(p.mrp??p.price),s=num(p.price),same=samePrice(p),cut=F.price&&!same&&m>s&&s>0,off=F.mrp&&F.price&&!same?labelOff(p):0;
+    let h="";
+    if(F.logo){const src=typeof o.logo==="function"?o.logo(p):o.logo;
+      h+=src?at("logo",`<img src="${esc(src)}" alt="">`):(o.noprint?at("logo","LOGO","ph"):"")}
+    if(F.name)h+=at("name",esc(p.name),"wrap");
+    if(F.sku)h+=at("sku",esc(p.sku),"b");
+    if(F.size&&dimText(p))h+=at("size",esc(dimText(p)));
+    if(F.barcode&&p.barcode&&L.barcode)h+=codeAt(String(p.barcode),L.barcode,svgFn);
+    if(F.mrp&&(m||s))h+=at("mrp",`MRP ${cut?`<s>${labelRs(m)}</s>`:labelRs(m||s)}`);
+    if(F.disc&&off>=1)h+=at("disc",`${off}% OFF`,"b");
+    if(F.price&&s&&!same)h+=at("price",labelRs(s),"b");
+    return `<div class="lb">${h}${texts}</div>`}).join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Barcode labels</title><style>${css}</style></head><body><div class="sheet">${body}</div>${o.noprint?"":"<script>onload=()=>setTimeout(()=>print(),500)<\/script>"}</body></html>`;
+}
+
 /* ---- Straight to the Seznik DEV (a 632-L58P), without the print dialog ----
    The printer takes TSPL in label mode, in the form its own Windows driver sends (captured by
    printing to FILE:): a fixed header, the whole label as one BITMAP in OR mode, then PRINT.
@@ -5102,7 +5317,7 @@ async function seznikSend(data){
    out in the height the head can reach and rasterised at 8 dots to the mm. */
 async function labelDots1(p,o,logo){
   const W=Math.min(110,Math.max(20,+o.w||50)),h=Math.max(12,+o.h||30),MM=96/25.4,K=DIRECT.dpmm;
-  const html=rollLabelsHTML([p],{...o,w:W,h,logo,noprint:false},barcodeSVG);
+  const html=rollLabelsHTML([p],{...o,w:W,h,logo,noprint:false},qrSVG);
   const css=html.slice(html.indexOf("<style>")+7,html.indexOf("</style>")),a=html.indexOf('<div class="sheet">')+19;
   const box=document.createElement("div");box.setAttribute("style","font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff");
   box.innerHTML="<style>"+css+"</style>"+html.slice(a,html.lastIndexOf("</div>"));
@@ -5130,7 +5345,7 @@ async function seznikLabels(items,o,logoOf,btn){
   const was=btn.textContent;btn.disabled=true;
   try{
     btn.textContent="Connecting…";await seznikConnect();
-    if(o.fields&&o.fields.barcode!==false)await loadJsBarcode();
+    if(o.fields&&o.fields.barcode!==false)await loadQR();
     for(let i=0;i<items.length;i++){
       btn.textContent=items.length>1?`Printing ${i+1} of ${items.length}…`:"Printing…";
       await seznikSend(tsplJob(await labelDots1(items[i],o,await logoOf(items[i])),o));
@@ -5144,7 +5359,7 @@ const DIRECT_NOTE=`<b>Print on Seznik</b> sends labels straight to the printer o
    Name, SKU, barcode, MRP and selling price start ticked and the roll starts at 50 × 30 every
    time, so the usual label is one tap; anything else is a choice made for this print. */
 const LABEL_FIELDS=[["name","Name"],["sku","SKU"],["barcode","Barcode"],["mrp","MRP"],["price","Selling price"],
-  ["disc","Discount %"],["tax","GST note"],["size","Size"]];
+  ["disc","Discount %"],["size","Size"]];
 window.openProductLabel=function(pid){
   const p=S.products.find(x=>x.id===pid);if(!p)return;
   const hasDim=!!dimText(p),br=brandOf(p),fetched=new Set();
@@ -5162,17 +5377,159 @@ window.openProductLabel=function(pid){
     <div><label>Label size</label><select id="pl-size">${LABEL_SIZES.map(([w,h2])=>`<option value="${w}x${h2}">${w} × ${h2} mm</option>`).join("")}<option value="custom">Another size…</option></select></div></div>
    <div class="f"><div><label>Copies</label><input id="pl-copies" type="number" min="1" max="500" step="1" value="1" inputmode="numeric"></div><div></div></div>
    <div id="pl-custom" class="f hide"><div><label>Width (mm)</label><input id="pl-w" type="number" min="20" max="110" step="1" value="50"></div><div><label>Height (mm)</label><input id="pl-h" type="number" min="12" max="150" step="1" value="30"></div></div>
-   <div><label>Preview</label><div id="pl-prev" style="background:#e9e9ec;border-radius:10px;padding:14px;display:flex;justify-content:center;overflow:hidden"></div>
+   <div class="f"><div><label>Layout</label><div class="row" style="flex-wrap:nowrap;align-items:center"><span id="pl-tpl" class="small mute" style="flex:1"></span><button class="btn sec sm" id="pl-dzt" type="button">Edit layout</button></div></div><div></div></div>
+   <div id="pl-dz" class="hide"></div>
+   <div><div class="row" style="align-items:center;margin-bottom:6px"><label style="flex:1;margin:0">Preview</label><button class="btn sec sm" id="pl-undo" type="button" title="Undo">Undo</button><button class="btn sec sm" id="pl-redo" type="button" title="Redo">Redo</button></div><div id="pl-prev" style="background:#e9e9ec;border-radius:10px;padding:14px;display:flex;justify-content:center;overflow:hidden"></div>
     <div id="pl-note" class="small mute" style="margin-top:6px"></div></div></div>
   <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Close</button><button class="btn sec" id="pl-print">Print</button>${directCan()?`<button class="btn" id="pl-direct">Print on Seznik</button>`:""}</div>
   ${directCan()?`<div class="f" style="margin-top:10px">${FIT_FIELDS("pl")}</div><div class="small mute" style="margin-top:8px">${DIRECT_NOTE}</div>`:""}</div></div>`;
+  /* The layout this label is drawn in: the one saved for the product's type, sub-category or
+     category at this size if there is one, otherwise the default for the size. DZ holds the boxes
+     and the text fields. Edit layout shows the boxes over the preview to drag; outside it the
+     preview is the clean label. */
+  /* The chosen logo, read fresh the first time in this dialog so a new upload shows at once. */
+  const logoFor=async(id,o)=>{if(!id)return "";const v=await getLogo(id,!fetched.has(id));fetched.add(id);return fitLogo(v,labelGeom(o).box)};
+  let DZ=null,tpl=null,dzEdited=false,szKey="",layoutEdit=false,fitPending=false;
+  // undo and redo over the layout: a step is taken before each change; typing counts as one step per field
+  let undoS=[],redoS=[],lastTyped=null;
+  const snap=()=>JSON.parse(JSON.stringify(DZ));
+  const commit=()=>{undoS.push(snap());if(undoS.length>100)undoS.shift();redoS=[]};
+  const scopeKey=(kind,w,h)=>{const c=p.categoryId||"",s=p.subcategoryId||"",t=p.typeId||"",sz=`${w}x${h}`;
+    return kind==="t"?`${c}|${s}|${t}|${sz}`:kind==="s"?`${c}|${s}||${sz}`:`${c}|||${sz}`};
+  const scopes=[["t",p.typeId,"Type",p.typeName],["s",p.subcategoryId,"Sub-category",p.subcategoryName],["c",p.categoryId,"Category",p.categoryName]].filter(x=>x[1]);
+  const tplFor=(w,h)=>{for(const [kind] of scopes){const key=scopeKey(kind,w,h),r=S.labelLayouts&&S.labelLayouts[key];if(r&&r.layout)return {key,rec:r}}return null};
+  // a saved layout is used as saved; any printed field it lacks comes from the default
+  const syncSize=(w,h)=>{const k=`${w}x${h}`;if(k===szKey)return;szKey=k;undoS=[];redoS=[];tpl=tplFor(w,h);
+    const d=defaultDesign(w,h);
+    DZ=tpl?{...Object.fromEntries(DESIGN_FIELDS.filter(f=>d[f]).map(f=>[f,d[f]])),...JSON.parse(JSON.stringify(tpl.rec.layout))}:d;
+    dzEdited=false};
   const opts=()=>{const sz=$("#pl-size").value;let w,h2;
     if(sz==="custom"){w=+$("#pl-w").value||50;h2=+$("#pl-h").value||30}else[w,h2]=sz.split("x").map(Number);
     const fields={};LABEL_FIELDS.forEach(([k])=>{const c=document.querySelector(`.pl-f[data-k="${k}"]`);fields[k]=!!(c&&c.checked&&!c.disabled)});
     const logoId=$("#pl-logo").value;fields.logo=!!logoId;
-    return {layout:"roll",w:Math.min(110,Math.max(20,w)),h:Math.min(150,Math.max(12,h2)),fields,price:true,logoId}};
-  /* The chosen logo, read fresh the first time in this dialog so a new upload shows at once. */
-  const logoFor=async(id,o)=>{if(!id)return "";const v=await getLogo(id,!fetched.has(id));fetched.add(id);return fitLogo(v,labelGeom(o).box)};
+    if(samePrice(p)){fields.price=false;fields.disc=false}
+    const W=Math.min(110,Math.max(20,w)),H=Math.min(150,Math.max(12,h2));
+    syncSize(W,H);
+    return {layout:"roll",w:W,h:H,fields,price:true,logoId,design:DZ}};
+  // the boxes shown: each ticked printed field, and every text field
+  const dzKeys=o=>Object.keys(DZ).filter(k=>DZ[k]&&DZ[k].x!==undefined&&(DESIGN_FIELDS.includes(k)?!!o.fields[k]:typeof DZ[k].text==="string"));
+  const dzName=k=>DZ_LABEL[k]||DZ[k].label||k;
+  /* The text each box prints for this product, measured with Arial as the label is set. */
+  const textOf=k=>{if(typeof DZ[k].text==="string")return DZ[k].text;
+    const m=num(p.mrp??p.price),s=num(p.price);
+    return {name:p.name,sku:p.sku,size:dimText(p),mrp:`MRP ${labelRs(m||s)}`,price:labelRs(s),disc:`${labelOff(p)}% OFF`}[k]||""};
+  const textMM=mmWidth;
+  /* Shrinks one box round its text, keeping the side it is aligned to, so the box is the text's size
+     and can be stretched from there. Text that does not fit the width wraps onto more lines. */
+  const fitOne=k=>{const b=DZ[k];if(!b)return;
+    if(k==="barcode"){
+      if(!p.barcode)return;
+      // the code is a square as large as the box's height allows, with its number under it
+      const numH=Math.max(1.8,b.fs*.3528*1.3),m=+((/data-m="(\d+)"/.exec(qrSVG(String(p.barcode)))||[])[1]||0);
+      if(!m)return;
+      const side=codeSide(b,m);
+      const w=+Math.max(side,textMM(String(p.barcode),b.fs,false)+.4).toFixed(2),h=Math.ceil((side+numH+.3)*100)/100;
+      DZ[k]={...b,x:+(b.x+(b.w-w)/2).toFixed(2),w,h};return}
+    const t=textOf(k);if(!t)return;
+    const bold=["sku","price","disc"].includes(k),wrap=k==="name"||typeof b.text==="string";
+    const lh1=b.fs*.3528*1.2+.2,tw=textMM(t,b.fs,bold)+.4;
+    const nw=wrap?Math.min(tw,b.w):tw,lines=wrap?Math.max(1,Math.ceil(tw/nw-1e-6)):1;
+    const w=+nw.toFixed(2),h=+(lines*lh1).toFixed(2);
+    const x=b.a==="right"?b.x+b.w-w:b.a==="center"?b.x+(b.w-w)/2:b.x;
+    DZ[k]={...b,x:+x.toFixed(2),w,h,ref:{w,h}}};
+  /* Boxes drawn over the preview in Edit layout, in the order the label stacks them, so a box that
+     overlaps another is the one on top. Drag moves a box; a corner resizes it in proportion; an edge
+     stretches it. Nothing is redrawn while the mouse is down: the preview is redrawn on release. */
+  const dzOverlay=o=>{
+    const wrap=$("#pl-prev").firstElementChild;if(!wrap||!layoutEdit||!DZ)return;
+    wrap.style.position="relative";
+    wrap.querySelectorAll(".dzbox").forEach(e=>e.remove());
+    const k=wrap.getBoundingClientRect().width/o.w;      // screen px per mm
+    const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),r1=v=>Math.round(v*10)/10,r2=v=>Math.round(v*100)/100;
+    const grips={nw:"left:-5px;top:-5px;cursor:nwse-resize",n:"left:50%;top:-5px;margin-left:-5px;cursor:ns-resize",
+      ne:"right:-5px;top:-5px;cursor:nesw-resize",e:"right:-5px;top:50%;margin-top:-5px;cursor:ew-resize",
+      se:"right:-5px;bottom:-5px;cursor:nwse-resize",s:"left:50%;bottom:-5px;margin-left:-5px;cursor:ns-resize",
+      sw:"left:-5px;bottom:-5px;cursor:nesw-resize",w:"left:-5px;top:50%;margin-top:-5px;cursor:ew-resize"};
+    dzKeys(o).forEach(key=>{
+      const el=document.createElement("div");el.className="dzbox";el.dataset.k=key;
+      el.style.cssText="position:absolute;box-sizing:border-box;border:1px dashed #1d4ed8;background:rgba(29,78,216,.07);cursor:move;touch-action:none;z-index:2";
+      el.innerHTML=`<span style="position:absolute;left:0;top:0;white-space:nowrap;background:#1d4ed8;color:#fff;padding:0 3px;font:9px/13px Arial;pointer-events:none">${esc(dzName(key))}</span>`
+        +Object.keys(grips).map(g=>`<span data-h="${g}" style="position:absolute;width:9px;height:9px;background:#fff;border:1px solid #1d4ed8;box-sizing:border-box;${grips[g]}"></span>`).join("");
+      const place=b=>{el.style.left=`${b.x*k}px`;el.style.top=`${b.y*k}px`;el.style.width=`${b.w*k}px`;el.style.height=`${b.h*k}px`};
+      place(DZ[key]);
+      wrap.appendChild(el);
+      el.addEventListener("pointerdown",ev=>{
+        ev.preventDefault();
+        const h=(ev.target.dataset&&ev.target.dataset.h)||"";      // "" is the box itself: move it
+        // text keeps the size it was first drawn at; resizing stretches it with the box
+        if(key!=="logo"&&key!=="barcode"&&!DZ[key].ref)DZ[key].ref={w:DZ[key].w,h:DZ[key].h};
+        const sx=ev.clientX,sy=ev.clientY,s={...DZ[key]};let moved=false;
+        try{el.setPointerCapture(ev.pointerId)}catch(e){}
+        const mv=e=>{if(!moved){moved=true;commit()}const dx=(e.clientX-sx)/k,dy=(e.clientY-sy)/k;let nb;
+          if(!h)nb={x:r1(clamp(s.x+dx,0,o.w-s.w)),y:r1(clamp(s.y+dy,0,o.h-s.h))};
+          else if(h.length===2){
+            // a corner keeps the proportions: the opposite corner stays put and the box scales evenly
+            const ax=h.includes("w")?s.x+s.w:s.x,ay=h.includes("n")?s.y+s.h:s.y;
+            const px=h.includes("e")?s.x+s.w+dx:s.x+dx,py=h.includes("s")?s.y+s.h+dy:s.y+dy;
+            const maxF=Math.min((h.includes("e")?o.w-ax:ax)/s.w,(h.includes("s")?o.h-ay:ay)/s.h);
+            const f=clamp((Math.abs(px-ax)/s.w+Math.abs(py-ay)/s.h)/2,1/Math.min(s.w,s.h),maxF);
+            const nw=s.w*f,nh=s.h*f;
+            nb={x:r2(h.includes("w")?ax-nw:ax),y:r2(h.includes("n")?ay-nh:ay),w:r2(nw),h:r2(nh)};
+          }
+          else if(h==="e")nb={x:s.x,y:s.y,w:r1(clamp(s.w+dx,1,o.w-s.x)),h:s.h};
+          else if(h==="s")nb={x:s.x,y:s.y,w:s.w,h:r1(clamp(s.h+dy,1,o.h-s.y))};
+          else if(h==="w"){const X=r1(clamp(s.x+dx,0,s.x+s.w-1));nb={x:X,y:s.y,w:r1(s.x+s.w-X),h:s.h}}
+          else{const Y=r1(clamp(s.y+dy,0,s.y+s.h-1));nb={x:s.x,y:Y,w:s.w,h:r1(s.y+s.h-Y)}};
+          DZ[key]={...DZ[key],...nb};place(DZ[key])};
+        const up=()=>{el.removeEventListener("pointermove",mv);el.removeEventListener("pointerup",up);el.removeEventListener("pointercancel",up);
+          dzEdited=true;draw()};
+        el.addEventListener("pointermove",mv);el.addEventListener("pointerup",up);el.addEventListener("pointercancel",up);
+      });
+    });
+  };
+  const dzPanel=o=>{
+    const texts=Object.keys(DZ).filter(k=>typeof DZ[k].text==="string");
+    const saver=!isAdmin()?`<div class="small mute" style="margin-top:10px">Only an admin can save a layout as the default for a category.</div>`
+      :scopes.length?`<div class="f" style="margin-top:10px"><div><label>Save this layout for ${o.w} × ${o.h} mm as the default for</label><div class="row" style="flex-wrap:nowrap"><select id="pl-scope">${scopes.map(([kind,,lab,nm])=>`<option value="${kind}">${lab}: ${esc(nm||"")}</option>`).join("")}</select><button class="btn sm" id="pl-savetpl" type="button">Save</button></div></div></div>`
+      :`<div class="small mute" style="margin-top:10px">This product has no category, so there is nothing to save the layout for.</div>`;
+    return `<div class="small mute" style="margin:8px 0 6px">Drag a box to move it, a corner to resize it in proportion, or an edge to stretch it. Boxes may overlap; the preview is exactly what prints.</div>
+     <div class="small" style="font-weight:600;margin:8px 0 4px">Text fields</div>
+     ${texts.map(k=>`<div class="row" style="flex-wrap:nowrap;margin-bottom:6px"><input class="tf-name" data-k="${k}" value="${esc(DZ[k].label||"")}" placeholder="Field name" style="flex:0 0 32%;min-width:0"><input class="tf-text" data-k="${k}" value="${esc(DZ[k].text)}" placeholder="Text to print" style="flex:1;min-width:0"><button class="btn sec sm tf-del" data-k="${k}" type="button">Remove</button></div>`).join("")}
+     <div class="row" style="margin-top:4px"><button class="btn sec sm" id="pl-tfadd" type="button">+ Add text field</button><button class="btn sec sm" id="pl-dzreset" type="button">Reset to default layout</button></div>${saver}`;
+  };
+  const dzDraw=o=>{
+    $("#pl-tpl").textContent=dzEdited?"Edited for this print":tpl?`Saved layout · ${tpl.rec.name||""}`:"Default layout for this size";
+    $("#pl-dz").innerHTML=dzPanel(o);
+    const typing=k=>{if(lastTyped!==k){commit();lastTyped=k}};
+    document.querySelectorAll(".tf-name").forEach(i=>{
+      i.oninput=()=>{const k=i.dataset.k;typing(k);DZ[k]={...DZ[k],label:i.value.trim()||"Text"};dzEdited=true;paint(opts())};
+      i.onchange=()=>{lastTyped=null}});
+    // the text is shown at its own size while it is typed, and wraps inside the box; the box grows downwards if
+    // the text needs more lines than it has
+    document.querySelectorAll(".tf-text").forEach(i=>{
+      i.oninput=()=>{const k=i.dataset.k;typing(k);const b={...DZ[k],text:i.value};delete b.ref;
+        const need=wrapLines(i.value,b.fs,b.w-.3)*(b.fs*.3528*1.2+.2);if(need>b.h)b.h=+need.toFixed(2);
+        DZ[k]=b;dzEdited=true;paint(opts())};
+      i.onchange=()=>{lastTyped=null;draw()}});
+    document.querySelectorAll(".tf-del").forEach(b=>b.onclick=()=>{commit();delete DZ[b.dataset.k];dzEdited=true;draw()});
+    $("#pl-tfadd").onclick=()=>{commit();const n=Object.keys(DZ).filter(k=>typeof DZ[k].text==="string").length+1;
+      const k="t"+Date.now().toString(36);
+      DZ[k]={x:2,y:Math.round(o.h/2*10)/10,w:o.w-4,h:3,fs:6,a:"left",label:`Text ${n}`,text:"New text"};
+      fitOne(k);dzEdited=true;draw()};
+    $("#pl-dzreset").onclick=()=>{commit();DZ=defaultDesign(o.w,o.h);tpl=null;dzEdited=false;draw()};
+    if($("#pl-savetpl"))$("#pl-savetpl").onclick=async()=>{
+      const kind=$("#pl-scope").value,sc=scopes.find(x=>x[0]===kind),key=scopeKey(kind,o.w,o.h),b=$("#pl-savetpl");
+      const rec={name:`${sc[2]}: ${sc[3]||""}`.trim(),layout:JSON.parse(JSON.stringify(DZ)),updatedAt:serverTimestamp(),updatedBy:S.user.uid};
+      b.disabled=true;
+      try{await setDoc(doc(db,"settings","labelLayouts"),{[key]:rec},{merge:true});
+        S.labelLayouts={...S.labelLayouts,[key]:rec};tpl={key,rec};dzEdited=false;
+        toast(`Layout saved for ${sc[2].toLowerCase()} ${sc[3]||""} at ${o.w} × ${o.h} mm`);draw();
+      }catch(e){b.disabled=false;toast(emsg(e),1)}
+    };
+  };
+  $("#pl-undo").onclick=()=>{if(!undoS.length)return;redoS.push(snap());DZ=undoS.pop();dzEdited=true;lastTyped=null;draw()};
+  $("#pl-redo").onclick=()=>{if(!redoS.length)return;undoS.push(snap());DZ=redoS.pop();dzEdited=true;lastTyped=null;draw()};
+  $("#pl-dzt").onclick=()=>{layoutEdit=!layoutEdit;if(layoutEdit)fitPending=true;$("#pl-dz").classList.toggle("hide",!layoutEdit);$("#pl-dzt").textContent=layoutEdit?"Done":"Edit layout";draw()};
   const nobar=()=>{
     $("#pl-nobar").innerHTML=p.barcode?""
       :`<span style="color:var(--warn)">This product has no barcode yet.</span>${can("editProducts")?` <button class="btn sm sec" id="pl-gen" type="button">Generate barcode</button>`:" Ask an admin to generate one."}`;
@@ -5186,35 +5543,47 @@ window.openProductLabel=function(pid){
   const draw=async()=>{
     $("#pl-custom").classList.toggle("hide",$("#pl-size").value!=="custom");
     const on=k=>{const c=document.querySelector(`.pl-f[data-k="${k}"]`);return !!(c&&c.checked&&!c.disabled)};
-    const dc=document.querySelector('.pl-f[data-k="disc"]');if(dc)dc.disabled=!(on("mrp")&&on("price"));
-    const tc=document.querySelector('.pl-f[data-k="tax"]');if(tc)tc.disabled=!(on("mrp")||on("price"));
-    const o=opts(),any=Object.entries(o.fields).some(([k,v])=>v&&k!=="logo"&&k!=="disc"&&k!=="tax");
+    const same=samePrice(p);
+    const pc=document.querySelector('.pl-f[data-k="price"]');if(pc){if(same)pc.checked=false;pc.disabled=same}
+    const dc=document.querySelector('.pl-f[data-k="disc"]');if(dc){if(same)dc.checked=false;dc.disabled=same||!(on("mrp")&&on("price"))}
+    const o=opts();
+    // on entering Edit layout every box is drawn round its text, so the handles start close to it
+    if(layoutEdit&&fitPending){fitPending=false;Object.keys(DZ).filter(k=>k!=="logo").forEach(fitOne)}
+    dzDraw(o);
+    $("#pl-undo").disabled=!undoS.length;$("#pl-redo").disabled=!redoS.length;
+    await paint(o);
+  };
+  const paint=async o=>{
+    $("#pl-undo").disabled=!undoS.length;$("#pl-redo").disabled=!redoS.length;
+    const same=samePrice(p),any=Object.entries(o.fields).some(([k,v])=>v&&k!=="logo"&&k!=="disc");
     $("#pl-print").disabled=!any;if($("#pl-direct"))$("#pl-direct").disabled=!any;
     if(!any){$("#pl-prev").innerHTML=`<span class="small mute" style="padding:30px 0">Tick at least one thing to print.</span>`;$("#pl-note").textContent="";return}
-    if(o.fields.barcode)try{await loadJsBarcode()}catch(e){$("#pl-prev").innerHTML=`<span class="small mute">${esc(emsg(e))}</span>`;return}
+    if(o.fields.barcode)try{await loadQR()}catch(e){$("#pl-prev").innerHTML=`<span class="small mute">${esc(emsg(e))}</span>`;return}
     const lg=await logoFor(o.logoId,o);
-    drawLabelPreview($("#pl-prev"),"pl-frame",labelsHTML([p],{...o,logo:lg,noprint:true},barcodeSVG),o.w,o.h,true);
+    drawLabelPreview($("#pl-prev"),"pl-frame",labelsHTML([p],{...o,logo:lg,noprint:true},qrSVG),o.w,o.h,true);
+    dzOverlay(o);
     const lname={store:"store logo",online:"online store logo"}[o.logoId]||(br?`${br.name} logo`:"logo");
-    let note=`Actual size <b>${o.w} × ${o.h} mm</b>, shown enlarged. In the print dialog pick the label printer, paper size ${o.w} × ${o.h} mm, margins none, scale 100%.`
+    let note=(same?`<span class="mute">The selling price is the MRP, so the MRP is printed without a strike-out and the selling price and discount are left off.</span><br>`:"")+`Actual size <b>${o.w} × ${o.h} mm</b>, shown enlarged. In the print dialog pick the label printer, paper size ${o.w} × ${o.h} mm, margins none, scale 100%.`
       +(o.logoId&&!lg?`<br><span style="color:var(--warn)">No ${esc(lname)} has been uploaded yet, so its corner prints blank.</span>${isAdmin()?" Add it in Settings.":" An admin can add it in Settings."}`:"");
-    if(o.fields.barcode&&p.barcode&&!isEAN13(String(p.barcode))){
-      const m=+((/data-m="(\d+)"/.exec(barcodeSVG(String(p.barcode)))||[])[1]||0);
-      if(m&&labelDots(o.w,m)<2)note+=`<br><span style="color:var(--warn)">This barcode is too long to print dependably on a ${o.w} mm label — use a wider roll.</span>`;
+    if(o.fields.barcode&&p.barcode&&o.design.barcode){
+      const bb=o.design.barcode,m=+((/data-m="(\d+)"/.exec(qrSVG(String(p.barcode)))||[])[1]||0);
+      const nH=Math.max(1.8,bb.fs*.3528*1.3);
+      if(m&&Math.min(bb.w,bb.h-nH-.3)<CODE_MIN_MM)note+=`<br><span style="color:var(--warn)">The code box is smaller than the ${CODE_MIN_MM} mm minimum, so the code prints at ${CODE_MIN_MM} mm and may run past the box.</span>`;
     }
     $("#pl-note").innerHTML=note;
   };
   document.querySelectorAll(".pl-f").forEach(c=>c.onchange=draw);
   $("#pl-size").onchange=draw;$("#pl-logo").onchange=draw;["#pl-w","#pl-h"].forEach(i=>$(i).oninput=draw);
   $("#pl-print").onclick=async()=>{
-    const o=opts();if(!Object.entries(o.fields).some(([k,v])=>v&&k!=="logo"&&k!=="disc"&&k!=="tax"))return toast("Tick at least one thing to print",1);
+    const o=opts();if(!Object.entries(o.fields).some(([k,v])=>v&&k!=="logo"&&k!=="disc"))return toast("Tick at least one thing to print",1);
     const n=Math.min(500,Math.max(1,Math.floor(+$("#pl-copies").value||1)));
     const w=window.open("","_blank");if(!w)return toast("Allow pop-ups to print",1);
-    try{if(o.fields.barcode)await loadJsBarcode();const lg=await logoFor(o.logoId,o);
-      w.document.write(labelsHTML(Array.from({length:n},()=>p),{...o,logo:lg},barcodeSVG));w.document.close();
+    try{if(o.fields.barcode)await loadQR();const lg=await logoFor(o.logoId,o);
+      w.document.write(labelsHTML(Array.from({length:n},()=>p),{...o,logo:lg},qrSVG));w.document.close();
     }catch(e){w.close();toast(emsg(e),1)}
   };
   if($("#pl-direct"))$("#pl-direct").onclick=async()=>{
-    const o=opts();if(!Object.entries(o.fields).some(([k,v])=>v&&k!=="logo"&&k!=="disc"&&k!=="tax"))return toast("Tick at least one thing to print",1);
+    const o=opts();if(!Object.entries(o.fields).some(([k,v])=>v&&k!=="logo"&&k!=="disc"))return toast("Tick at least one thing to print",1);
     const n=Math.min(500,Math.max(1,Math.floor(+$("#pl-copies").value||1)));
     const fit=readFit("pl");
     let lg;const logoOf=async()=>lg!==undefined?lg:(lg=await logoFor(o.logoId,o));
@@ -5280,17 +5649,16 @@ window.openLabels=function(){
     const pick=(bar.length?bar:L).slice().sort((a,b)=>String(b.name||"").length-String(a.name||"").length)[0];
     if(!pick){$("#lb-prevbox").classList.add("hide");return}
     $("#lb-prevbox").classList.remove("hide");
-    try{await loadJsBarcode()}catch(e){$("#lb-prev").innerHTML=`<span class="small mute">${esc(emsg(e))}</span>`;return}
+    try{await loadQR()}catch(e){$("#lb-prev").innerHTML=`<span class="small mute">${esc(emsg(e))}</span>`;return}
     const W=roll?Math.min(110,Math.max(20,o.w)):64,H=roll?Math.min(150,Math.max(12,o.h)):34;
     const lg=roll?await logoFn(o.logoMode,[pick],o):"";
-    drawLabelPreview($("#lb-prev"),"lb-frame",labelsHTML([{...pick,barcode:pick.barcode||"2000000000015"}],{...o,logo:lg,border:false,noprint:true},barcodeSVG),W,H,roll);
+    drawLabelPreview($("#lb-prev"),"lb-frame",labelsHTML([{...pick,barcode:pick.barcode||"2000000000015"}],{...o,logo:lg,border:false,noprint:true},qrSVG),W,H,roll);
     $("#lb-prevnote").innerHTML=(roll?`Actual size <b>${W} × ${H} mm</b>, shown enlarged. One label per page — in the print dialog pick the label printer, paper size ${W} × ${H} mm, margins none, scale 100%.`
         :`One of 24 on the A4 sheet, 64 × 34 mm, shown enlarged.`)
       +(pick.barcode?` Showing <b>${esc(pick.sku||"")}</b>, the longest name in this selection.`:` This product has no barcode yet, so the bars are a sample.`);
-    if(roll){ // in-store codes are always 95 bars; only a vendor's own long code can be too wide
-      const wide=bar.filter(p=>!isEAN13(String(p.barcode))).filter(p=>{
-        const m=+((/data-m="(\d+)"/.exec(barcodeSVG(String(p.barcode)))||[])[1]||0);return m&&labelDots(W,m)<2});
-      if(wide.length)$("#lb-prevnote").innerHTML+=`<br><span style="color:var(--warn)">${wide.length} barcode${wide.length===1?" is":"s are"} too long to print dependably on a ${W} mm label (${esc(wide.slice(0,3).map(p=>p.sku).join(", "))}${wide.length>3?"…":""}) — use a wider roll for ${wide.length===1?"it":"those"}.</span>`;
+    if(roll){ // a code too small to print dependably on this roll: the products are named
+      const small=bar.filter(p=>{const m=+((/data-m="(\d+)"/.exec(qrSVG(String(p.barcode)))||[])[1]||0);return m&&qrDots(W,H,m)<2});
+      if(small.length)$("#lb-prevnote").innerHTML+=`<br><span style="color:var(--warn)">${small.length} code${small.length===1?" is":"s are"} too small to print dependably on a ${W} × ${H} mm label (${esc(small.slice(0,3).map(p=>p.sku).join(", "))}${small.length>3?"…":""}) — use a larger roll for ${small.length===1?"it":"those"}.</span>`;
     }
   };
   { // open on what was used last time; a new device starts on the roll
@@ -5340,8 +5708,8 @@ window.openLabels=function(){
     L.forEach(p=>{const n=perUnit?Math.max(1,Math.floor(+p.qty||0)):1;for(let i=0;i<n;i++)items.push(p)});
     if(items.length>2000)return toast(`That would be ${items.length} labels — narrow the selection (max 2000)`,1);
     const w=window.open("","_blank");if(!w)return toast("Allow pop-ups to print",1);
-    try{await loadJsBarcode();
-      const o=opts();w.document.write(labelsHTML(items,{...o,logo:o.layout==="roll"?await logoFn(o.logoMode,L,o):""},barcodeSVG));w.document.close();
+    try{await loadQR();
+      const o=opts();w.document.write(labelsHTML(items,{...o,logo:o.layout==="roll"?await logoFn(o.logoMode,L,o):""},qrSVG));w.document.close();
     }catch(e){w.close();toast(emsg(e),1)}
   };
 };
