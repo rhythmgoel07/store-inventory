@@ -1,6 +1,6 @@
 // Network first, cache as the fallback when offline. The page registers this file as
 // sw.js?v=<build>, so every new build gets its own cache and the old one is cleared.
-const V="inv-"+(new URL(self.location).searchParams.get("v")||"1"),SHELL=["./","index.html","manifest.json","icon.svg","icon-192.png","apple-touch-icon.png","firebase-config.js"];
+const V="inv-"+(new URL(self.location).searchParams.get("v")||"1"),SHELL=["./","index.html","manifest.json","icon.svg","icon-192.png","apple-touch-icon.png","firebase-config.js","qrcode.js"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener("fetch",e=>{
