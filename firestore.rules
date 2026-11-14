@@ -113,7 +113,11 @@ service cloud.firestore {
     match /customers/{id} {
       allow read: if isStaff();
       allow create: if isStaff() && autoId(id) && byMe('createdBy');
-      allow update: if can('editCustomer');
+      allow update: if can('editCustomer')
+        // anyone may fill in a name or address that was left blank; what is saved stays
+        || (isStaff() && changed().hasOnly(['name','address','updatedAt','updatedBy'])
+            && (!changed().hasAny(['name']) || resource.data.get('name', '') == '')
+            && (!changed().hasAny(['address']) || resource.data.get('address', '') == ''));
       allow delete: if isAdmin();
     }
 
@@ -150,13 +154,37 @@ service cloud.firestore {
       allow create: if isStaff() && autoId(id) && byMe('createdBy')
         && nd().status == 'open' && amount('total') && amount('subtotal')
         && nd().total <= nd().subtotal;
+      // An open enquiry is worked on live: staff add lines and change quantities, discounts,
+      // ticks and the follow-up date. They can never make the list of lines shorter — only an
+      // admin removes one.
+      function enqLive() {
+        return ['items','subtotal','itemDiscount','discount','discIn','discType','total','gstAmount',
+                'followUp','fuCarried','source','customerName','customerAddress','wonAs','updatedAt','updatedBy'];
+      }
+      function keepsLines() { return nd().get('items', []).size() >= resource.data.get('items', []).size(); }
       allow update: if isAdmin()
+        || (isStaff() && resource.data.status == 'open' && nd().status == 'open'
+            && changed().hasOnly(enqLive()) && keepsLines())
         // closing an open enquiry, either way
         || (isStaff() && resource.data.status == 'open' && nd().status in ['converted','won','lost']
-            && changed().hasOnly(['status','wonAs','lostReason','closedAt','closedBy']))
+            && changed().hasOnly(enqLive().concat(['status','lostReason','closedAt','closedBy'])) && keepsLines())
         // putting a closed one back in play
         || (isStaff() && resource.data.status in ['converted','won','lost'] && nd().status == 'open'
             && changed().hasOnly(['status','wonAs','lostReason','reopenedAt','reopenedBy']));
+      allow delete: if isAdmin();
+    }
+    // Estimates: the closed copy filed each time one is printed. Never changed afterwards.
+    match /estimates/{id} {
+      allow read: if isStaff();
+      allow create: if isStaff() && autoId(id) && byMe('createdBy') && amount('total');
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    // The follow-up log kept under each customer. Entries are added, never rewritten.
+    match /followups/{id} {
+      allow read: if isStaff();
+      allow create: if isStaff() && autoId(id) && byMe('createdBy');
+      allow update: if false;
       allow delete: if isAdmin();
     }
 
