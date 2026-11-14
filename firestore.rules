@@ -159,7 +159,7 @@ service cloud.firestore {
       // admin removes one.
       function enqLive() {
         return ['items','subtotal','itemDiscount','discount','discIn','discType','total','gstAmount',
-                'followUp','fuCarried','source','customerName','customerAddress','wonAs','updatedAt','updatedBy'];
+                'followUp','fuCarried','source','sourceNote','customerName','customerAddress','wonAs','updatedAt','updatedBy'];
       }
       function keepsLines() { return nd().get('items', []).size() >= resource.data.get('items', []).size(); }
       allow update: if isAdmin()
