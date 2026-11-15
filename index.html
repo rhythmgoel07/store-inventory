@@ -766,7 +766,7 @@ function render(soft){
     ${items.map(n=>`<button class="${navOn(n[0])?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}${n[0]==="approvals"&&pendingReqs().length?` <span class="badge">${pendingReqs().length}</span>`:""}</button>`).join("")}
     <div class="sp"></div><div class="me">${esc(S.profile.name)} · ${esc(ROLE_LABEL[ROLE()]||S.profile.role)}<br><a href="#" style="color:#fff" onclick="doSignOut();return false">Sign out</a><br><span class="bld" title="Which version of the app this device is running">build ${esc(BUILD)}</span></div></nav>
    <main id="main"></main></div>
-   <div class="bottom">${items.slice(0,4).map(n=>`<button class="${navOn(n[0])?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}${items.length>4?`<button class="${items.slice(4).some(n=>navOn(n[0]))?"on":""}" onclick="openMore()"><span>⋯</span>More</button>`:""}</div>`;
+   <div class="bottom">${items.slice(0,4).map(n=>`<button class="${navOn(n[0])?"on":""}" onclick="go('${n[0]}')"><span>${n[2]}</span>${n[1]}</button>`).join("")}<button class="${items.slice(4).some(n=>navOn(n[0]))?"on":""}" onclick="openMore()"><span>⋯</span>More</button></div>`;
   const v={dashboard:vDash,products:vProducts,product:vProduct,sell:vSell,stock:vStock,sales:vSales,returns:vReturns,return:vReturn,categories:vCats,settings:vSettings,
     customers:vCustomers,customer:vCustomer,bookings:vBookings,booking:vBooking,newbooking:vNewBooking,team:vTeam,approvals:vApprovals,
     vendors:vVendors,vendor:vVendor,sale:vSale,purchase:vPurchase,
@@ -801,7 +801,7 @@ window.dashTo=what=>{
 window.doSignOut=()=>signOut(auth);
 window.openMore=()=>{
   $("#modal").innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal" style="max-width:380px"><h3>Menu</h3>
-  <div class="grid">${navItems().slice(4).map(n=>`<button class="btn sec" style="text-align:left" onclick="closeModal();go('${n[0]}')">${n[2]} &nbsp;${n[1]}</button>`).join("")}</div>
+  <div class="grid">${navItems().slice(4).map(n=>`<button class="btn sec" style="text-align:left" onclick="closeModal();go('${n[0]}')">${n[2]} &nbsp;${n[1]}</button>`).join("")}<button class="btn sec" style="text-align:left" onclick="closeModal();doSignOut()">⎋ &nbsp;Sign out (${esc(S.profile?.name||"")})</button></div>
   <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn sec" onclick="closeModal()">Close</button></div></div></div>`;
 };
 
