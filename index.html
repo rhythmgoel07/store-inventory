@@ -3498,13 +3498,16 @@ const srcText=e=>e.source?e.source+(e.sourceNote?" — "+e.sourceNote:""):"";
 
 const enqTag=e=>{const s=ENQ_STATUS[e.status]||ENQ_STATUS.open;return `<span class="tag ${s[2]}">${s[1]}</span>`};
 const enqOverdue=e=>e.status==="open"&&e.followUp&&e.followUp<=dkey();
+/* The customer's name as it stands today: the customer record wins, so an edit in the customer
+   module shows everywhere; the name copied onto the enquiry is only a fallback. */
+function enqCustName(e){const c=e.customerId&&S.customers.find(x=>x.id===e.customerId);return (c&&c.name)||e.customerName||""}
 function vEnquiries(el){
   const f=S.ef,q=f.q.trim().toLowerCase(),qk=custKey(f.q);
   let L=S.enquiries.filter(e=>{
     if(f.status!=="all"&&e.status!==f.status)return false;
     if(f.due&&!enqOverdue(e))return false;
     if(!q)return true;
-    return (qk&&custKey(e.customerPhone).includes(qk))||`${e.enquiryNo} ${e.customerName} ${e.notes||""}`.toLowerCase().includes(q)
+    return (qk&&custKey(e.customerPhone).includes(qk))||`${e.enquiryNo} ${enqCustName(e)} ${e.notes||""}`.toLowerCase().includes(q)
       ||(e.items||[]).some(i=>`${i.name} ${i.sku}`.toLowerCase().includes(q));
   });
   const open=S.enquiries.filter(e=>e.status==="open"),due=open.filter(enqOverdue);
@@ -3522,7 +3525,7 @@ function vEnquiries(el){
   ${L.map(e=>`<tr><td data-l="Enquiry"><a href="#enquiry/${e.id}"><b>${esc(e.enquiryNo)}</b></a>${backTag(e)} ${enqTag(e)}
     <br><span class="small mute">${fdt(tms(e.createdAt))} · ${esc(e.createdByName||"")}${e.source?" · "+esc(srcText(e)):""}</span>
     ${e.followUp?`<br><span class="small" style="color:${enqOverdue(e)?"var(--warn)":"var(--mute)"}">next follow up ${esc(fday(e.followUp)||e.followUp)}</span>${e.status==="open"&&num(e.fuCarried)?` <span class="tag carried">carried forward ×${num(e.fuCarried)}</span>`:""}`:""}</td>
-   <td data-l="Customer">${e.customerId?`<a href="#customer/${e.customerId}">${esc(e.customerName||"—")}</a>`:esc(e.customerName||"—")}
+   <td data-l="Customer">${e.customerId?`<a href="#customer/${e.customerId}">${esc(enqCustName(e)||"—")}</a>`:esc(enqCustName(e)||"—")}
     <br><span class="small mute">${esc(e.customerPhone||"no phone")}</span></td>
    <td data-l="Items" class="small">${(e.items||[]).slice(0,4).map(i=>`<div style="padding:2px 0">${plink(i.pid,i.name)}<br><span class="mute">${esc(i.sku)}${lineCat(i)?" · "+esc(lineCat(i)):""}</span><br><span class="mute">${i.qty} × ${inr(i.price)}${num(i.disc)?" · special discount "+inr(num(i.disc)):""} = <b style="color:var(--ink)">${inr(i.lineTotal??lineNet(i))}</b></span></div>`).join("")}${(e.items||[]).length>4?`<div class="mute">+ ${e.items.length-4} more item(s)</div>`:""}
     ${e.notes?`<div class="mute" style="margin-top:4px">“${esc(e.notes)}”</div>`:""}</td>
@@ -3542,7 +3545,7 @@ function vEnquiryClosed(el){
    ["Recorded",`${fdt(tms(e.createdAt))} by ${esc(e.createdByName||"")}`],
    ...(e.source?[["Source of Information",esc(srcText(e))]]:[]),
    ...(e.followUp?[["Follow up on",`${esc(e.followUp)}${enqOverdue(e)?` <span class="tag low">due</span>`:""}`]]:[]),
-   ["Customer",(e.customerId?`<a href="#customer/${e.customerId}">${esc(e.customerName||"—")}</a>`:esc(e.customerName||"—"))+(e.customerPhone?` · ${esc(e.customerPhone)}`:" · no phone")],
+   ["Customer",(e.customerId?`<a href="#customer/${e.customerId}">${esc(enqCustName(e)||"—")}</a>`:esc(enqCustName(e)||"—"))+(e.customerPhone?` · ${esc(e.customerPhone)}`:" · no phone")],
    ...(e.notes?[["They asked for",esc(e.notes)]]:[]),
    ["Items",inr(e.subtotal??t.gross)],
    ...(num(e.itemDiscount)?[["Special discount","− "+inr(e.itemDiscount)]]:[]),
